@@ -1,3 +1,5 @@
+import Footer from '@/components/footer/footer';
+import Header from '@/components/header/header';
 import '@/styles/globals.css';
 import type { ReactNode } from 'react';
 
@@ -7,8 +9,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ru">
       <body>
-        <div className="w-screen bg-stone-900 h-[2rem]"></div>
-        <div className="container mx-auto">{children}</div>
+        <Header />
+        <div className="container mx-auto min-h-screen">{children}</div>
+        <Footer />
       </body>
     </html>
   );
