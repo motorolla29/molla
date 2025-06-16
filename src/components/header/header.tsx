@@ -1,7 +1,7 @@
 export default function Header() {
   return (
     <div className="w-full sticky top-0 z-10 bg-stone-100 h-10">
-      <div className="container mx-auto h-10 flex items-center justify-between">
+      <div className="container px-4 mx-auto h-10 flex items-center justify-between">
         <img className="flex h-[60%]" src="/logo/next.svg" />
         <div className="flex">
           <svg
@@ -36,7 +36,7 @@ export default function Header() {
               clipRule="evenodd"
             />
           </svg>
-          <span className="text-stone-800 hover:opacity-80 cursor-pointer">
+          <span className="text-stone-800 hover:opacity-80 cursor-pointer ml-1">
             Войти
           </span>
         </div>

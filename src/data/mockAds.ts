@@ -35,10 +35,7 @@ export const mockAds: AdBase[] = [
     price: 39990,
     currency: 'RUB',
     datePosted: '2025-06-10T10:15:00Z',
-    photos: [
-      'https://via.placeholder.com/400x300?text=Smartphone+Front',
-      'https://via.placeholder.com/400x300?text=Smartphone+Back',
-    ],
+    photos: ['1.jpg', '2.jpg', '3.jpg'],
     seller: {
       id: 'seller1',
       name: 'Иван Иванов',
@@ -81,10 +78,7 @@ export const mockAds: AdBase[] = [
     price: 25000,
     currency: 'RUB',
     datePosted: '2025-06-08T09:00:00Z',
-    photos: [
-      'https://via.placeholder.com/400x300?text=Kitchen',
-      'https://via.placeholder.com/400x300?text=Living+Room',
-    ],
+    photos: ['4.webp', '5.jpg', '6.jpg'],
     seller: {
       id: 'seller3',
       name: 'Андрей Смирнов',
@@ -106,7 +100,7 @@ export const mockAds: AdBase[] = [
     price: 700000,
     currency: 'RUB',
     datePosted: '2025-06-07T11:20:00Z',
-    photos: ['https://via.placeholder.com/400x300?text=Car+Front'],
+    photos: ['7.jpg', '8.jpg'],
     seller: {
       id: 'seller4',
       name: 'Ольга Кузнецова',
@@ -150,7 +144,7 @@ export const mockAds: AdBase[] = [
     price: 500,
     currency: 'RUB',
     datePosted: '2025-06-06T08:30:00Z',
-    photos: [],
+    photos: ['9.png', '10.jpg'],
     seller: {
       id: 'seller6',
       name: 'Петр Новиков',
@@ -172,7 +166,7 @@ export const mockAds: AdBase[] = [
     price: 1200000,
     currency: 'RUB',
     datePosted: '2025-06-04T12:00:00Z',
-    photos: ['https://via.placeholder.com/400x300?text=Land'],
+    photos: [],
     seller: {
       id: 'seller7',
       name: 'Мария Волкова',
@@ -194,7 +188,7 @@ export const mockAds: AdBase[] = [
     price: 1200000,
     currency: 'RUB',
     datePosted: '2025-06-03T09:15:00Z',
-    photos: ['https://via.placeholder.com/400x300?text=Nissan+Leaf'],
+    photos: ['7.jpg', '8.jpg'],
     seller: {
       id: 'seller8',
       name: 'Дмитрий Орлов',
@@ -216,7 +210,7 @@ export const mockAds: AdBase[] = [
     price: 300,
     currency: 'RUB',
     datePosted: '2025-06-02T13:00:00Z',
-    photos: [],
+    photos: ['11.jpg'],
     seller: {
       id: 'seller9',
       name: 'Анна Соколова',
@@ -238,7 +232,7 @@ export const mockAds: AdBase[] = [
     price: 5000,
     currency: 'RUB',
     datePosted: '2025-06-01T10:00:00Z',
-    photos: ['https://via.placeholder.com/400x300?text=Coffee+Machine'],
+    photos: ['1.jpg', '2.jpg'],
     seller: {
       id: 'seller10',
       name: 'Илья Козлов',
@@ -259,10 +253,7 @@ export const mockAds: AdBase[] = [
     price: 5500000,
     currency: 'RUB',
     datePosted: '2025-05-30T15:30:00Z',
-    photos: [
-      'https://via.placeholder.com/400x300?text=Living+Room',
-      'https://via.placeholder.com/400x300?text=Bedroom',
-    ],
+    photos: ['4.webp', '5.jpg', '6.jpg'],
     seller: {
       id: 'seller11',
       name: 'Светлана Морозова',
@@ -305,7 +296,7 @@ export const mockAds: AdBase[] = [
     price: 20000,
     currency: 'RUB',
     datePosted: '2025-05-25T09:45:00Z',
-    photos: ['https://via.placeholder.com/400x300?text=Design+Sample'],
+    photos: ['11.jpg'],
     seller: {
       id: 'seller13',
       name: 'Алексей Сидоров',
@@ -349,7 +340,7 @@ export const mockAds: AdBase[] = [
     price: 10000,
     currency: 'RUB',
     datePosted: '2025-05-18T08:00:00Z',
-    photos: ['https://via.placeholder.com/400x300?text=Room'],
+    photos: ['1.jpg', '2.jpg'],
     seller: {
       id: 'seller15',
       name: 'Ольга Белова',
