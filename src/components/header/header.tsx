@@ -1,8 +1,12 @@
+import Link from 'next/link';
+
 export default function Header() {
   return (
     <div className="w-full sticky top-0 z-10 bg-stone-100 h-10">
       <div className="container px-4 mx-auto h-10 flex items-center justify-between">
-        <img className="flex h-[60%]" src="/logo/next.svg" />
+        <Link className="flex h-[60%]" href="/">
+          <img src="/logo/next.svg" />
+        </Link>
         <div className="flex">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -36,9 +40,12 @@ export default function Header() {
               clipRule="evenodd"
             />
           </svg>
-          <span className="text-stone-800 hover:opacity-80 cursor-pointer ml-1">
+          <Link
+            href="/auth"
+            className="font-semibold text-neutral-500 hover:opacity-80 cursor-pointer ml-1"
+          >
             Войти
-          </span>
+          </Link>
         </div>
       </div>
     </div>

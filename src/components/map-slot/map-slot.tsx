@@ -1,47 +1,42 @@
-import { useState } from 'react';
-import { MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
+'use client';
 
-export default function MapSlot() {
+import { useState } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import MapGl from '../map-gl/map-gl';
+
+export default function MapSlot({ ads }) {
   const [showFullMap, setShowFullMap] = useState(false);
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold">Карта объявлений</h2>
-        <button
-          onClick={() => setShowFullMap(true)}
-          className="flex items-center gap-1 text-blue-600 hover:underline"
-        >
-          <MapPinIcon className="h-5 w-5" />
-          Посмотреть на карте
-        </button>
-      </div>
-      {/* Заглушка для мини-карты */}
-      <div className="h-48 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
-        Мини-карта (здесь подключите компонент с Яндекс.Картой или Map)
-      </div>
-    </div>
-  );
-
-  {
-    /* Модалка/оверлей для полной карты */
-  }
-  {
-    showFullMap && (
-      <div className="fixed inset-0 z-20 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="relative w-full h-full bg-white">
+    <div>
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <h2 className="text-lg text-stone-800 font-semibold mb-2">
+          Карта объявлений
+        </h2>
+        <div className="h-48 relative bg-gray-200 flex items-center justify-center rounded-md overflow-hidden">
+          <MapGl ads={ads} />
+          <div className="absolute inset-0 bg-white/40" />
           <button
-            onClick={() => setShowFullMap(false)}
-            className="absolute top-4 right-4 p-2 bg-white rounded-full shadow hover:bg-gray-100"
-            aria-label="Закрыть"
+            onClick={() => setShowFullMap(true)}
+            className="absolute rounded-md text-white bg-violet-400 cursor-pointer px-4 py-2 mt-18 shadow-xl hover:bg-violet-500"
           >
-            <XMarkIcon className="h-6 w-6 text-gray-600" />
+            Посмотреть на карте
           </button>
-          {/* Здесь разместите ваш компонент карты на весь экран */}
-          <div className="w-full h-full">
-            Полная карта (здесь компонент с Яндекс.Картой)
-          </div>
         </div>
       </div>
-    );
-  }
+      {showFullMap && (
+        <div className="fixed inset-0 z-20 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="relative w-full h-full bg-white">
+            <MapGl ads={ads} />
+            <button
+              onClick={() => setShowFullMap(false)}
+              className="absolute cursor-pointer top-4 right-4 p-2 bg-white rounded-full shadow hover:bg-gray-100"
+              aria-label="Закрыть"
+            >
+              <XMarkIcon className="h-6 w-6 text-gray-600" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
