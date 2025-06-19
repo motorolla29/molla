@@ -9,7 +9,7 @@ export default function TopSearchPanel() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const { city, setLocation } = useLocationStore();
+  const { cityName, setLocation } = useLocationStore();
   const dropdownRef = useRef<HTMLDivElement>(null); // <== ссылка на dropdown
 
   // Закрытие по клику вне dropdown
@@ -99,7 +99,7 @@ export default function TopSearchPanel() {
         >
           <MapPinIcon className="size-6" />
           <span className="ml-1 leading-none line-clamp-2 min-w-0 max-w-[200px]">
-            {city}
+            {cityName}
           </span>
         </button>
         <div className="ml-8">
@@ -114,8 +114,8 @@ export default function TopSearchPanel() {
       {showLocationModal && (
         <LocationModal
           onClose={() => setShowLocationModal(false)}
-          onSelect={(newCity, lat, lon) => {
-            setLocation(newCity, lat, lon);
+          onSelect={(label, nameNom, namePrep, lat, lon) => {
+            setLocation(label, nameNom, namePrep, lat, lon);
             setShowLocationModal(false);
           }}
         />

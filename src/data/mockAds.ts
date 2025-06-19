@@ -4,6 +4,7 @@ export interface AdBase {
   title: string;
   description: string;
   city: string;
+  cityLabel: string;
   address: string;
   location: { lat: number; lng: number };
   price?: number;
@@ -30,6 +31,7 @@ export const mockAds: AdBase[] = [
     description:
       'Продам новый смартфон XYZ 128GB, полностью запечатан, гарантия 2 года. Цвет: черный.',
     city: 'Москва',
+    cityLabel: 'moscow',
     address: 'г. Москва, ул. Арбат, д. 12',
     location: { lat: 55.752023, lng: 37.617499 },
     price: 39990,
@@ -51,6 +53,7 @@ export const mockAds: AdBase[] = [
     description:
       'Опытный репетитор предлагает занятия по английскому онлайн и оффлайн. Подготовка к экзаменам, разговорный английский.',
     city: 'Санкт-Петербург',
+    cityLabel: 'saint_petersburg',
     address: 'г. Санкт-Петербург, пр. Невский, д. 50',
     location: { lat: 59.93428, lng: 30.335099 },
     price: 1000,
@@ -73,6 +76,7 @@ export const mockAds: AdBase[] = [
     description:
       'Сдам 1-комнатную квартиру 35м² в центре города, рядом метро. Мебель, интернет, без комиссии.',
     city: 'Новосибирск',
+    cityLabel: 'novosibirsk',
     address: 'г. Новосибирск, ул. Ленина, д. 100',
     location: { lat: 55.030199, lng: 82.92043 },
     price: 25000,
@@ -95,6 +99,7 @@ export const mockAds: AdBase[] = [
     description:
       'Toyota Corolla 2015 года, пробег 85000 км, бензин, автомат. Своевременное техобслуживание, без аварий.',
     city: 'Екатеринбург',
+    cityLabel: 'yekaterinburg',
     address: 'г. Екатеринбург, ул. Малышева, д. 10',
     location: { lat: 56.838926, lng: 60.605702 },
     price: 700000,
@@ -117,6 +122,7 @@ export const mockAds: AdBase[] = [
     description:
       'Удобный диван из IKEA, двухместный, б/у, состояние отличное. Нужно только перевезти.',
     city: 'Казань',
+    cityLabel: 'kazan',
     address: 'г. Казань, ул. Баумана, д. 20',
     location: { lat: 55.790278, lng: 49.134722 },
     price: 8000,
@@ -139,6 +145,7 @@ export const mockAds: AdBase[] = [
     description:
       'Грузчики для переезда, любые этажи. Без выходных. Цена договорная в зависимости от объёма.',
     city: 'Москва',
+    cityLabel: 'moscow',
     address: 'г. Москва, метро Таганская',
     location: { lat: 55.74, lng: 37.65 },
     price: 500,
@@ -161,6 +168,7 @@ export const mockAds: AdBase[] = [
     description:
       'Участок 10 соток в пригороде, ИЖС. Электричество рядом, подъездная дорога асфальтирована.',
     city: 'Санкт-Петербург',
+    cityLabel: 'saint_petersburg',
     address: 'Ленинградская обл., Всеволожский р-н',
     location: { lat: 60.0, lng: 30.5 },
     price: 1200000,
@@ -183,6 +191,7 @@ export const mockAds: AdBase[] = [
     description:
       'Электромобиль Nissan Leaf 2018 года, пробег 40000 км, полный электропакет. Зарядка от обычной розетки.',
     city: 'Новосибирск',
+    cityLabel: 'novosibirsk',
     address: 'г. Новосибирск, ул. Красный проспект',
     location: { lat: 55.03, lng: 82.92 },
     price: 1200000,
@@ -205,6 +214,7 @@ export const mockAds: AdBase[] = [
     description:
       'Быстрая курьерская доставка документов и небольших посылок по Москве.',
     city: 'Москва',
+    cityLabel: 'moscow',
     address: 'г. Москва, офисный центр Сити',
     location: { lat: 55.755826, lng: 37.6173 },
     price: 300,
@@ -227,6 +237,7 @@ export const mockAds: AdBase[] = [
     description:
       'Кофемашина Bosch, пробег небольшой, регулярно чистилась. Есть инструкция.',
     city: 'Казань',
+    cityLabel: 'kazan',
     address: 'г. Казань, переулок Пушкина, д. 5',
     location: { lat: 55.79, lng: 49.13 },
     price: 5000,
@@ -248,6 +259,7 @@ export const mockAds: AdBase[] = [
     description:
       'Продам 2-комнатную квартиру 55м², хороший ремонт, рядом парковка и магазины.',
     city: 'Екатеринбург',
+    cityLabel: 'yekaterinburg',
     address: 'г. Екатеринбург, ул. Вайнера, д. 20',
     location: { lat: 56.838, lng: 60.605 },
     price: 5500000,
@@ -270,6 +282,7 @@ export const mockAds: AdBase[] = [
     description:
       'Горный велосипед Trek, куплен год назад, использовался несколько раз. Рама 18".',
     city: 'Санкт-Петербург',
+    cityLabel: 'saint_petersburg',
     address: 'г. Санкт-Петербург, ул. Петроградская набережная',
     location: { lat: 59.96, lng: 30.28 },
     price: 15000,
@@ -291,6 +304,7 @@ export const mockAds: AdBase[] = [
     description:
       'Профессиональный дизайнер предлагает услуги по разработке логотипов, брендбука и полиграфии.',
     city: 'Казань',
+    cityLabel: 'kazan',
     address: 'г. Казань, ул. Кремлёвская, д. 1',
     location: { lat: 55.797, lng: 49.123 },
     price: 20000,
@@ -313,6 +327,7 @@ export const mockAds: AdBase[] = [
     description:
       'Набор из 10 книг классической литературы в хорошем состоянии. Цена за весь набор.',
     city: 'Москва',
+    cityLabel: 'moscow',
     address: 'г. Москва, ул. Тверская, д. 15',
     location: { lat: 55.764, lng: 37.605 },
     price: 3000,
@@ -335,6 +350,7 @@ export const mockAds: AdBase[] = [
     description:
       'Сдам комнату 12м² в коммунальной квартире. Район тихий, метро в шаговой доступности.',
     city: 'Новосибирск',
+    cityLabel: 'novosibirsk',
     address: 'г. Новосибирск, ул. Достоевского, д. 5',
     location: { lat: 55.031, lng: 82.9205 },
     price: 10000,

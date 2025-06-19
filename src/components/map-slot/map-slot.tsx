@@ -8,20 +8,18 @@ export default function MapSlot({ ads }) {
   const [showFullMap, setShowFullMap] = useState(false);
   return (
     <div>
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <h2 className="text-lg text-stone-800 font-semibold mb-2">
-          Карта объявлений
-        </h2>
-        <div className="h-48 relative bg-gray-200 flex items-center justify-center rounded-md overflow-hidden">
-          <MapGl ads={ads} />
-          <div className="absolute inset-0 bg-white/40" />
-          <button
-            onClick={() => setShowFullMap(true)}
-            className="absolute rounded-md text-white bg-violet-400 cursor-pointer px-4 py-2 mt-18 shadow-xl hover:bg-violet-500"
-          >
-            Посмотреть на карте
-          </button>
-        </div>
+      <h2 className="text-lg text-stone-800 font-semibold mb-2">
+        Карта объявлений
+      </h2>
+      <div className="h-48 relative bg-gray-200 flex items-center justify-center rounded-md overflow-hidden">
+        <MapGl ads={ads} />
+        <div className="absolute inset-0 bg-white/40" />
+        <button
+          onClick={() => setShowFullMap(true)}
+          className="absolute rounded-md text-white bg-violet-400 cursor-pointer px-4 py-2 mt-18 shadow-xl hover:bg-violet-500"
+        >
+          Посмотреть на карте
+        </button>
       </div>
       {showFullMap && (
         <div className="fixed inset-0 z-20 bg-black bg-opacity-50 flex items-center justify-center">

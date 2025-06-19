@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <TopSearchPanel />
-      <div className="px-4 py-6 space-y-6">
+      <div className="mx-4 mt-6 mb-4 space-y-6">
         <MapSlot ads={mockAds} />
       </div>
       <HomePageFreshAndRecommendedAdsBlock />

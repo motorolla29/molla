@@ -4,91 +4,85 @@ import { useState, useRef, useEffect } from 'react';
 import { useLocationStore } from '@/store/useLocationStore';
 
 interface Suggestion {
-  city: string;
+  label: string;
+  nameNominative: string;
+  namePrepositional: string;
   lat: number;
   lon: number;
 }
 
 interface LocationModalProps {
   onClose: () => void;
-  onSelect: (city: string, lat: number, lon: number) => void;
+  onSelect: (
+    cityLabel: string,
+    cityName: string,
+    cityNamePreposition: string,
+    lat: number,
+    lon: number
+  ) => void;
+}
+
+interface CityRaw {
+  name?: string;
+  label?: string;
+  namecase?: {
+    nominative?: string;
+    prepositional?: string;
+  };
+  coords?: {
+    lat?: number;
+    lon?: number;
+  };
+}
+
+let citiesData: CityRaw[] | null = null;
+async function loadCitiesData(): Promise<CityRaw[]> {
+  if (!citiesData) {
+    // динамический импорт JSON; Next.js вынесет его в отдельный чанк
+    const mod = await import('@/lib/russia-cities.json');
+    const data = (mod as any).default ?? (mod as any);
+    if (Array.isArray(data)) {
+      citiesData = data;
+    } else {
+      console.error('Ошибка: russia-cities.json не является массивом');
+      citiesData = [];
+    }
+  }
+  return citiesData;
 }
 
 async function fetchCitySuggestions(query: string): Promise<Suggestion[]> {
-  const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY;
-  if (!apiKey) {
-    console.warn('Yandex API key missing');
-    return [];
-  }
-
-  const term = query.trim();
+  const term = query.trim().toLowerCase();
   if (term.length < 2) return [];
 
-  const url =
-    `https://geocode-maps.yandex.ru/1.x?apikey=${apiKey}` +
-    `&format=json&geocode=${encodeURIComponent(term)}` +
-    `&kind=locality&results=10&lang=ru_RU`;
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.warn('Yandex Geocoder error:', res.status);
-      return [];
-    }
-
-    const data = await res.json();
-    const members = data.response?.GeoObjectCollection?.featureMember || [];
-    const items: Suggestion[] = [];
-
-    for (const member of members) {
-      const geoObj = member.GeoObject;
-
-      // Проверка на Россию
-      let countryCode: string | null = null;
-      try {
-        countryCode =
-          geoObj.metaDataProperty.GeocoderMetaData.Address.country_code;
-      } catch {}
-      if (!countryCode) {
-        try {
-          countryCode =
-            geoObj.metaDataProperty.GeocoderMetaData.Address.Details.Country
-              .CountryNameCode;
-        } catch {}
+  const data = await loadCitiesData();
+  const results: Suggestion[] = [];
+  for (const item of data) {
+    // Получаем именительный падеж или обычное name
+    const nameNom = item.namecase?.nominative ?? item.name;
+    if (!nameNom) continue;
+    if (nameNom.toLowerCase().startsWith(term)) {
+      const label = item.label;
+      if (!label) continue;
+      const coords = item.coords;
+      if (
+        coords &&
+        typeof coords.lat === 'number' &&
+        typeof coords.lon === 'number'
+      ) {
+        const namePrep = item.namecase?.prepositional ?? nameNom;
+        results.push({
+          label,
+          nameNominative: nameNom,
+          namePrepositional: namePrep,
+          lat: coords.lat,
+          lon: coords.lon,
+        });
       }
-      if (countryCode !== 'RU') continue;
-
-      // Название города
-      let cityName: string | null = null;
-      try {
-        cityName =
-          geoObj.metaDataProperty.GeocoderMetaData.Address.Details.Country
-            .Locality.LocalityName;
-      } catch {}
-      if (!cityName) {
-        cityName = geoObj.name || null;
-      }
-      if (!cityName || cityName.length < 2) continue;
-
-      // Координаты
-      let lat = 0,
-        lon = 0;
-      try {
-        const pos = geoObj.Point.pos; // "lon lat"
-        const [lonStr, latStr] = pos.split(' ');
-        lon = parseFloat(lonStr);
-        lat = parseFloat(latStr);
-      } catch {}
-
-      items.push({ city: cityName, lat, lon });
+      if (results.length >= 10) break;
     }
-
-    const unique = Array.from(new Map(items.map((i) => [i.city, i])).values());
-    return unique;
-  } catch (e) {
-    console.error('fetchCitySuggestions error:', e);
-    return [];
   }
+  return results;
 }
 
 export default function LocationModal({
@@ -96,34 +90,58 @@ export default function LocationModal({
   onSelect,
 }: LocationModalProps) {
   const {
-    city: currentCity,
+    cityName: currentCityName,
+    cityLabel: currentCityLabel,
+    cityNamePreposition: currentCityPrepositional,
     lat: currentLat,
     lon: currentLon,
   } = useLocationStore();
 
-  // Инпут
   const [input, setInput] = useState('');
-
-  // Подсказки
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Выбранный город (локально), но еще не применён
-  const [previewCity, setPreviewCity] = useState(currentCity);
-  const [previewLat, setPreviewLat] = useState(currentLat);
-  const [previewLon, setPreviewLon] = useState(currentLon);
+  const [previewLabel, setPreviewLabel] = useState<string | null>(
+    currentCityLabel
+  );
+  const [previewNameNom, setPreviewNameNom] = useState<string | null>(
+    currentCityName
+  );
+  const [previewNamePrep, setPreviewNamePrep] = useState<string | null>(
+    currentCityPrepositional
+  );
+  const [previewLat, setPreviewLat] = useState<number | null>(
+    currentLat ?? null
+  );
+  const [previewLon, setPreviewLon] = useState<number | null>(
+    currentLon ?? null
+  );
 
   const modalRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<number>();
+  const debounceRef = useRef<number | null>(null);
 
+  // Предзагрузка JSON фоном (опционально)
   useEffect(() => {
-    // Блокируем прокрутку при монтировании
-    document.body.classList.add('overflow-hidden');
-
+    let canceled = false;
+    loadCitiesData().catch((e) => {
+      if (!canceled) console.error('Не удалось загрузить список городов', e);
+    });
     return () => {
-      // Возвращаем прокрутку при размонтировании
+      canceled = true;
+    };
+  }, []);
+
+  // Блокировка прокрутки при открытом модале
+  useEffect(() => {
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.classList.add('overflow-hidden');
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    return () => {
       document.body.classList.remove('overflow-hidden');
+      document.body.style.paddingRight = '';
     };
   }, []);
 
@@ -174,7 +192,9 @@ export default function LocationModal({
 
   // Выбор подсказки
   const handleSelectSuggestion = (item: Suggestion) => {
-    setPreviewCity(item.city);
+    setPreviewLabel(item.label);
+    setPreviewNameNom(item.nameNominative);
+    setPreviewNamePrep(item.namePrepositional);
     setPreviewLat(item.lat);
     setPreviewLon(item.lon);
     setInput('');
@@ -184,8 +204,20 @@ export default function LocationModal({
 
   // Применение
   const handleApply = () => {
-    if (previewCity && previewLat != null && previewLon != null) {
-      onSelect(previewCity, previewLat, previewLon);
+    if (
+      previewLabel &&
+      previewNameNom &&
+      previewNamePrep &&
+      previewLat != null &&
+      previewLon != null
+    ) {
+      onSelect(
+        previewLabel,
+        previewNameNom,
+        previewNamePrep,
+        previewLat,
+        previewLon
+      );
     }
     onClose();
   };
@@ -202,7 +234,7 @@ export default function LocationModal({
         <div className="mb-4">
           <span className="text-sm text-stone-600">Текущий город:</span>
           <div className="mt-1 px-3 py-2 bg-gray-100 rounded-md text-stone-800">
-            {previewCity || 'Не задан'}
+            {previewNameNom || 'Не задан'}
           </div>
         </div>
 
@@ -219,7 +251,7 @@ export default function LocationModal({
             className="w-full border border-gray-300 rounded-md pl-3 pr-10 py-2 outline-none"
           />
           {loading && (
-            <div className="absolute right-4.5 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+            <div className="absolute right-4.5 top-4.5 -translate-y-1/2 text-sm text-gray-500">
               ...
             </div>
           )}
@@ -228,11 +260,11 @@ export default function LocationModal({
             <ul className="absolute w-full top-full max-h-48 overflow-auto border border-gray-200 rounded-md bg-white z-50">
               {suggestions.map((item, idx) => (
                 <li
-                  key={`${item.city}-${idx}`}
+                  key={`${item.label}-${idx}`}
                   onClick={() => handleSelectSuggestion(item)}
                   className="p-2 hover:bg-gray-100 cursor-pointer"
                 >
-                  {item.city}
+                  {item.nameNominative}
                 </li>
               ))}
             </ul>
@@ -257,7 +289,7 @@ export default function LocationModal({
           </button>
           <button
             onClick={handleApply}
-            className="px-4 py-2 bg-violet-500 text-white rounded-md hover:bg-violet-600"
+            className="px-4 py-2 bg-violet-400 text-white rounded-md hover:bg-violet-500"
           >
             Применить
           </button>
