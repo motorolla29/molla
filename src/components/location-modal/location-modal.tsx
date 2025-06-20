@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useLocationStore } from '@/store/useLocationStore';
+import { CityRaw } from '@/types/city-raw';
 
 interface Suggestion {
   label: string;
@@ -20,19 +21,6 @@ interface LocationModalProps {
     lat: number,
     lon: number
   ) => void;
-}
-
-interface CityRaw {
-  name?: string;
-  label?: string;
-  namecase?: {
-    nominative?: string;
-    prepositional?: string;
-  };
-  coords?: {
-    lat?: number;
-    lon?: number;
-  };
 }
 
 let citiesData: CityRaw[] | null = null;

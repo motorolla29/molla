@@ -1,3 +1,4 @@
+import LocationInitializer from '@/components/location-initializer/location-initializer';
 import '@/styles/globals.css';
 import type { ReactNode } from 'react';
 
@@ -8,7 +9,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        <LocationInitializer />
+        {children}
+      </body>
     </html>
   );
 }

@@ -11,7 +11,7 @@ export default function MapGl({ ads }) {
   }, [ads]);
 
   return (
-    <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_API_KEY }}>
+    <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY }}>
       <Map
         options={{ suppressMapOpenBlock: true }}
         defaultState={{ center, zoom: 4 }}
