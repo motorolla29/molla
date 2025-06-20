@@ -1,8 +1,8 @@
 export type CategoryKey = 'goods' | 'services' | 'realestate' | 'auto';
 
-export type Currency = 'RUB' | 'USD' | 'EUR';
+export type Currency = 'RUB' | 'USD' | 'EUR' | undefined;
 
-export type ContactType = 'phone' | 'email' | 'chat';
+export type ContactType = 'phone' | 'email';
 
 export interface Seller {
   id: string;

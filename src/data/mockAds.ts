@@ -1,27 +1,4 @@
-export interface AdBase {
-  id: string;
-  category: string;
-  title: string;
-  description: string;
-  city: string;
-  cityLabel: string;
-  address: string;
-  location: { lat: number; lng: number };
-  price?: number;
-  currency?: 'RUB' | 'USD' | 'EUR';
-  datePosted: string; // ISO-string
-  photos: string[];
-  seller: {
-    id: string;
-    name: string;
-    rating: number; // от 0 до 5
-    contact: {
-      type: 'phone' | 'email' | 'chat';
-      value: string;
-    };
-  };
-  details: string; // теперь просто текст
-}
+import { AdBase } from '@/types/ad';
 
 export const mockAds: AdBase[] = [
   {
@@ -133,7 +110,7 @@ export const mockAds: AdBase[] = [
       id: 'seller5',
       name: 'Руслан Галкин',
       rating: 4.1,
-      contact: { type: 'chat', value: 'chat_user_5' },
+      contact: { type: 'email', value: 'user_5@mail.ru' },
     },
     details:
       'Диван IKEA двухместный, в отличном состоянии, б/у, требует только перевозки.',
@@ -225,7 +202,7 @@ export const mockAds: AdBase[] = [
       id: 'seller9',
       name: 'Анна Соколова',
       rating: 4.9,
-      contact: { type: 'chat', value: 'sokolova_chat' },
+      contact: { type: 'email', value: 'sokolova@mail.com' },
     },
     details:
       'Курьерская доставка документов и мелких посылок по Москве, быстро.',
@@ -338,7 +315,7 @@ export const mockAds: AdBase[] = [
       id: 'seller14',
       name: 'Марина Лебедева',
       rating: 4.3,
-      contact: { type: 'chat', value: 'marina_lebed_chat' },
+      contact: { type: 'email', value: 'marina_lebed@yandex.ru' },
     },
     details:
       'Набор из 10 книг классической литературы, состояние хорошее, цена за весь комплект.',

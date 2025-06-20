@@ -25,7 +25,7 @@ export default async function AdPage({ params }: Props) {
   }
 
   // Можно имитировать задержку, если хотите: await new Promise(r => setTimeout(r, 500));
-  await new Promise((r) => setTimeout(r, 500));
+  await new Promise((r) => setTimeout(r, 3000));
   const ad = mockAds.find((x) => x.id === adId);
   if (!ad) {
     notFound();

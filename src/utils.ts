@@ -1,4 +1,6 @@
-export function getCurrencySymbol(currencyCode) {
+import { Currency } from './types/ad';
+
+export function getCurrencySymbol(currencyCode: Currency) {
   switch (currencyCode) {
     case 'RUB':
       return '₽';
