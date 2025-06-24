@@ -7,10 +7,7 @@ import MapGl from '../map-gl/map-gl';
 export default function MapSlot({ ads }) {
   const [showFullMap, setShowFullMap] = useState(false);
   return (
-    <div>
-      <h2 className="text-lg text-stone-800 font-semibold mb-2">
-        Карта объявлений
-      </h2>
+    <>
       <div className="h-48 relative bg-gray-200 flex items-center justify-center rounded-md overflow-hidden">
         <MapGl ads={ads} />
         <div className="absolute inset-0 bg-white/40" />
@@ -35,6 +32,6 @@ export default function MapSlot({ ads }) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

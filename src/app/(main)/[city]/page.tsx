@@ -9,7 +9,7 @@ export default async function CityPage({ params }: Props) {
   const citiesMod = await import('@/lib/russia-cities.json');
   const cities = (citiesMod as any).default ?? citiesMod;
   const foundCity = cities.find((c: any) => c.label === city);
-  if (!foundCity) notFound();
+  if (!foundCity && city !== 'russia') notFound();
 
   // Передаём имя города в клиент
   return (

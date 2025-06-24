@@ -13,7 +13,7 @@ export default async function CategoryPage({ params }: Props) {
   const foundCity = cities.find((c: any) => c.label === city);
   const foundCategory = categoryOptions.find((c) => c.key === category);
 
-  if (!foundCity || !foundCategory) {
+  if ((!foundCity && city !== 'russia') || !foundCategory) {
     notFound();
   }
 

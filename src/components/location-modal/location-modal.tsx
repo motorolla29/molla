@@ -18,8 +18,8 @@ interface LocationModalProps {
     cityLabel: string,
     cityName: string,
     cityNamePreposition: string,
-    lat: number,
-    lon: number
+    lat: number | null,
+    lon: number | null
   ) => void;
 }
 
@@ -192,7 +192,9 @@ export default function LocationModal({
 
   // Применение
   const handleApply = () => {
-    if (
+    if (previewLabel === 'russia' && previewNameNom === 'Все города') {
+      onSelect('russia', 'Россия', 'России', null, null);
+    } else if (
       previewLabel &&
       previewNameNom &&
       previewNamePrep &&
@@ -216,8 +218,24 @@ export default function LocationModal({
         ref={modalRef}
         className="bg-white rounded-lg w-full max-w-md mx-4 p-4 shadow-2xl"
       >
-        <h2 className="text-lg font-medium mb-4">Выберите город</h2>
-
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-medium">Выберите город</h2>
+          <button
+            onClick={() => {
+              setPreviewLabel('russia');
+              setPreviewNameNom('Все города');
+              setPreviewNamePrep('России');
+              setPreviewLat(null);
+              setPreviewLon(null);
+              setInput('');
+              setSuggestions([]);
+              setError(null);
+            }}
+            className="text-md underline text-violet-400 font-medium hover:text-violet-500"
+          >
+            Все города
+          </button>
+        </div>
         {/* Текущий город */}
         <div className="mb-4">
           <span className="text-sm text-stone-600">Текущий город:</span>

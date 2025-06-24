@@ -31,12 +31,6 @@ export const useLocationStore = create<LocationState>((set) => ({
   lon: DEFAULT_LON,
   setLocation: (cityLabel, cityName, cityNamePreposition, lat, lon) => {
     set({ cityLabel, cityName, cityNamePreposition, lat, lon });
-    try {
-      const toStore = { cityLabel, cityName, cityNamePreposition, lat, lon };
-      localStorage.setItem('userLocation', JSON.stringify(toStore));
-    } catch (e) {
-      console.warn('Не удалось сохранить location в localStorage', e);
-    }
   },
   clearLocation: () => {
     set({

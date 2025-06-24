@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: #a07ff3;
+}
+
 button {
   cursor: pointer;
 }

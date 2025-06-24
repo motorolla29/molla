@@ -9,7 +9,7 @@ export default function TopSearchPanel() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const { cityName, setLocation } = useLocationStore();
+  const { cityLabel, cityName, setLocation } = useLocationStore();
   const dropdownRef = useRef<HTMLDivElement>(null); // <== ссылка на dropdown
 
   // Закрытие по клику вне dropdown
@@ -33,7 +33,7 @@ export default function TopSearchPanel() {
   }, [showFilterDropdown]);
 
   return (
-    <div className="bg-white sticky px-4 top-10 z-10">
+    <div className="hidden lg:block bg-white sticky px-4 top-15 z-10">
       <div className="mx-auto py-3 flex items-center gap-2">
         <div className="relative" ref={dropdownRef}>
           <button
@@ -62,14 +62,19 @@ export default function TopSearchPanel() {
               <div className="flex flex-col pb-3">
                 {categoryOptions.map((opt) => (
                   <div key={opt.key} className="flex items-center px-2">
-                    <img
-                      src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
-                      alt="cat-icon"
-                      className="w-6 h-6 aspect-auto mr-1"
-                    />
-                    <span className="flex items-center text-stone-800 px-1 py-1 hover:bg-gray-50 rounded-sm cursor-pointer">
-                      {opt.label}
-                    </span>
+                    <Link
+                      className="flex items-center"
+                      href={`/${cityLabel}/${opt.key}`}
+                    >
+                      <img
+                        src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
+                        alt="cat-icon"
+                        className="w-6 h-6 aspect-auto mr-1"
+                      />
+                      <span className="flex items-center text-stone-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
+                        {opt.label}
+                      </span>
+                    </Link>
                   </div>
                 ))}
               </div>

@@ -12,7 +12,7 @@ export default function AsideFilters({
   setMaxPrice,
 }: AsideFiltersProps) {
   return (
-    <aside className="w-1/3 h-fit flex flex-col flex-shrink-0 bg-amber-100 p-4 rounded-xl xl:w-1/4">
+    <aside className="hidden lg:flex w-1/3 h-fit flex-col flex-shrink-0 bg-amber-100 p-4 rounded-xl xl:w-1/4">
       {/* Фильтр по цене */}
       <div className="mb-6">
         <h2 className="text-lg text-stone-800 font-medium mb-2">Цена</h2>

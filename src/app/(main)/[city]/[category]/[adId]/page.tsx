@@ -14,7 +14,7 @@ export default async function AdPage({ params }: Props) {
   const citiesMod = await import('@/lib/russia-cities.json');
   const cities = (citiesMod as any).default ?? citiesMod;
   const foundCity = cities.find((c: any) => c.label === city);
-  if (!foundCity) {
+  if (!foundCity && city !== 'russia') {
     notFound();
   }
 

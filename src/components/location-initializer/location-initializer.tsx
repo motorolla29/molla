@@ -20,20 +20,7 @@ export default function LocationInitializer() {
     if (tried) return;
     setTried(true);
 
-    // 1) Сначала проверяем: если уже в сторе указана локация (в т.ч. после перезагрузки
-    // zustand не сохраняет автоматически, но localStorage в setLocation записано)
-    // if (
-    //   cityLabel &&
-    //   cityName &&
-    //   cityNamePreposition &&
-    //   lat != null &&
-    //   lon != null
-    // ) {
-    //   // Всё есть — ничего не делаем
-    //   return;
-    // }
-
-    // Если в сторе пусто или частично null, пробуем достать из localStorage:
+    // 1) пробуем достать из localStorage:
     try {
       const json = localStorage.getItem('userLocation');
       if (json) {
@@ -90,7 +77,6 @@ export default function LocationInitializer() {
                   data.response?.GeoObjectCollection?.featureMember;
                 if (members && members.length) {
                   const geoObj = members[0].GeoObject;
-                  console.log(geoObj);
                   try {
                     const details =
                       geoObj.metaDataProperty.GeocoderMetaData.Address.Details;
@@ -124,6 +110,23 @@ export default function LocationInitializer() {
                 const latJson = matched.coords!.lat!;
                 const lonJson = matched.coords!.lon!;
                 setLocation(label, nom, prep, latJson, lonJson);
+                try {
+                  localStorage.setItem(
+                    'userLocation',
+                    JSON.stringify({
+                      cityLabel,
+                      cityName,
+                      cityNamePreposition,
+                      lat,
+                      lon,
+                    })
+                  );
+                } catch (e) {
+                  console.warn(
+                    'Не удалось сохранить location в localStorage',
+                    e
+                  );
+                }
                 return;
               } else {
                 console.warn(
@@ -145,6 +148,20 @@ export default function LocationInitializer() {
               const latJson = nearest.coords!.lat!;
               const lonJson = nearest.coords!.lon!;
               setLocation(label, nom, prep, latJson, lonJson);
+              try {
+                localStorage.setItem(
+                  'userLocation',
+                  JSON.stringify({
+                    cityLabel,
+                    cityName,
+                    cityNamePreposition,
+                    lat,
+                    lon,
+                  })
+                );
+              } catch (e) {
+                console.warn('Не удалось сохранить location в localStorage', e);
+              }
             } else {
               console.warn(
                 'Не удалось найти nearest city в JSON по координатам, оставляю дефолтную локацию.'

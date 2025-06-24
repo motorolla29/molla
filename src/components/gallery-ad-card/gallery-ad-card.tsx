@@ -1,11 +1,15 @@
 import { getCurrencySymbol } from '@/utils';
 import Link from 'next/link';
+import { AdBase } from '@/types/ad';
+interface GalleryAdCardProps {
+  ad: AdBase;
+}
 
-export default function GalleryAdCard({ ad }) {
+export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
   return (
     <div key={ad.id} className="flex flex-col w-full overflow-hidden h-full">
       <Link
-        href={'/'}
+        href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
         className="w-full aspect-square mb-2 overflow-hidden rounded-lg"
       >
         <img
@@ -18,8 +22,8 @@ export default function GalleryAdCard({ ad }) {
       </Link>
       <div className="flex-1 flex-col">
         <Link
-          href={'/'}
-          className="text-stone-800 line-clamp-2 hover:text-violet-600"
+          href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
+          className="text-stone-800 line-clamp-2 leading-[1.2] pb-1 hover:text-violet-400"
         >
           {ad.title}
         </Link>

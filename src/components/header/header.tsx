@@ -2,10 +2,10 @@ import Link from 'next/link';
 
 export default function Header() {
   return (
-    <div className="w-full sticky top-0 z-10 bg-stone-100 h-10">
-      <div className="container px-4 mx-auto h-10 flex items-center justify-between">
+    <div className="w-full hidden lg:block sticky top-0 z-10 bg-stone-100 h-15">
+      <div className="container px-4 mx-auto h-15 flex items-center justify-between">
         <Link className="flex h-[60%]" href="/">
-          <img src="/logo/next.svg" />
+          <img src="/logo/molla-logo.svg" />
         </Link>
         <div className="flex">
           <svg

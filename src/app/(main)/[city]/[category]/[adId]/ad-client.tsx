@@ -136,7 +136,7 @@ export default function AdClient({ ad }: AdClientProps) {
       </div>
 
       {/* Блок с похожими объявлениями: можно отрендерить несколько случайных из mockAds той же категории и города */}
-      <section className="mt-8 text-stone-800">
+      {/* <section className="mt-8 text-stone-800">
         <h2 className="text-xl font-semibold mb-4">Похожие объявления</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {mockAds
@@ -151,7 +151,7 @@ export default function AdClient({ ad }: AdClientProps) {
               <GalleryAdCard key={x.id} ad={x} />
             ))}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

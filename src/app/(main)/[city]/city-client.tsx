@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { mockAds } from '@/data/mockAds';
 import AsideFilters from '@/components/aside-filters/aside-filters';
 import TopPanel from '@/components/top-panel/top-panel';
+import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 
 interface AdItem {
   id: string;
@@ -62,6 +63,7 @@ export default function CityClient({
 
   return (
     <div className="container mx-auto px-4 py-6">
+      <TopSearchPanel />
       {/* Breadcrumbs */}
       <nav className="text-sm mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
