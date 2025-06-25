@@ -26,7 +26,7 @@ export default function TopSearchPanelMobile() {
 
   return (
     <>
-      <div className="lg:hidden bg-white mx-auto py-3 flex items-center gap-2 sticky px-4 top-10 z-10">
+      <div className="lg:hidden bg-white mx-auto py-3 flex items-center gap-2 sticky top-10 z-9">
         {/* Строка поиска с иконкой внутри */}
         <form onSubmit={handleSearchSubmit} className="flex-1 relative min-w-0">
           {/* Иконка поиска слева */}

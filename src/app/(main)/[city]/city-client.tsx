@@ -8,6 +8,7 @@ import { mockAds } from '@/data/mockAds';
 import AsideFilters from '@/components/aside-filters/aside-filters';
 import TopPanel from '@/components/top-panel/top-panel';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
+import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 
 interface AdItem {
   id: string;
@@ -62,8 +63,9 @@ export default function CityClient({
   }, [cityLabel, category, minPrice, maxPrice, sort]);
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 pb-6">
       <TopSearchPanel />
+      <TopSearchPanelMobile />
       {/* Breadcrumbs */}
       <nav className="text-sm mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">

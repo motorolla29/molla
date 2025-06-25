@@ -9,8 +9,10 @@ import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-searc
 export default function Home() {
   return (
     <div className="min-h-screen">
-      <TopSearchPanel />
-      <TopSearchPanelMobile />
+      <div className=" px-4">
+        <TopSearchPanel />
+        <TopSearchPanelMobile />
+      </div>
       <div className="mx-4 my-4 space-y-6">
         <MapSlot ads={mockAds} />
       </div>
