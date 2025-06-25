@@ -7,7 +7,7 @@ import LocationModal from '../location-modal/location-modal';
 import { categoryOptions } from '@/const';
 
 interface AsideFiltersProps {
-  category: string;
+  category: string | null;
 }
 
 export default function AsideFilters({ category }: AsideFiltersProps) {
@@ -36,9 +36,8 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   const [lon, setLon] = useState<number | null>(storeLon ?? null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [categoryKey, setCategoryKey] = useState<string | null>(category);
-
-  const [minPrice, setMinPrice] = useState<string | null>(null);
-  const [maxPrice, setMaxPrice] = useState<string | null>(null);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [isVip, setIsVip] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | '7' | '24'>('all');
 
@@ -49,6 +48,11 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
     if (sp.maxPrice) setMaxPrice(sp.maxPrice);
     if (sp.categoryKey) setCategoryKey(sp.categoryKey);
     if (sp.vip) setIsVip(true);
+    if (sp.time === '7' || sp.time === '24') {
+      setTimeFilter(sp.time);
+    } else {
+      setTimeFilter('all');
+    }
     // Город из стора уже синхронизирован в useEffect ниже
   }, []);
 

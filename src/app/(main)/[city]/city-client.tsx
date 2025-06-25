@@ -10,6 +10,7 @@ import TopPanel from '@/components/top-panel/top-panel';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
+import { useSearchParams } from 'next/navigation';
 
 interface AdItem {
   id: string;
@@ -31,26 +32,16 @@ export default function CityClient({
   cityNamePrep,
 }: CityClientProps) {
   const [ads, setAds] = useState<AdItem[]>([]);
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
-
-  // Фильтры в состоянии:
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
-  const [sort, setSort] = useState<string>('default');
-  const [category, setCategory] = useState<string>(''); // пусто = все категории
 
   // При изменении фильтров или города делаем запрос к API
   useEffect(() => {
     async function fetchAds() {
       setLoading(true);
-      // Сформировать query-параметры
       const params = new URLSearchParams();
-      params.set('city', cityLabel);
-      if (category) params.set('category', category);
-      if (minPrice) params.set('minPrice', minPrice);
-      if (maxPrice) params.set('maxPrice', maxPrice);
-      if (sort) params.set('sort', sort);
+
       const res = await fetch(`/api/ads?${params.toString()}`);
       if (res.ok) {
         const data: AdItem[] = await res.json();
@@ -62,10 +53,10 @@ export default function CityClient({
       setLoading(false);
     }
     fetchAds();
-  }, [cityLabel, category, minPrice, maxPrice, sort]);
+  }, [cityLabel, searchParams]);
 
   return (
-    <div className="container mx-auto px-4 pb-6">
+    <div className="container text-stone-800 mx-auto px-4 pb-6">
       <TopSearchPanel />
       <TopSearchPanelMobile
         setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
@@ -87,22 +78,11 @@ export default function CityClient({
 
       <div className="flex gap-6">
         {/* Sidebar - фильтры*/}
-        <AsideFilters
-          minPrice={minPrice}
-          setMinPrice={setMinPrice}
-          maxPrice={maxPrice}
-          setMaxPrice={setMaxPrice}
-          onClose={() => setMobileFiltersVisible(false)}
-          // Передавайте нужные пропсы: cityLabel, categoryOptions и т.д.
-          onApply={(f) => {
-            console.log(f);
-          }}
-          // categoryOptions можно импортировать внутри FiltersMobile
-        />
+        <AsideFilters category={null} />
 
         {/* Основной блок с объявлениями */}
         <main className="flex-1">
-          <TopPanel sort={sort} setSort={setSort} />
+          <TopPanel />
 
           {loading ? (
             <div>Загрузка...</div>

@@ -60,7 +60,7 @@ export default function CategoryClient({
   }, [cityLabel, categoryKey, searchParams]);
 
   return (
-    <div className="container mx-auto px-4 pb-6">
+    <div className="container text-stone-800 mx-auto px-4 pb-6">
       <TopSearchPanel />
       <TopSearchPanelMobile
         setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
@@ -113,6 +113,7 @@ export default function CategoryClient({
       {/* Модал/Overlay с фильтрами во весь экран для мобильных */}
       {mobileFiltersVisible && (
         <FiltersMobile
+          category={categoryKey}
           setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
         />
       )}

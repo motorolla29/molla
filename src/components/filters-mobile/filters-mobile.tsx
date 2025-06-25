@@ -57,6 +57,11 @@ export default function FiltersMobile({
     if (sp.maxPrice) setMaxPrice(sp.maxPrice);
     if (sp.categoryKey) setCategoryKey(sp.categoryKey);
     if (sp.vip) setIsVip(true);
+    if (sp.time === '7' || sp.time === '24') {
+      setTimeFilter(sp.time);
+    } else {
+      setTimeFilter('all');
+    }
     // Город из стора уже синхронизирован в useEffect ниже
   }, []);
 
@@ -101,6 +106,7 @@ export default function FiltersMobile({
     const queryString = params.toString();
     const path = buildPath();
     router.push(path + (queryString ? `?${params.toString()}` : ''));
+    setFiltersVisible(false);
   };
 
   const handleReset = () => {
