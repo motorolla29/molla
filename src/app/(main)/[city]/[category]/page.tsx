@@ -17,11 +17,15 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
+  const cityName =
+    foundCity?.namecase?.nominative || foundCity?.name || 'Россия';
+  const cityNamePrep = foundCity?.namecase?.prepositional || 'России';
+
   return (
     <CategoryClient
       cityLabel={city}
-      cityName={foundCity.namecase.nominative || foundCity.name}
-      cityNamePrep={foundCity.namecase.prepositional}
+      cityName={cityName}
+      cityNamePrep={cityNamePrep}
       categoryKey={category}
       categoryLabel={foundCategory.label}
     />

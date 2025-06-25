@@ -5,32 +5,18 @@ import { useLocationStore } from '@/store/useLocationStore';
 import LocationModal from '../location-modal/location-modal';
 import { categoryOptions } from '@/const';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface FiltersMobileProps {
-  onClose: () => void;
-  // при применении фильтров можно передать выбранные значения:
-  onApply: (filters: {
-    cityLabel: string | null;
-    cityName: string | null;
-    minPrice: string;
-    maxPrice: string;
-    categoryKey: string | null;
-    isVip: boolean;
-    timeFilter: 'all' | '7' | '24';
-  }) => void;
+  setFiltersVisible: (bool: boolean) => void;
+  category: string | null;
 }
 
-/**
- * Мобильный экран фильтров.
- * Читает текущее city из стора для инициализации локального состояния.
- * При выборе города через LocationModal обновляет локально.
- * При Apply вызывает onApply с выбранными значениями и закрывает себя.
- */
 export default function FiltersMobile({
-  onClose,
-  onApply,
+  setFiltersVisible,
+  category,
 }: FiltersMobileProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const hasUrlFilters = ['minPrice', 'maxPrice', 'vip', 'time'].some((key) =>
     searchParams.has(key)
@@ -57,12 +43,22 @@ export default function FiltersMobile({
   const [lat, setLat] = useState<number | null>(storeLat ?? null);
   const [lon, setLon] = useState<number | null>(storeLon ?? null);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [categoryKey, setCategoryKey] = useState<string | null>(category);
 
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [categoryKey, setCategoryKey] = useState<string | null>(null);
   const [isVip, setIsVip] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | '7' | '24'>('all');
+
+  // Инициализация из URL при монтировании
+  useEffect(() => {
+    const sp = Object.fromEntries(searchParams.entries());
+    if (sp.minPrice) setMinPrice(sp.minPrice);
+    if (sp.maxPrice) setMaxPrice(sp.maxPrice);
+    if (sp.categoryKey) setCategoryKey(sp.categoryKey);
+    if (sp.vip) setIsVip(true);
+    // Город из стора уже синхронизирован в useEffect ниже
+  }, []);
 
   // При монтировании и при изменении стора синхронизируем начальное состояние
   useEffect(() => {
@@ -73,6 +69,16 @@ export default function FiltersMobile({
     setLon(storeLon ?? null);
   }, [storeCityLabel, storeCityName, storeCityPrep, storeLat, storeLon]);
 
+  const displayCity =
+    cityLabel === 'russia' ? 'Все города' : cityName || 'Город не выбран';
+
+  const buildPath = () => {
+    const segments = [];
+    if (cityLabel) segments.push(cityLabel);
+    if (categoryKey) segments.push(categoryKey);
+    return '/' + segments.join('/');
+  };
+
   // Блокировка скролла фона
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -81,8 +87,24 @@ export default function FiltersMobile({
     };
   }, []);
 
-  // Сброс локального состояния к начальному (по стору или пустому)
+  const handleApply = () => {
+    // обновляем стор локации
+    if (cityLabel && cityName && cityPrep) {
+      setLocation(cityLabel, cityName, cityPrep, lat, lon);
+    }
+    // Формируем query-параметры только для фильтров, не затрагивая routing-параметры
+    const params = new URLSearchParams();
+    if (minPrice) params.set('minPrice', minPrice);
+    if (maxPrice) params.set('maxPrice', maxPrice);
+    if (isVip) params.set('vip', '1');
+    if (timeFilter && timeFilter !== 'all') params.set('time', timeFilter);
+    const queryString = params.toString();
+    const path = buildPath();
+    router.push(path + (queryString ? `?${params.toString()}` : ''));
+  };
+
   const handleReset = () => {
+    // сброс локального состояния
     setCityLabel(storeCityLabel ?? null);
     setCityName(storeCityName ?? null);
     setCityPrep(storeCityPrep ?? null);
@@ -90,39 +112,20 @@ export default function FiltersMobile({
     setLon(storeLon ?? null);
     setMinPrice('');
     setMaxPrice('');
-    setCategoryKey(null);
+    setCategoryKey(category);
     setIsVip(false);
     setTimeFilter('all');
+    // Навигация: остаёмся на текущем routing (city/category), убираем query
+    const path = buildPath();
+    router.push(path);
   };
-
-  // Применение: сохраняем город в сторе и вызываем onApply с текущими фильтрами
-  const handleApply = () => {
-    if (cityLabel && cityName && cityPrep) {
-      // обновляем стор локации
-      setLocation(cityLabel, cityName, cityPrep, lat, lon);
-    }
-    onApply({
-      cityLabel,
-      cityName,
-      minPrice,
-      maxPrice,
-      categoryKey,
-      isVip,
-      timeFilter,
-    });
-    onClose();
-  };
-
-  // Отображаемое имя города: если null, показываем «Город не выбран» или «Все города»
-  const displayCity =
-    cityLabel === 'russia' ? 'Все города' : cityName || 'Город не выбран';
 
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col pb-[env(safe-area-inset-bottom)]">
       {/* Хедер */}
       <div className="flex items-center justify-between p-4 shadow-md">
         <h2 className="text-lg font-medium">Фильтры</h2>
-        <button onClick={onClose} className="p-2">
+        <button onClick={() => setFiltersVisible(false)} className="p-2">
           <XMarkIcon className="w-6 h-6 text-gray-600" />
         </button>
       </div>
@@ -164,7 +167,7 @@ export default function FiltersMobile({
               placeholder="От"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2"
+              className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
               min={0}
             />
             <input
@@ -172,7 +175,7 @@ export default function FiltersMobile({
               placeholder="До"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2"
+              className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
               min={0}
             />
           </div>

@@ -17,8 +17,8 @@ interface LocationState {
     cityLabel: string,
     cityName: string,
     cityNamePreposition: string,
-    lat: number,
-    lon: number
+    lat: number | null,
+    lon: number | null
   ) => void;
   clearLocation: () => void;
 }

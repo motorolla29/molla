@@ -11,7 +11,13 @@ import {
 } from '@heroicons/react/24/outline';
 import FiltersMobile from '../filters-mobile/filters-mobile';
 
-export default function TopSearchPanelMobile() {
+interface TopSearchPanelMobileProps {
+  setFiltersVisible: (value: boolean) => void;
+}
+
+export default function TopSearchPanelMobile({
+  setFiltersVisible,
+}: TopSearchPanelMobileProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const { cityLabel } = useLocationStore();
@@ -53,25 +59,13 @@ export default function TopSearchPanelMobile() {
 
         {/* Кнопка фильтры справа */}
         <button
-          onClick={() => setShowFiltersMobile(true)}
+          onClick={() => setFiltersVisible(true)}
           className="p-2 bg-violet-100 rounded-md cursor-pointer flex-shrink-0"
           aria-label="Фильтры"
         >
           <AdjustmentsHorizontalIcon className="w-6 h-6 text-stone-800" />
         </button>
       </div>
-
-      {/* Модал/Overlay с фильтрами во весь экран */}
-      {showFiltersMobile && (
-        <FiltersMobile
-          onClose={() => setShowFiltersMobile(false)}
-          // Передавайте нужные пропсы: cityLabel, categoryOptions и т.д.
-          onApply={(f) => {
-            console.log(f);
-          }}
-          // categoryOptions можно импортировать внутри FiltersMobile
-        />
-      )}
     </>
   );
 }

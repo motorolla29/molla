@@ -8,6 +8,8 @@ import AsideFilters from '@/components/aside-filters/aside-filters';
 import { mockAds } from '@/data/mockAds';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
+import FiltersMobile from '@/components/filters-mobile/filters-mobile';
+import { useSearchParams } from 'next/navigation';
 
 interface AdItem {
   id: string;
@@ -35,22 +37,14 @@ export default function CategoryClient({
   categoryLabel,
 }: CategoryClientProps) {
   const [ads, setAds] = useState<AdItem[]>([]);
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
-
-  // состояние фильтров
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [sort, setSort] = useState('default');
+  const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
 
   useEffect(() => {
     async function fetchAds() {
       setLoading(true);
       const params = new URLSearchParams();
-      params.set('city', cityLabel);
-      params.set('category', categoryKey);
-      if (minPrice) params.set('minPrice', minPrice);
-      if (maxPrice) params.set('maxPrice', maxPrice);
-      if (sort) params.set('sort', sort);
 
       const res = await fetch(`/api/ads?${params.toString()}`);
       if (res.ok) {
@@ -63,12 +57,14 @@ export default function CategoryClient({
       setLoading(false);
     }
     fetchAds();
-  }, [cityLabel, categoryKey, minPrice, maxPrice, sort]);
+  }, [cityLabel, categoryKey, searchParams]);
 
   return (
     <div className="container mx-auto px-4 pb-6">
       <TopSearchPanel />
-      <TopSearchPanelMobile />
+      <TopSearchPanelMobile
+        setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+      />
       {/* Breadcrumbs */}
       <nav className="text-sm mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
@@ -96,16 +92,11 @@ export default function CategoryClient({
       </h1>
 
       <div className="flex gap-6">
-        <AsideFilters
-          minPrice={minPrice}
-          setMinPrice={setMinPrice}
-          maxPrice={maxPrice}
-          setMaxPrice={setMaxPrice}
-        />
+        <AsideFilters category={categoryKey} />
 
         {/* Основной блок */}
         <main className="flex-1">
-          <TopPanel sort={sort} setSort={setSort} />
+          <TopPanel />
           {loading ? (
             <div>Загрузка...</div>
           ) : ads.length === 0 ? (
@@ -119,6 +110,12 @@ export default function CategoryClient({
           )}
         </main>
       </div>
+      {/* Модал/Overlay с фильтрами во весь экран для мобильных */}
+      {mobileFiltersVisible && (
+        <FiltersMobile
+          setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+        />
+      )}
     </div>
   );
 }

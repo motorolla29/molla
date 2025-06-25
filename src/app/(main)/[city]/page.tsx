@@ -11,12 +11,16 @@ export default async function CityPage({ params }: Props) {
   const foundCity = cities.find((c: any) => c.label === city);
   if (!foundCity && city !== 'russia') notFound();
 
+  const cityName =
+    foundCity?.namecase?.nominative || foundCity?.name || 'Россия';
+  const cityNamePrep = foundCity?.namecase?.prepositional || 'России';
+
   // Передаём имя города в клиент
   return (
     <CityClient
       cityLabel={city}
-      cityName={foundCity.namecase.nominative}
-      cityNamePrep={foundCity.namecase.prepositional}
+      cityName={cityName}
+      cityNamePrep={cityNamePrep}
     />
   );
 }

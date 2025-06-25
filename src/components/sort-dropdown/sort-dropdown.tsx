@@ -1,11 +1,7 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
-
-interface SortDropdownProps {
-  value?: string;
-  onChange?: (newValue: string) => void;
-}
 
 const OPTIONS = [
   { value: 'default', label: 'По умолчанию' },
@@ -13,17 +9,18 @@ const OPTIONS = [
   { value: 'price_asc', label: 'По стоимости' },
 ];
 
-export default function SortDropdown({
-  value = 'default',
-  onChange,
-}: SortDropdownProps) {
+export default function SortDropdown() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [open, setOpen] = useState(false);
-  const [current, setCurrent] = useState(value);
+  const [current, setCurrent] = useState(searchParams.get('sort') || 'default');
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setCurrent(value);
-  }, [value]);
+    const sortValue = searchParams.get('sort') || 'default';
+    setCurrent(sortValue);
+  }, [searchParams]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -37,21 +34,33 @@ export default function SortDropdown({
     };
   }, []);
 
-  const currentLabel =
-    OPTIONS.find((opt) => opt.value === current)?.label ?? 'Сортировка';
-
   const handleSelect = (val: string) => {
     setCurrent(val);
     setOpen(false);
-    if (onChange) onChange(val);
+
+    const params = new URLSearchParams(Array.from(searchParams.entries())); // сохранить другие параметры
+    if (val === 'default') {
+      params.delete('sort');
+    } else {
+      params.set('sort', val);
+    }
+
+    const queryString = params.toString();
+    const path = `${window.location.pathname}${
+      queryString ? '?' + queryString : ''
+    }`;
+    router.push(path);
   };
+
+  const currentLabel =
+    OPTIONS.find((opt) => opt.value === current)?.label ?? 'Сортировка';
 
   return (
     <div className="relative inline-block text-left min-w-38" ref={ref}>
       <button
         type="button"
         className="text-stone-800 inline-flex justify-between items-center w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
-        onClick={() => setOpen((p) => !p)}
+        onClick={() => setOpen((prev) => !prev)}
       >
         <span>{currentLabel}</span>
         <svg

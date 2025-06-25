@@ -1,8 +1,18 @@
 @import 'tailwindcss';
 
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
 input[type='checkbox'],
 input[type='radio'] {
   accent-color: #a07ff3;
+  cursor: pointer;
 }
 
 button {

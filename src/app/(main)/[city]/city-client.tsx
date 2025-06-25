@@ -9,6 +9,7 @@ import AsideFilters from '@/components/aside-filters/aside-filters';
 import TopPanel from '@/components/top-panel/top-panel';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
+import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 
 interface AdItem {
   id: string;
@@ -31,6 +32,7 @@ export default function CityClient({
 }: CityClientProps) {
   const [ads, setAds] = useState<AdItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
 
   // Фильтры в состоянии:
   const [minPrice, setMinPrice] = useState<string>('');
@@ -65,7 +67,9 @@ export default function CityClient({
   return (
     <div className="container mx-auto px-4 pb-6">
       <TopSearchPanel />
-      <TopSearchPanelMobile />
+      <TopSearchPanelMobile
+        setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+      />
       {/* Breadcrumbs */}
       <nav className="text-sm mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
@@ -88,6 +92,12 @@ export default function CityClient({
           setMinPrice={setMinPrice}
           maxPrice={maxPrice}
           setMaxPrice={setMaxPrice}
+          onClose={() => setMobileFiltersVisible(false)}
+          // Передавайте нужные пропсы: cityLabel, categoryOptions и т.д.
+          onApply={(f) => {
+            console.log(f);
+          }}
+          // categoryOptions можно импортировать внутри FiltersMobile
         />
 
         {/* Основной блок с объявлениями */}
@@ -107,6 +117,13 @@ export default function CityClient({
           )}
         </main>
       </div>
+      {/* Модал/Overlay с фильтрами во весь экран для мобильных */}
+      {mobileFiltersVisible && (
+        <FiltersMobile
+          category={null}
+          setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+        />
+      )}
     </div>
   );
 }
