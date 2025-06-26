@@ -2,14 +2,26 @@ import { useEffect, useRef, useState } from 'react';
 import { categoryOptions } from '@/const';
 import Link from 'next/link';
 import { useLocationStore } from '@/store/useLocationStore';
+import { useRouter, useSearchParams } from 'next/navigation';
 import LocationModal from '../location-modal/location-modal';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 
-export default function TopSearchPanel() {
+interface TopSearchPanelProps {
+  categoryName: string | null;
+  categoryKey: string | null;
+}
+
+export default function TopSearchPanel({
+  categoryName,
+  categoryKey,
+}: TopSearchPanelProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const { cityLabel, cityName, setLocation } = useLocationStore();
+  const { cityLabel, cityName, cityNamePreposition, setLocation } =
+    useLocationStore();
   const dropdownRef = useRef<HTMLDivElement>(null); // <== ссылка на dropdown
 
   // Закрытие по клику вне dropdown
@@ -88,11 +100,28 @@ export default function TopSearchPanel() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Найти объявления..."
+            placeholder={`Найти ${
+              categoryName ? categoryName.toLocaleLowerCase() : 'объявления'
+            }${cityNamePreposition ? ` в ${cityNamePreposition}...` : '...'}`}
             className="w-full pl-4 pr-24 py-2 border outline-none border-gray-300 rounded-full focus:border-violet-300"
           />
           <button
-            onClick={() => {}}
+            onClick={() => {
+              const trimmed = searchTerm.trim();
+              const params = new URLSearchParams(searchParams.toString());
+
+              if (trimmed) {
+                params.set('search', trimmed); // заменит или добавит параметр search
+              } else {
+                params.delete('search'); // если строка пуста — удаляем параметр
+              }
+
+              const basePath = categoryKey
+                ? `/${cityLabel}/${categoryKey}`
+                : `/${cityLabel}`;
+
+              router.push(`${basePath}?${params.toString()}`);
+            }}
             className="absolute outline-none right-0 top-0 h-full px-4 cursor-pointer bg-violet-400 text-white rounded-full hover:bg-violet-500"
           >
             Найти

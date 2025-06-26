@@ -61,8 +61,10 @@ export default function CategoryClient({
 
   return (
     <div className="container text-stone-800 mx-auto px-4 pb-6">
-      <TopSearchPanel />
+      <TopSearchPanel categoryName={categoryLabel} categoryKey={categoryKey} />
       <TopSearchPanelMobile
+        categoryName={categoryLabel}
+        categoryKey={categoryKey}
         setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
       />
       {/* Breadcrumbs */}
@@ -89,6 +91,14 @@ export default function CategoryClient({
 
       <h1 className="text-3xl font-medium mb-4">
         {categoryLabel} в {cityNamePrep}
+        {searchParams.get('search') && (
+          <span className="text-stone-400">
+            {' '}
+            (по запросу «
+            <span className="text-stone-800">{searchParams.get('search')}</span>
+            »):
+          </span>
+        )}
       </h1>
 
       <div className="flex gap-6">

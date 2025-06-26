@@ -81,7 +81,7 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
       setLocation(cityLabel, cityName, cityPrep, lat, lon);
     }
     // Формируем query-параметры только для фильтров, не затрагивая routing-параметры
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
     if (isVip) params.set('vip', '1');
@@ -92,20 +92,18 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   };
 
   const handleReset = () => {
-    // сброс локального состояния
-    setCityLabel(storeCityLabel ?? null);
-    setCityName(storeCityName ?? null);
-    setCityPrep(storeCityPrep ?? null);
-    setLat(storeLat ?? null);
-    setLon(storeLon ?? null);
-    setMinPrice('');
-    setMaxPrice('');
-    setCategoryKey(category);
-    setIsVip(false);
-    setTimeFilter('all');
-    // Навигация: остаёмся на текущем routing (city/category), убираем query
+    const params = new URLSearchParams(searchParams.toString());
+
+    // удаляем только фильтры
+    params.delete('minPrice');
+    params.delete('maxPrice');
+    params.delete('vip');
+    params.delete('time');
+    // НЕ трогаем search и sort
+
     const path = buildPath();
-    router.push(path);
+    const qs = params.toString();
+    router.push(path + (qs ? `?${qs}` : ''));
   };
 
   return (

@@ -57,8 +57,10 @@ export default function CityClient({
 
   return (
     <div className="container text-stone-800 mx-auto px-4 pb-6">
-      <TopSearchPanel />
+      <TopSearchPanel categoryKey={null} categoryName={null} />
       <TopSearchPanelMobile
+        categoryKey={null}
+        categoryName={null}
         setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
       />
       {/* Breadcrumbs */}
@@ -74,7 +76,17 @@ export default function CityClient({
         </ol>
       </nav>
 
-      <h1 className="text-3xl font-medium mb-4">Объявления в {cityNamePrep}</h1>
+      <h1 className="text-3xl font-medium mb-4">
+        Объявления в {cityNamePrep}
+        {searchParams.get('search') && (
+          <span className="text-stone-400">
+            {' '}
+            (по запросу «
+            <span className="text-stone-800">{searchParams.get('search')}</span>
+            »):
+          </span>
+        )}
+      </h1>
 
       <div className="flex gap-6">
         {/* Sidebar - фильтры*/}
