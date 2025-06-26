@@ -10,6 +10,7 @@ import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 import { useSearchParams } from 'next/navigation';
+import { useLocationStore } from '@/store/useLocationStore';
 
 interface AdItem {
   id: string;
@@ -27,6 +28,8 @@ interface CategoryClientProps {
   cityNamePrep: string;
   categoryKey: string;
   categoryLabel: string;
+  lat: number | null;
+  lon: number | null;
 }
 
 export default function CategoryClient({
@@ -35,11 +38,18 @@ export default function CategoryClient({
   cityNamePrep,
   categoryKey,
   categoryLabel,
+  lat = null,
+  lon = null,
 }: CategoryClientProps) {
   const [ads, setAds] = useState<AdItem[]>([]);
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
+  const setLocation = useLocationStore((s) => s.setLocation);
+
+  useEffect(() => {
+    setLocation(cityLabel, cityName, cityNamePrep, lat, lon);
+  }, [cityLabel, cityName, cityNamePrep, lat, lon, setLocation]);
 
   useEffect(() => {
     async function fetchAds() {

@@ -14,6 +14,8 @@ export default async function CityPage({ params }: Props) {
   const cityName =
     foundCity?.namecase?.nominative || foundCity?.name || 'Россия';
   const cityNamePrep = foundCity?.namecase?.prepositional || 'России';
+  const lat = foundCity?.coords?.lat ?? null;
+  const lon = foundCity?.coords?.lon ?? null;
 
   // Передаём имя города в клиент
   return (
@@ -21,6 +23,8 @@ export default async function CityPage({ params }: Props) {
       cityLabel={city}
       cityName={cityName}
       cityNamePrep={cityNamePrep}
+      lat={lat}
+      lon={lon}
     />
   );
 }

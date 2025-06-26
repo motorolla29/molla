@@ -11,6 +11,7 @@ import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 import { useSearchParams } from 'next/navigation';
+import { useLocationStore } from '@/store/useLocationStore';
 
 interface AdItem {
   id: string;
@@ -24,17 +25,26 @@ interface CityClientProps {
   cityLabel: string;
   cityName: string;
   cityNamePrep: string;
+  lat: number | null;
+  lon: number | null;
 }
 
 export default function CityClient({
   cityLabel,
   cityName,
   cityNamePrep,
+  lat = null,
+  lon = null,
 }: CityClientProps) {
   const [ads, setAds] = useState<AdItem[]>([]);
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
+  const setLocation = useLocationStore((s) => s.setLocation);
+
+  useEffect(() => {
+    setLocation(cityLabel, cityName, cityNamePrep, lat, lon);
+  }, [cityLabel, cityName, cityNamePrep, lat, lon, setLocation]);
 
   // При изменении фильтров или города делаем запрос к API
   useEffect(() => {

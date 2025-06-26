@@ -20,6 +20,8 @@ export default async function CategoryPage({ params }: Props) {
   const cityName =
     foundCity?.namecase?.nominative || foundCity?.name || 'Россия';
   const cityNamePrep = foundCity?.namecase?.prepositional || 'России';
+  const lat = foundCity?.coords?.lat ?? null;
+  const lon = foundCity?.coords?.lon ?? null;
 
   return (
     <CategoryClient
@@ -28,6 +30,8 @@ export default async function CategoryPage({ params }: Props) {
       cityNamePrep={cityNamePrep}
       categoryKey={category}
       categoryLabel={foundCategory.label}
+      lat={lat}
+      lon={lon}
     />
   );
 }
