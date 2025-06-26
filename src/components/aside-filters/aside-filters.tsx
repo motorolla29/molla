@@ -92,6 +92,10 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   };
 
   const handleReset = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setIsVip(false);
+    setTimeFilter('all');
     const params = new URLSearchParams(searchParams.toString());
 
     // удаляем только фильтры

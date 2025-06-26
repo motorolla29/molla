@@ -110,6 +110,10 @@ export default function FiltersMobile({
   };
 
   const handleReset = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setIsVip(false);
+    setTimeFilter('all');
     const params = new URLSearchParams(searchParams.toString());
 
     // удаляем только фильтры
