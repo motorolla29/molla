@@ -6,6 +6,7 @@ export type ContactType = 'phone' | 'email';
 
 export interface Seller {
   id: string;
+  avatar: string | null;
   name: string;
   rating: number; // 0–5
   contact: {

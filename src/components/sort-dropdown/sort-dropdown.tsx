@@ -56,7 +56,10 @@ export default function SortDropdown() {
     OPTIONS.find((opt) => opt.value === current)?.label ?? 'Сортировка';
 
   return (
-    <div className="relative inline-block text-left min-w-38" ref={ref}>
+    <div
+      className="relative text-xs sm:text-sm inline-block text-left min-w-38"
+      ref={ref}
+    >
       <button
         type="button"
         className="text-stone-800 inline-flex justify-between items-center w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"

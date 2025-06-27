@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import Link from 'next/link';
-import TopPanel from '@/components/top-panel/top-panel';
+import TopPanel from '@/components/gallery-top-panel/gallery-top-panel';
 import AsideFilters from '@/components/aside-filters/aside-filters';
 import { mockAds } from '@/data/mockAds';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
@@ -11,16 +11,11 @@ import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-searc
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 import { useSearchParams } from 'next/navigation';
 import { useLocationStore } from '@/store/useLocationStore';
-
-interface AdItem {
-  id: string;
-  title: string;
-  description: string;
-  price?: number;
-  categoryKey?: string;
-  cityLabel?: string;
-  // ...другие поля
-}
+import { FidgetSpinner } from 'react-loader-spinner';
+import GalleryTopPanel from '@/components/gallery-top-panel/gallery-top-panel';
+import AdCardsGallery from '@/components/ad-cards-gallery/ad-cards-gallery';
+import AdCardsDefault from '@/components/ad-cards-default/ad-cards-default';
+import { AdBase } from '@/types/ad';
 
 interface CategoryClientProps {
   cityLabel: string;
@@ -41,7 +36,8 @@ export default function CategoryClient({
   lat = null,
   lon = null,
 }: CategoryClientProps) {
-  const [ads, setAds] = useState<AdItem[]>([]);
+  const [ads, setAds] = useState<AdBase[]>([]);
+  const [viewType, setViewType] = useState('default');
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
@@ -58,7 +54,7 @@ export default function CategoryClient({
 
       const res = await fetch(`/api/ads?${params.toString()}`);
       if (res.ok) {
-        const data: AdItem[] = await res.json();
+        const data: AdBase[] = await res.json();
         setAds(data);
       } else {
         setAds([]);
@@ -78,7 +74,7 @@ export default function CategoryClient({
         setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
       />
       {/* Breadcrumbs */}
-      <nav className="text-sm mb-4" aria-label="Breadcrumb">
+      <nav className="text-xs sm:text-sm mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
           <li>
             <Link href="/" className="text-blue-500 hover:underline">
@@ -99,7 +95,7 @@ export default function CategoryClient({
         </ol>
       </nav>
 
-      <h1 className="text-3xl font-medium mb-5">
+      <h1 className="text-xl sm:text-3xl font-medium mb-5">
         {categoryLabel} в {cityNamePrep}
         {searchParams.get('search') && (
           <span className="text-stone-400">
@@ -116,17 +112,39 @@ export default function CategoryClient({
 
         {/* Основной блок */}
         <main className="flex-1">
-          <TopPanel />
+          <GalleryTopPanel viewType={viewType} setViewType={setViewType} />
           {loading ? (
-            <div>Загрузка...</div>
-          ) : ads.length === 0 ? (
-            <p>Нет объявлений по выбранным параметрам.</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-              {ads.map((ad) => (
-                <GalleryAdCard key={ad.id} ad={ad} />
-              ))}
+            <div className="w-full flex justify-center mt-30 sm:mt-20">
+              <FidgetSpinner
+                ariaLabel="fidget-spinner-loading"
+                width={'100%'}
+                height={'100%'}
+                wrapperClass="w-16 sm:w-20"
+                backgroundColor="#A684FF"
+                ballColors={['#D5FF4D', '#FE9A00', '#737373']}
+              />
             </div>
+          ) : ads.length === 0 ? (
+            <div className="w-full flex flex-col justify-center items-center mt-20 text-neutral-500">
+              <div className="flex flex-col justify-center items-center max-w-75">
+                <img
+                  className="w-16 md:w-20"
+                  src="https://ik.imagekit.io/motorolla29/molla/icons/%D0%BD%D0%B8%D1%87%D0%B5%D0%B3%D0%BE-%D0%BD%D0%B5-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BE-100.png"
+                  alt="nothing-found"
+                />
+                <p className="text-sm md:text-base font-semibold text-center">
+                  Нет объявлений по выбранным параметрам.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {viewType === 'gallery' ? (
+                <AdCardsGallery ads={ads} />
+              ) : (
+                <AdCardsDefault ads={ads} />
+              )}
+            </>
           )}
         </main>
       </div>

@@ -17,6 +17,7 @@ export const mockAds: AdBase[] = [
     photos: ['1.jpg', '2.jpg', '3.jpg'],
     seller: {
       id: 'seller1',
+      avatar: '765-default-avatar.png',
       name: 'Иван Иванов',
       rating: 4.8,
       contact: { type: 'phone', value: '+7 (912) 345-67-89' },
@@ -39,6 +40,7 @@ export const mockAds: AdBase[] = [
     photos: [], // нет фотографий
     seller: {
       id: 'seller2',
+      avatar: null,
       name: 'Екатерина Петрова',
       rating: 4.5,
       contact: { type: 'email', value: 'kate.petrov@example.com' },
@@ -62,6 +64,7 @@ export const mockAds: AdBase[] = [
     photos: ['4.webp', '5.jpg', '6.jpg'],
     seller: {
       id: 'seller3',
+      avatar: null,
       name: 'Андрей Смирнов',
       rating: 4.2,
       contact: { type: 'phone', value: '+7 (913) 987-65-43' },
@@ -85,6 +88,7 @@ export const mockAds: AdBase[] = [
     photos: ['7.jpg', '8.jpg'],
     seller: {
       id: 'seller4',
+      avatar: null,
       name: 'Ольга Кузнецова',
       rating: 4.7,
       contact: { type: 'phone', value: '+7 (950) 123-45-67' },
@@ -108,6 +112,7 @@ export const mockAds: AdBase[] = [
     photos: [],
     seller: {
       id: 'seller5',
+      avatar: null,
       name: 'Руслан Галкин',
       rating: 4.1,
       contact: { type: 'email', value: 'user_5@mail.ru' },
@@ -131,6 +136,7 @@ export const mockAds: AdBase[] = [
     photos: ['9.png', '10.jpg'],
     seller: {
       id: 'seller6',
+      avatar: null,
       name: 'Петр Новиков',
       rating: 4.3,
       contact: { type: 'phone', value: '+7 (901) 234-56-78' },
@@ -154,6 +160,7 @@ export const mockAds: AdBase[] = [
     photos: [],
     seller: {
       id: 'seller7',
+      avatar: null,
       name: 'Мария Волкова',
       rating: 4.6,
       contact: { type: 'email', value: 'maria.volkova@example.com' },
@@ -177,6 +184,7 @@ export const mockAds: AdBase[] = [
     photos: ['7.jpg', '8.jpg'],
     seller: {
       id: 'seller8',
+      avatar: null,
       name: 'Дмитрий Орлов',
       rating: 4.4,
       contact: { type: 'phone', value: '+7 (913) 555-66-77' },
@@ -200,6 +208,7 @@ export const mockAds: AdBase[] = [
     photos: ['11.jpg'],
     seller: {
       id: 'seller9',
+      avatar: null,
       name: 'Анна Соколова',
       rating: 4.9,
       contact: { type: 'email', value: 'sokolova@mail.com' },
@@ -223,6 +232,7 @@ export const mockAds: AdBase[] = [
     photos: ['1.jpg', '2.jpg'],
     seller: {
       id: 'seller10',
+      avatar: null,
       name: 'Илья Козлов',
       rating: 4.0,
       contact: { type: 'phone', value: '+7 (927) 111-22-33' },
@@ -245,6 +255,7 @@ export const mockAds: AdBase[] = [
     photos: ['4.webp', '5.jpg', '6.jpg'],
     seller: {
       id: 'seller11',
+      avatar: null,
       name: 'Светлана Морозова',
       rating: 4.5,
       contact: { type: 'phone', value: '+7 (900) 222-33-44' },
@@ -268,6 +279,7 @@ export const mockAds: AdBase[] = [
     photos: [],
     seller: {
       id: 'seller12',
+      avatar: null,
       name: 'Максим Иванов',
       rating: 4.2,
       contact: { type: 'email', value: 'max.ivanov@example.com' },
@@ -290,6 +302,7 @@ export const mockAds: AdBase[] = [
     photos: ['11.jpg'],
     seller: {
       id: 'seller13',
+      avatar: null,
       name: 'Алексей Сидоров',
       rating: 4.9,
       contact: { type: 'email', value: 'alex.sidorov@example.com' },
@@ -313,6 +326,7 @@ export const mockAds: AdBase[] = [
     photos: [],
     seller: {
       id: 'seller14',
+      avatar: null,
       name: 'Марина Лебедева',
       rating: 4.3,
       contact: { type: 'email', value: 'marina_lebed@yandex.ru' },
@@ -336,6 +350,7 @@ export const mockAds: AdBase[] = [
     photos: ['1.jpg', '2.jpg'],
     seller: {
       id: 'seller15',
+      avatar: null,
       name: 'Ольга Белова',
       rating: 4.0,
       contact: { type: 'phone', value: '+7 (913) 333-44-55' },
