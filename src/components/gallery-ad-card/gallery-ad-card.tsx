@@ -23,14 +23,14 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
       <div className="flex-1 flex-col">
         <Link
           href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-          className="text-stone-800 line-clamp-2 leading-[1.2] pb-1 hover:text-violet-400"
+          className="text-base sm:text-lg text-stone-800 line-clamp-2 leading-[1.2] pb-1 hover:text-violet-400"
         >
           {ad.title}
         </Link>
-        <p className="text-md font-semibold">
+        <p className="text-sm sm:text-base font-semibold">
           {ad.price} {getCurrencySymbol(ad.currency)}
         </p>
-        <p className="text-sm flex items-center text-stone-400 pt-1">
+        <p className="text-xs sm:text-sm flex items-center text-stone-400 pt-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
