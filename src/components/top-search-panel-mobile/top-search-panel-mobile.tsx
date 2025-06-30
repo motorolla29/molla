@@ -82,7 +82,7 @@ export default function TopSearchPanelMobile({
           className="p-2 bg-violet-100 rounded-md cursor-pointer flex-shrink-0"
           aria-label="Фильтры"
         >
-          <AdjustmentsHorizontalIcon className="w-6 h-6 text-stone-800" />
+          <AdjustmentsHorizontalIcon className="w-6 h-6 text-neutral-800" />
         </button>
       </div>
     </>

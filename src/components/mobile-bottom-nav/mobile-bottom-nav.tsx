@@ -16,14 +16,14 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-stone-100 border-t border-t-stone-400 lg:hidden z-50 shadow-md"
+      className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden z-50 shadow-md"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex">
         {navItems.map(({ href, Icon, label }) => {
           const isActive =
             href === '/' ? pathname === '/' : pathname.startsWith(href);
-          const colorClass = isActive ? 'text-violet-500' : 'text-stone-400';
+          const colorClass = isActive ? 'text-violet-500' : 'text-neutral-400';
           return (
             <Link
               key={href}

@@ -24,7 +24,7 @@ export default function FavoritesPage() {
   if (!isLoggedIn) return null;
 
   return (
-    <div className="container text-stone-800 mx-auto px-4">
+    <div className="container text-neutral-800 mx-auto px-4">
       <h1 className="relative text-xl w-fit sm:text-3xl font-medium mt-4 mb-6">
         Избранное
         <span className="absolute text-lg font-bold text-neutral-500 -right-6 top-0">

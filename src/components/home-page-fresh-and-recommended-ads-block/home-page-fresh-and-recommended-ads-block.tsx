@@ -16,7 +16,7 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
           className={`px-4 py-2 font-semibold hover:cursor-pointer border-b-2 border-transparent ${
             activeTab === 'recommend'
               ? 'border-violet-400 text-violet-400'
-              : 'text-stone-400 hover:text-gray-400'
+              : 'text-neutral-400 hover:text-gray-400'
           }`}
         >
           Рекомендации
@@ -26,7 +26,7 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
           className={`ml-4 px-4 py-2 font-semibold hover:cursor-pointer border-b-2 border-transparent ${
             activeTab === 'fresh'
               ? 'border-violet-400 text-violet-400'
-              : 'text-stone-400 hover:text-gray-400'
+              : 'text-neutral-400 hover:text-gray-400'
           }`}
         >
           Свежие

@@ -45,7 +45,7 @@ export default function TopSearchPanel({
   }, [showFilterDropdown]);
 
   return (
-    <div className="hidden lg:block bg-white sticky top-15 z-10">
+    <div className="hidden lg:block bg-white sticky top-15 z-9">
       <div className="mx-auto py-3 flex items-center gap-2">
         <div className="relative" ref={dropdownRef}>
           <button
@@ -57,7 +57,7 @@ export default function TopSearchPanel({
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="size-6 fill-stone-800"
+              className="size-6 fill-neutral-800"
             >
               <path
                 fillRule="evenodd"
@@ -83,7 +83,7 @@ export default function TopSearchPanel({
                         alt="cat-icon"
                         className="w-6 h-6 aspect-auto mr-1"
                       />
-                      <span className="flex items-center text-stone-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
+                      <span className="flex items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
                         {opt.label}
                       </span>
                     </Link>

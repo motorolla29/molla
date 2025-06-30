@@ -32,7 +32,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
           <h2 className="text-base sm:text-lg font-semibold line-clamp-2 hover:text-violet-400">
             {ad.title}
           </h2>
-          <p className="text-xs sm:text-sm text-stone-600 mt-1 mb-1 line-clamp-3">
+          <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-3">
             {ad.description}
           </p>
         </div>
@@ -40,7 +40,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
           <p className="text-lg sm:text-xl font-bold">
             {ad.price} {getCurrencySymbol(ad.currency)}
           </p>
-          <p className="text-xs sm:text-sm text-stone-400 mt-2 flex items-center">
+          <p className="text-xs sm:text-sm text-neutral-400 mt-2 flex items-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -93,7 +93,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             );
           })}
           {/* Rating number */}
-          <span className="text-xs sm:text-sm text-stone-600 ml-1">
+          <span className="text-xs sm:text-sm text-neutral-600 ml-1">
             {ad.seller.rating.toFixed(1)}
           </span>
         </div>

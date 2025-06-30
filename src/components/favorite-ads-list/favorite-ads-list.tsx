@@ -15,7 +15,7 @@ export default function FavoriteAdsList({ ads }: FavoriteAdsListProps) {
             src="https://ik.imagekit.io/motorolla29/molla/icons/empty-favs-image.svg"
             alt="favs-empty"
           />
-          <p className="text-sm sm:text-base text-center max-w-100">
+          <p className="text-sm font-semibold sm:text-base text-center max-w-100">
             У вас ещё нет избранных объявлений. Если вы нашли что-то интересное,
             нажмите на сердечко в результатах поиска.
           </p>

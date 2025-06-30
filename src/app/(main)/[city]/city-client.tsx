@@ -62,7 +62,7 @@ export default function CityClient({
   }, [cityLabel, searchParams]);
 
   return (
-    <div className="container text-stone-800 mx-auto px-4 pb-6">
+    <div className="container text-neutral-800 mx-auto px-4 pb-6">
       <TopSearchPanel categoryKey={null} categoryName={null} />
       <TopSearchPanelMobile
         categoryKey={null}
@@ -85,10 +85,12 @@ export default function CityClient({
       <h1 className="text-xl sm:text-3xl font-medium mb-5">
         Объявления в {cityNamePrep}
         {searchParams.get('search') && (
-          <span className="text-stone-400">
+          <span className="text-neutral-400">
             {' '}
             (по запросу «
-            <span className="text-stone-800">{searchParams.get('search')}</span>
+            <span className="text-neutral-800">
+              {searchParams.get('search')}
+            </span>
             »):
           </span>
         )}

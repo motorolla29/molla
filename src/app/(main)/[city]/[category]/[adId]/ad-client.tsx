@@ -56,10 +56,10 @@ export default function AdClient({ ad }: AdClientProps) {
         </ol>
       </nav>
 
-      <div className="flex flex-col lg:flex-row gap-6 text-stone-800">
+      <div className="flex flex-col lg:flex-row gap-6 text-neutral-800">
         {/* Левая часть: фото и основные данные */}
         <div className="flex-1 space-y-6 lg:max-w-2xl">
-          <h1 className="text-3xl text-stone-800 font-medium mb-8">
+          <h1 className="text-3xl text-neutral-800 font-medium mb-8">
             {ad.title}
           </h1>
           {/* Фото: можно галерею */}
@@ -136,7 +136,7 @@ export default function AdClient({ ad }: AdClientProps) {
       </div>
 
       {/* Блок с похожими объявлениями: можно отрендерить несколько случайных из mockAds той же категории и города */}
-      <section className="mt-8 text-stone-800">
+      <section className="mt-8 text-neutral-800">
         <h2 className="text-xl font-semibold mb-4">Похожие объявления</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {mockAds

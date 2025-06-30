@@ -247,7 +247,7 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
         </button>
         <button
           onClick={handleReset}
-          className="text-stone-800 bg-stone-200 rounded-md w-full h-10"
+          className="text-neutral-800 bg-neutral-200 rounded-md w-full h-10"
         >
           Сбросить фильтры
         </button>

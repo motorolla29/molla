@@ -119,7 +119,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
           </div>
           <button
             onClick={scrollPrev}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-stone-800 bg-white/70 text-4xl hover:bg-white/80"
+            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +138,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
           </button>
           <button
             onClick={scrollNext}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-stone-800 bg-white/70 text-4xl hover:bg-white/80"
+            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -167,7 +167,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                 className={`relative rounded-md overflow-hidden w-20 h-20 border-2 ${
                   idx === selectedIndex
                     ? 'border-violet-400'
-                    : 'border-stone-100'
+                    : 'border-neutral-100'
                 }`}
               >
                 <Image
@@ -184,7 +184,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
       {isZoomOpen && (
         <div
           onClick={() => setIsZoomOpen(false)}
-          className="fixed inset-0 z-50 bg-stone-200/50 bg-opacity-90 backdrop-blur-xl flex flex-col justify-center items-center group"
+          className="fixed inset-0 z-50 bg-neutral-200/50 bg-opacity-90 backdrop-blur-xl flex flex-col justify-center items-center group"
         >
           <div
             className="w-full h-full max-h-screen overflow-hidden cursor-grab"
@@ -211,7 +211,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
           <div className="absolute top-3 right-6 md:top-4 md:right-12">
             <button
               onClick={() => setIsZoomOpen(false)}
-              className="text-stone-800 w-12 h-12 text-xl md:w-18 md:h-18 md:text-3xl flex items-center justify-center border border-stone-800 p-4 font-bold z-[100] bg-white/70 rounded-full hover:bg-white"
+              className="text-neutral-800 w-12 h-12 text-xl md:w-18 md:h-18 md:text-3xl flex items-center justify-center border border-neutral-800 p-4 font-bold z-[100] bg-white/70 rounded-full hover:bg-white"
             >
               ✕
             </button>
@@ -222,7 +222,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
               emblaZoomApi?.scrollPrev();
               e.stopPropagation();
             }}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-stone-800 bg-white/70 text-4xl hover:bg-white/80"
+            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -244,7 +244,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
               emblaZoomApi?.scrollNext();
               e.stopPropagation();
             }}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-stone-800 bg-white/70 text-4xl hover:bg-white/80"
+            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

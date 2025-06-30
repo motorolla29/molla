@@ -9,7 +9,7 @@ export default function NotFound() {
     <div className="h-screen flex flex-col justify-between">
       <Header />
       <HeaderMobile />
-      <div className="h-screen flex flex-col items-center justify-center text-stone-600">
+      <div className="h-screen flex flex-col items-center justify-center text-neutral-600">
         <img
           className="w-20 xl:w-32 mb-2 "
           src="https://ik.imagekit.io/motorolla29/molla/icons/oshibka_404.svg"

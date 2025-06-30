@@ -62,12 +62,12 @@ export default function SortDropdown() {
     >
       <button
         type="button"
-        className="text-stone-800 inline-flex justify-between items-center w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+        className="text-neutral-800 inline-flex justify-between items-center w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
         onClick={() => setOpen((prev) => !prev)}
       >
         <span>{currentLabel}</span>
         <svg
-          className={`stroke-stone-800 w-4 h-4 ml-2 transform ${
+          className={`stroke-neutral-800 w-4 h-4 ml-2 transform ${
             open ? 'rotate-180' : 'rotate-0'
           }`}
           fill="none"
@@ -90,7 +90,9 @@ export default function SortDropdown() {
               <button
                 type="button"
                 className={`w-full text-left text-nowrap px-4 py-2 hover:bg-gray-100 ${
-                  opt.value === current ? 'text-violet-500' : 'text-stone-700 '
+                  opt.value === current
+                    ? 'text-violet-500'
+                    : 'text-neutral-700 '
                 }`}
                 onClick={() => handleSelect(opt.value)}
               >

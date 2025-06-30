@@ -22,7 +22,7 @@ export default function GalleryTopPanel({
             <LayoutList
               className={`${
                 viewType === 'default'
-                  ? 'stroke-stone-800'
+                  ? 'stroke-neutral-800'
                   : 'stroke-neutral-300'
               }  w-5 h-5 sm:w-6 sm:h-6`}
             />
@@ -34,7 +34,7 @@ export default function GalleryTopPanel({
             <LayoutGrid
               className={`${
                 viewType === 'gallery'
-                  ? 'stroke-stone-800'
+                  ? 'stroke-neutral-800'
                   : 'stroke-neutral-300'
               } w-5 h-5 sm:w-6 sm:h-6`}
             />

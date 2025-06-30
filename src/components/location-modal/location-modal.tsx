@@ -238,8 +238,8 @@ export default function LocationModal({
         </div>
         {/* Текущий город */}
         <div className="mb-4">
-          <span className="text-sm text-stone-600">Текущий город:</span>
-          <div className="mt-1 px-3 py-2 bg-gray-100 rounded-md text-stone-800">
+          <span className="text-sm text-neutral-600">Текущий город:</span>
+          <div className="mt-1 px-3 py-2 bg-gray-100 rounded-md text-neutral-800">
             {previewNameNom || 'Не задан'}
           </div>
         </div>
