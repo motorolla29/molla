@@ -1,3 +1,4 @@
+import { AdBase } from '@/types/ad';
 import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 
 interface AdCardsGalleryProps {
@@ -10,7 +11,6 @@ export default function AdCardsGallery({ ads }: AdCardsGalleryProps) {
       {ads.map((ad) => (
         <GalleryAdCard key={ad.id} ad={ad} />
       ))}
-      ;
     </div>
   );
 }

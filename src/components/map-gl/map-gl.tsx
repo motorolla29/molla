@@ -62,6 +62,7 @@ export default function MapGl({ ads, onPinClick, onClusterClick }: MapGlProps) {
               groupByCoordinates: false,
               clusterDisableClickZoom: true,
               clusterOpenBalloonOnClick: false,
+              gridSize: 256,
             }}
             onClick={handleCluster}
           >
