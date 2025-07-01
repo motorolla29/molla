@@ -88,7 +88,7 @@ export default function MapSlot({ ads }: MapSlotProps) {
                 <div className="p-4 mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-1 xl:grid-cols-2 overflow-auto">
                   {drawerAds.map((ad) => (
                     <Link
-                      href={`${ad.cityLabel}/${ad.category}/${ad.id}`}
+                      href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
                       target="blank"
                       key={ad.id}
                       className="bg-gray-50 rounded-lg overflow-hidden shadow-sm hover:opacity-85"
