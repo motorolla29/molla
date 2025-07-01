@@ -1,14 +1,50 @@
 'use client';
 
+import { AdBase } from '@/types/ad';
 import { YMaps, Map, Placemark, Clusterer } from '@pbe/react-yandex-maps';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
-export default function MapGl({ ads }) {
+interface MapGlProps {
+  ads: AdBase[];
+  onPinClick?: (ad: AdBase) => void;
+  onClusterClick?: (adsInCluster: AdBase[]) => void;
+}
+
+export default function MapGl({ ads, onPinClick, onClusterClick }: MapGlProps) {
   const center = useMemo(() => {
     if (ads.length === 0) return [55.75, 37.57];
     const first = ads[0].location;
     return [first.lat, first.lng];
   }, [ads]);
+
+  const ORIGINAL_SIZE: [number, number] = [399, 548];
+  const MAX_WIDTH = 50;
+
+  // Вычисляем пропорциональную высоту и смещение
+  const aspectRatio = ORIGINAL_SIZE[1] / ORIGINAL_SIZE[0];
+  const iconWidth = MAX_WIDTH;
+  const iconHeight = Math.round(MAX_WIDTH * aspectRatio);
+  const iconOffsetX = -iconWidth / 2;
+  const iconOffsetY = -iconHeight;
+
+  const handlePin = useCallback((ad: AdBase) => onPinClick?.(ad), [onPinClick]);
+  const handleCluster = useCallback(
+    (e: any) => {
+      if (!onClusterClick) return;
+      const target = e.get('target');
+      if (typeof target.getGeoObjects !== 'function') {
+        return;
+      }
+      const geoObjects = target.getGeoObjects();
+
+      const ids: string[] = geoObjects.map((o: any) =>
+        o.properties.get('adId')
+      );
+      const adsInCluster = ads.filter((a) => ids.includes(a.id));
+      onClusterClick(adsInCluster);
+    },
+    [ads, onClusterClick]
+  );
 
   return (
     <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY }}>
@@ -23,9 +59,10 @@ export default function MapGl({ ads }) {
           options={{
             preset: 'islands#invertedVioletClusterIcons',
             groupByCoordinates: false,
-            clusterDisableClickZoom: false,
+            clusterDisableClickZoom: true,
             clusterOpenBalloonOnClick: false,
           }}
+          onClick={handleCluster}
         >
           {ads.map((ad) => (
             <Placemark
@@ -33,13 +70,15 @@ export default function MapGl({ ads }) {
               geometry={[ad.location.lat, ad.location.lng]}
               properties={{
                 balloonContentHeader: ad.title,
+                adId: ad.id,
               }}
               options={{
                 iconLayout: 'default#image',
-                iconImageHref: '/pin.svg', // или jpg/png
-                iconImageSize: [30, 30],
-                iconImageOffset: [-15, -30],
+                iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${ad.category}-map-marker.png`, // или jpg/png
+                iconImageSize: [iconWidth, iconHeight],
+                iconImageOffset: [iconOffsetX, iconOffsetY],
               }}
+              onClick={() => handlePin(ad)}
             />
           ))}
         </Clusterer>
