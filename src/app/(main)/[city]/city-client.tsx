@@ -15,6 +15,9 @@ import { useSearchParams } from 'next/navigation';
 import { useLocationStore } from '@/store/useLocationStore';
 import GalleryTopPanel from '@/components/gallery-top-panel/gallery-top-panel';
 import { AdBase } from '@/types/ad';
+import MapSlot from '@/components/map-slot/map-slot';
+import AdCardsGallery from '@/components/ad-cards-gallery/ad-cards-gallery';
+import AdCardsDefault from '@/components/ad-cards-default/ad-cards-default';
 
 interface CityClientProps {
   cityLabel: string;
@@ -101,7 +104,11 @@ export default function CityClient({
         <AsideFilters category={null} />
 
         {/* Основной блок с объявлениями */}
+
         <main className="flex-1">
+          <div className="mb-6">
+            <MapSlot ads={ads} />
+          </div>
           <GalleryTopPanel viewType={viewType} setViewType={setViewType} />
 
           {loading ? (
@@ -129,11 +136,13 @@ export default function CityClient({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-              {ads.map((ad) => (
-                <GalleryAdCard key={ad.id} ad={ad} />
-              ))}
-            </div>
+            <>
+              {viewType === 'gallery' ? (
+                <AdCardsGallery ads={ads} />
+              ) : (
+                <AdCardsDefault ads={ads} />
+              )}
+            </>
           )}
         </main>
       </div>

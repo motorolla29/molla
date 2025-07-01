@@ -2,7 +2,7 @@
 
 import { AdBase } from '@/types/ad';
 import { YMaps, Map, Placemark, Clusterer } from '@pbe/react-yandex-maps';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface MapGlProps {
   ads: AdBase[];
@@ -47,42 +47,44 @@ export default function MapGl({ ads, onPinClick, onClusterClick }: MapGlProps) {
   );
 
   return (
-    <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY }}>
-      <Map
-        options={{ suppressMapOpenBlock: true }}
-        defaultState={{ center, zoom: 4 }}
-        width="100%"
-        height="100%"
-        modules={['templateLayoutFactory', 'layout.ImageWithContent']}
-      >
-        <Clusterer
-          options={{
-            preset: 'islands#invertedVioletClusterIcons',
-            groupByCoordinates: false,
-            clusterDisableClickZoom: true,
-            clusterOpenBalloonOnClick: false,
-          }}
-          onClick={handleCluster}
+    <div className="absolute inset-0">
+      <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY }}>
+        <Map
+          options={{ suppressMapOpenBlock: true }}
+          defaultState={{ center, zoom: 4 }}
+          width="100%"
+          height="100%"
+          modules={['templateLayoutFactory', 'layout.ImageWithContent']}
         >
-          {ads.map((ad) => (
-            <Placemark
-              key={ad.id}
-              geometry={[ad.location.lat, ad.location.lng]}
-              properties={{
-                balloonContentHeader: ad.title,
-                adId: ad.id,
-              }}
-              options={{
-                iconLayout: 'default#image',
-                iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${ad.category}-map-marker.png`, // или jpg/png
-                iconImageSize: [iconWidth, iconHeight],
-                iconImageOffset: [iconOffsetX, iconOffsetY],
-              }}
-              onClick={() => handlePin(ad)}
-            />
-          ))}
-        </Clusterer>
-      </Map>
-    </YMaps>
+          <Clusterer
+            options={{
+              preset: 'islands#invertedVioletClusterIcons',
+              groupByCoordinates: false,
+              clusterDisableClickZoom: true,
+              clusterOpenBalloonOnClick: false,
+            }}
+            onClick={handleCluster}
+          >
+            {ads.map((ad) => (
+              <Placemark
+                key={ad.id}
+                geometry={[ad.location.lat, ad.location.lng]}
+                properties={{
+                  balloonContentHeader: ad.title,
+                  adId: ad.id,
+                }}
+                options={{
+                  iconLayout: 'default#image',
+                  iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${ad.category}-map-marker.png`, // или jpg/png
+                  iconImageSize: [iconWidth, iconHeight],
+                  iconImageOffset: [iconOffsetX, iconOffsetY],
+                }}
+                onClick={() => handlePin(ad)}
+              />
+            ))}
+          </Clusterer>
+        </Map>
+      </YMaps>
+    </div>
   );
 }

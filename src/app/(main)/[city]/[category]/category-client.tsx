@@ -16,6 +16,7 @@ import GalleryTopPanel from '@/components/gallery-top-panel/gallery-top-panel';
 import AdCardsGallery from '@/components/ad-cards-gallery/ad-cards-gallery';
 import AdCardsDefault from '@/components/ad-cards-default/ad-cards-default';
 import { AdBase } from '@/types/ad';
+import MapSlot from '@/components/map-slot/map-slot';
 
 interface CategoryClientProps {
   cityLabel: string;
@@ -114,6 +115,9 @@ export default function CategoryClient({
 
         {/* Основной блок */}
         <main className="flex-1">
+          <div className="mb-6">
+            <MapSlot ads={ads} />
+          </div>
           <GalleryTopPanel viewType={viewType} setViewType={setViewType} />
           {loading ? (
             <div className="w-full flex justify-center mt-30 sm:mt-20">

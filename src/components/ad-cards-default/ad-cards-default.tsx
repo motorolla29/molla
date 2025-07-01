@@ -11,7 +11,6 @@ export default function AdCardsDefault({ ads }: AdCardsDefaultProps) {
       {ads.map((ad) => (
         <DefaultAdCard key={ad.id} ad={ad} />
       ))}
-      ;
     </div>
   );
 }
