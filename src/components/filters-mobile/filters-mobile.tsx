@@ -126,6 +126,7 @@ export default function FiltersMobile({
     const path = buildPath();
     const qs = params.toString();
     router.push(path + (qs ? `?${qs}` : ''));
+    setFiltersVisible(false);
   };
 
   return (

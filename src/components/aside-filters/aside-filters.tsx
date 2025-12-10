@@ -2,7 +2,7 @@
 
 import { useLocationStore } from '@/store/useLocationStore';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import LocationModal from '../location-modal/location-modal';
 import { categoryOptions } from '@/const';
 
@@ -40,6 +40,13 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   const [maxPrice, setMaxPrice] = useState('');
   const [isVip, setIsVip] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | '7' | '24'>('all');
+  const prevStoreRef = useRef({
+    cityLabel: storeCityLabel,
+    cityName: storeCityName,
+    cityPrep: storeCityPrep,
+    lat: storeLat,
+    lon: storeLon,
+  });
 
   // Инициализация из URL при монтировании
   useEffect(() => {
@@ -47,7 +54,7 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
     if (sp.minPrice) setMinPrice(sp.minPrice);
     if (sp.maxPrice) setMaxPrice(sp.maxPrice);
     if (sp.categoryKey) setCategoryKey(sp.categoryKey);
-    if (sp.vip) setIsVip(true);
+    setIsVip(!!sp.vip);
     if (sp.time === '7' || sp.time === '24') {
       setTimeFilter(sp.time);
     } else {
@@ -56,39 +63,126 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
     // Город из стора уже синхронизирован в useEffect ниже
   }, []);
 
-  // Синхронизация с глобальным стором
+  const displayCity =
+    cityLabel === 'russia' ? 'Все города' : cityName || 'Город не выбран';
+
+  const appliedCategoryKey =
+    searchParams.get('categoryKey') ?? category ?? null;
+
+  // Применённые фильтры из текущего URL
+  const appliedFilters = useMemo(() => {
+    const time = searchParams.get('time');
+    return {
+      minPrice: searchParams.get('minPrice') ?? '',
+      maxPrice: searchParams.get('maxPrice') ?? '',
+      isVip: searchParams.has('vip'),
+      timeFilter: time === '7' || time === '24' ? time : 'all',
+    };
+  }, [searchParams]);
+
+  const hasUnsavedChanges =
+    minPrice !== appliedFilters.minPrice ||
+    maxPrice !== appliedFilters.maxPrice ||
+    isVip !== appliedFilters.isVip ||
+    timeFilter !== appliedFilters.timeFilter ||
+    categoryKey !== appliedCategoryKey ||
+    cityLabel !== (storeCityLabel ?? null) ||
+    cityName !== (storeCityName ?? null) ||
+    cityPrep !== (storeCityPrep ?? null) ||
+    lat !== (storeLat ?? null) ||
+    lon !== (storeLon ?? null);
+
+  const hasAppliedFilters =
+    appliedFilters.minPrice !== '' ||
+    appliedFilters.maxPrice !== '' ||
+    appliedFilters.isVip ||
+    appliedFilters.timeFilter !== 'all';
+
+  const buildPath = (overrides?: {
+    cityLabel?: string | null;
+    categoryKey?: string | null;
+  }) => {
+    const targetCity = overrides?.cityLabel ?? cityLabel;
+    const targetCategory = overrides?.categoryKey ?? categoryKey;
+    const segments = [];
+    if (targetCity) segments.push(targetCity);
+    if (targetCategory) segments.push(targetCategory);
+    return '/' + segments.join('/');
+  };
+
+  const pushFilters = (
+    overrides?: Partial<{
+      minPrice: string;
+      maxPrice: string;
+      isVip: boolean;
+      timeFilter: 'all' | '7' | '24';
+      cityLabel: string | null;
+      categoryKey: string | null;
+    }>
+  ) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const nextMinPrice = overrides?.minPrice ?? minPrice;
+    const nextMaxPrice = overrides?.maxPrice ?? maxPrice;
+    const nextIsVip = overrides?.isVip ?? isVip;
+    const nextTimeFilter = overrides?.timeFilter ?? timeFilter;
+
+    if (nextMinPrice) params.set('minPrice', nextMinPrice);
+    else params.delete('minPrice');
+
+    if (nextMaxPrice) params.set('maxPrice', nextMaxPrice);
+    else params.delete('maxPrice');
+
+    if (nextIsVip) params.set('vip', '1');
+    else params.delete('vip');
+
+    if (nextTimeFilter && nextTimeFilter !== 'all') {
+      params.set('time', nextTimeFilter);
+    } else {
+      params.delete('time');
+    }
+
+    const queryString = params.toString();
+    const path = buildPath({
+      cityLabel: overrides?.cityLabel,
+      categoryKey: overrides?.categoryKey,
+    });
+    router.push(path + (queryString ? `?${queryString}` : ''));
+  };
+
+  // Синхронизация с глобальным стором + автоприменение при смене города снаружи
   useEffect(() => {
+    const changed =
+      storeCityLabel !== prevStoreRef.current.cityLabel ||
+      storeCityName !== prevStoreRef.current.cityName ||
+      storeCityPrep !== prevStoreRef.current.cityPrep ||
+      storeLat !== prevStoreRef.current.lat ||
+      storeLon !== prevStoreRef.current.lon;
+
     setCityLabel(storeCityLabel ?? null);
     setCityName(storeCityName ?? null);
     setCityPrep(storeCityPrep ?? null);
     setLat(storeLat ?? null);
     setLon(storeLon ?? null);
+
+    if (changed) {
+      pushFilters({
+        cityLabel: storeCityLabel ?? null,
+      });
+      prevStoreRef.current = {
+        cityLabel: storeCityLabel,
+        cityName: storeCityName,
+        cityPrep: storeCityPrep,
+        lat: storeLat,
+        lon: storeLon,
+      };
+    }
   }, [storeCityLabel, storeCityName, storeCityPrep, storeLat, storeLon]);
 
-  const displayCity =
-    cityLabel === 'russia' ? 'Все города' : cityName || 'Город не выбран';
-
-  const buildPath = () => {
-    const segments = [];
-    if (cityLabel) segments.push(cityLabel);
-    if (categoryKey) segments.push(categoryKey);
-    return '/' + segments.join('/');
-  };
-
   const handleApply = () => {
-    // обновляем стор локации
     if (cityLabel && cityName && cityPrep) {
       setLocation(cityLabel, cityName, cityPrep, lat, lon);
     }
-    // Формируем query-параметры только для фильтров, не затрагивая routing-параметры
-    const params = new URLSearchParams(searchParams.toString());
-    if (minPrice) params.set('minPrice', minPrice);
-    if (maxPrice) params.set('maxPrice', maxPrice);
-    if (isVip) params.set('vip', '1');
-    if (timeFilter && timeFilter !== 'all') params.set('time', timeFilter);
-    const queryString = params.toString();
-    const path = buildPath();
-    router.push(path + (queryString ? `?${params.toString()}` : ''));
+    pushFilters();
   };
 
   const handleReset = () => {
@@ -239,12 +333,14 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
       </div>
       {/* Кнопки */}
       <div className="flex flex-col gap-2 pt-2">
-        <button
-          onClick={handleApply}
-          className="text-white bg-violet-400 rounded-md hover:bg-violet-500 w-full h-10"
-        >
-          Применить
-        </button>
+        {hasUnsavedChanges && (
+          <button
+            onClick={handleApply}
+            className="text-white bg-violet-400 rounded-md hover:bg-violet-500 w-full h-10"
+          >
+            Применить
+          </button>
+        )}
         <button
           onClick={handleReset}
           className="text-neutral-800 bg-neutral-200 rounded-md w-full h-10"
@@ -262,6 +358,17 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
             setCityPrep(namePrep);
             setLat(selLat);
             setLon(selLon);
+            setLocation(label, nameNom, namePrep, selLat, selLon);
+            prevStoreRef.current = {
+              cityLabel: label,
+              cityName: nameNom,
+              cityPrep: namePrep,
+              lat: selLat,
+              lon: selLon,
+            };
+            pushFilters({
+              cityLabel: label,
+            });
             setShowLocationModal(false);
           }}
         />
