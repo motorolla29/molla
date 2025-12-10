@@ -2,20 +2,55 @@
 
 import { AdBase } from '@/types/ad';
 import { YMaps, Map, Placemark, Clusterer } from '@pbe/react-yandex-maps';
+import { useLocationStore } from '@/store/useLocationStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface MapGlProps {
   ads: AdBase[];
   onPinClick?: (ad: AdBase) => void;
   onClusterClick?: (adsInCluster: AdBase[]) => void;
+  minZoom?: number;
+  maxZoom?: number;
 }
 
-export default function MapGl({ ads, onPinClick, onClusterClick }: MapGlProps) {
-  const center = useMemo(() => {
-    if (ads.length === 0) return [55.75, 37.57];
-    const first = ads[0].location;
-    return [first.lat, first.lng];
-  }, [ads]);
+export default function MapGl({
+  ads,
+  onPinClick,
+  onClusterClick,
+  minZoom = 3,
+  maxZoom = 18,
+}: MapGlProps) {
+  const { lat: storeLat, lon: storeLon } = useLocationStore();
+  const DEFAULT_CENTER: [number, number] = [55.75, 37.57]; // Москва
+  const DEFAULT_ZOOM = 4;
+  const CITY_ZOOM = 11;
+
+  const targetCenter = useMemo<[number, number]>(() => {
+    if (storeLat && storeLon) return [storeLat, storeLon];
+    if (ads.length > 0) {
+      const first = ads[0].location;
+      return [first.lat, first.lng];
+    }
+    return DEFAULT_CENTER;
+  }, [ads, storeLat, storeLon]);
+
+  const clampZoom = (zoom: number) =>
+    Math.min(Math.max(zoom, minZoom), maxZoom);
+  const targetZoom = clampZoom(storeLat && storeLon ? CITY_ZOOM : DEFAULT_ZOOM);
+
+  const [mapState, setMapState] = useState<{
+    center: [number, number];
+    zoom: number;
+  }>({
+    center: targetCenter,
+    zoom: targetZoom,
+  });
+
+  useEffect(() => {
+    setMapState({ center: targetCenter, zoom: targetZoom });
+  }, [targetCenter, targetZoom]);
+
+  const mapRef = useRef<any>(null);
 
   const ORIGINAL_SIZE: [number, number] = [399, 548];
   const MAX_WIDTH = 50;
@@ -50,8 +85,13 @@ export default function MapGl({ ads, onPinClick, onClusterClick }: MapGlProps) {
     <div className="absolute inset-0">
       <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY }}>
         <Map
-          options={{ suppressMapOpenBlock: true }}
-          defaultState={{ center, zoom: 4 }}
+          options={{
+            suppressMapOpenBlock: true,
+            minZoom,
+            maxZoom,
+          }}
+          state={mapState}
+          instanceRef={mapRef}
           width="100%"
           height="100%"
           modules={['templateLayoutFactory', 'layout.ImageWithContent']}
