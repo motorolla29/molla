@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { categoryOptions } from '@/const';
 import Link from 'next/link';
