@@ -184,7 +184,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
       {isZoomOpen && (
         <div
           onClick={() => setIsZoomOpen(false)}
-          className="fixed inset-0 z-50 bg-neutral-200/50 bg-opacity-90 backdrop-blur-xl flex flex-col justify-center items-center group"
+          className="fixed mb-0 inset-0 z-50 bg-neutral-200/50 bg-opacity-90 backdrop-blur-xl flex flex-col justify-center items-center group"
         >
           <div
             className="w-full h-full max-h-screen overflow-hidden cursor-grab"
@@ -196,7 +196,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                   className="flex-[0_0_100%] flex justify-center items-center"
                   key={idx}
                 >
-                  <div className="relative w-full h-full max-h-screen">
+                  <div className="relative max-w-[1200px] w-full h-[75vh] max-h-screen">
                     <Image
                       src={src}
                       alt={`Увеличенное фото ${idx + 1}`}
