@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -19,9 +19,11 @@ export default function Profile() {
   if (!isLoggedIn) return null;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-semibold mb-4">Профиль</h1>
-      {/* Здесь всё содержимое страницы профиля */}
-    </div>
+    <Suspense>
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-semibold mb-4">Профиль</h1>
+        {/* Здесь всё содержимое страницы профиля */}
+      </div>
+    </Suspense>
   );
 }
