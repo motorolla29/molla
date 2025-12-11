@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client'
-import { mockAds } from '../src/data/mockAds'
+import { PrismaClient } from '@prisma/client';
+import { mockAds } from '../src/data/mockAds';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding database...')
+  console.log('🌱 Seeding database...');
 
   // Создаем продавцов
   const sellers = [
@@ -32,14 +32,14 @@ async function main() {
       contactType: 'phone',
       contactValue: '+7 (999) 123-45-67',
     },
-  ]
+  ];
 
   for (const seller of sellers) {
     await prisma.seller.upsert({
       where: { id: seller.id },
       update: seller,
       create: seller,
-    })
+    });
   }
 
   // Создаем объявления
@@ -79,17 +79,17 @@ async function main() {
         details: ad.details,
         sellerId: ad.seller.id,
       },
-    })
+    });
   }
 
-  console.log('✅ Database seeded successfully!')
+  console.log('✅ Database seeded successfully!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error seeding database:', e)
-    process.exit(1)
+    console.error('❌ Error seeding database:', e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });
