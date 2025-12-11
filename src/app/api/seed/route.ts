@@ -1,9 +1,24 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { mockAds } from '@/data/mockAds'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    // Проверка доступа
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const authHeader = request.headers.get('authorization')
+    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+
+    // Проверяем пароль из заголовка или development режим
+    const providedPassword = authHeader?.replace('Bearer ', '')
+    const isAuthenticated = isDevelopment || providedPassword === adminPassword
+
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { error: 'Доступ запрещен. Укажите правильный пароль в заголовке Authorization: Bearer password' },
+        { status: 403 }
+      )
+    }
     console.log('🌱 Starting database seeding...')
 
     // Создаем продавцов
