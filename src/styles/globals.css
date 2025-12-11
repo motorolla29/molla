@@ -18,3 +18,23 @@ input[type='radio'] {
 button {
   cursor: pointer;
 }
+
+/* Кастомизация скроллбара для Webkit браузеров */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #dedde4;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d3caef;
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #cebeff;
+}

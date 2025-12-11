@@ -1,7 +1,8 @@
 'use client';
 
 import MapSlot from '@/components/map-slot/map-slot';
-import { TopSearchPanel, TopSearchPanelMobile } from '@/components/dynamic-components';
+import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
+import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 import HomePageFreshAndRecommendedAdsBlock from '@/components/home-page-fresh-and-recommended-ads-block/home-page-fresh-and-recommended-ads-block';
 import { mockAds } from '@/data/mockAds';
 import { useState, Suspense } from 'react';

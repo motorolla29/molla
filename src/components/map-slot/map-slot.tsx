@@ -74,9 +74,10 @@ export default function MapSlot({ ads }: MapSlotProps) {
                   absolute bg-white shadow-lg overflow-auto z-10
                   bottom-0 left-0 w-full h-1/2
                   lg:top-0 lg:bottom-0 lg:left-0 lg:w-1/4 lg:h-full
+                  custom-scrollbar
                 "
               >
-                <div className="flex justify-between items-center p-4 shadow-md sticky top-0 bg-violet-100">
+                <div className="flex justify-between items-center p-4 shadow-md sticky top-0 bg-violet-100 z-10">
                   <h2 className="text-lg font-medium">Объявления</h2>
                   <button
                     onClick={() => setDrawerOpen(false)}

@@ -1,68 +1,50 @@
-import { NextResponse, NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { mockAds } from '@/data/mockAds'
+import { NextResponse, NextRequest } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { mockAds } from '@/data/mockAds';
+import { mockSellers } from '@/data/mockSellers';
 
 export async function POST(request: NextRequest) {
   try {
-    // Проверка доступа
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const authHeader = request.headers.get('authorization')
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+    console.log('🌱 Starting database seeding...');
+    console.log('Mock sellers count:', mockSellers.length);
+    console.log('Mock ads count:', mockAds.length);
 
-    // Проверяем пароль из заголовка или development режим
-    const providedPassword = authHeader?.replace('Bearer ', '')
-    const isAuthenticated = isDevelopment || providedPassword === adminPassword
-
-    if (!isAuthenticated) {
-      return NextResponse.json(
-        { error: 'Доступ запрещен. Укажите правильный пароль в заголовке Authorization: Bearer password' },
-        { status: 403 }
-      )
-    }
-    console.log('🌱 Starting database seeding...')
-
-    // Создаем продавцов
-    const sellers = [
-      {
-        id: 'seller1',
-        name: 'Иван Иванов',
-        avatar: '765-default-avatar.png',
-        rating: 4.8,
-        contactType: 'phone',
-        contactValue: '+7 (912) 345-67-89',
-      },
-      {
-        id: 'seller2',
-        name: 'Екатерина Петрова',
-        avatar: null,
-        rating: 4.5,
-        contactType: 'email',
-        contactValue: 'kate.petrov@example.com',
-      },
-      {
-        id: 'seller3',
-        name: 'Алексей Сидоров',
-        avatar: null,
-        rating: 4.2,
-        contactType: 'phone',
-        contactValue: '+7 (999) 123-45-67',
-      },
-    ]
-
-    for (const seller of sellers) {
+    // Создаем продавцов на основе mockSellers
+    console.log('📝 Creating sellers...');
+    for (const seller of mockSellers) {
+      console.log(
+        `Creating seller: ${seller.name}, phone: ${seller.contact.phone}, email: ${seller.contact.email}`
+      );
       await prisma.seller.upsert({
         where: { id: seller.id },
-        update: seller,
-        create: seller,
-      })
+        update: {
+          name: seller.name,
+          avatar: seller.avatar,
+          rating: seller.rating,
+          phone: seller.contact.phone,
+          email: seller.contact.email,
+        },
+        create: {
+          id: seller.id,
+          name: seller.name,
+          avatar: seller.avatar,
+          rating: seller.rating,
+          phone: seller.contact.phone || null,
+          email: seller.contact.email || null,
+        },
+      });
     }
+    console.log('✅ Sellers created successfully');
 
     // Создаем объявления
+    console.log('📝 Creating ads...');
+    let adsCreated = 0;
     for (const ad of mockAds) {
+      console.log(`Creating ad: ${ad.title} for seller: ${ad.seller.name}`);
       await prisma.ad.upsert({
         where: { id: ad.id },
         update: {
-          category: ad.category.toUpperCase() as any,
+          category: ad.category as any,
           title: ad.title,
           description: ad.description,
           city: ad.city,
@@ -79,7 +61,7 @@ export async function POST(request: NextRequest) {
         },
         create: {
           id: ad.id,
-          category: ad.category.toUpperCase() as any,
+          category: ad.category as any,
           title: ad.title,
           description: ad.description,
           city: ad.city,
@@ -94,21 +76,30 @@ export async function POST(request: NextRequest) {
           details: ad.details,
           sellerId: ad.seller.id,
         },
-      })
+      });
+      adsCreated++;
     }
+    console.log(`✅ Ads created: ${adsCreated}`);
 
-    console.log('✅ Database seeded successfully!')
+    console.log('✅ Database seeded successfully!');
 
     return NextResponse.json({
       message: 'Database seeded successfully',
       adsCount: mockAds.length,
-      sellersCount: sellers.length
-    })
+      sellersCount: mockSellers.length,
+    });
   } catch (error) {
-    console.error('❌ Error seeding database:', error)
+    console.error('❌ Error seeding database:', error);
+    console.error(
+      'Stack trace:',
+      error instanceof Error ? error.stack : 'Unknown error'
+    );
     return NextResponse.json(
-      { error: 'Failed to seed database' },
+      {
+        error: 'Failed to seed database',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
-    )
+    );
   }
 }

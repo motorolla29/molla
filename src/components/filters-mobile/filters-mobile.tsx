@@ -114,6 +114,7 @@ export default function FiltersMobile({
     setMaxPrice('');
     setIsVip(false);
     setTimeFilter('all');
+    setCategoryKey(null); // Сбрасываем категорию
     const params = new URLSearchParams(searchParams.toString());
 
     // удаляем только фильтры
@@ -123,9 +124,10 @@ export default function FiltersMobile({
     params.delete('time');
     // НЕ трогаем search и sort
 
-    const path = buildPath();
+    // При сбросе переходим на страницу города без категории
+    const cityPath = cityLabel ? `/${cityLabel}` : '/russia';
     const qs = params.toString();
-    router.push(path + (qs ? `?${qs}` : ''));
+    router.push(cityPath + (qs ? `?${qs}` : ''));
     setFiltersVisible(false);
   };
 

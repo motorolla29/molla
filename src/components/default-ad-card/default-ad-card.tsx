@@ -60,15 +60,15 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
 
       {/* Информация о продавце */}
       <div className="hidden w-32 sm:flex flex-col items-start justify-start ml-8">
-        {ad.seller.avatar && (
-          <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${ad.seller.avatar}`}
-              alt="avatar"
-            />
-          </div>
-        )}
+        <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
+          <img
+            className="w-full h-full object-cover"
+            src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
+              ad.seller.avatar || '765-default-avatar.png'
+            }`}
+            alt="avatar"
+          />
+        </div>
         <span className="text-xs sm:text-sm font-medium truncate">
           {ad.seller.name}
         </span>

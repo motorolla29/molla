@@ -96,23 +96,25 @@ export default function AdClient({ ad }: AdClientProps) {
               <h3 className="text-xl font-semibold mb-2">Продавец</h3>
               <p className="font-semibold">{ad.seller.name}</p>
               <p>Рейтинг: {ad.seller.rating.toFixed(1)}</p>
-              {/* Кнопка по типу контакта */}
-              {ad.seller.contact.type === 'phone' && (
-                <a
-                  href={`tel:${ad.seller.contact.value}`}
-                  className="text-violet-500 hover:underline"
-                >
-                  Позвонить: {ad.seller.contact.value}
-                </a>
-              )}
-              {ad.seller.contact.type === 'email' && (
-                <a
-                  href={`mailto:${ad.seller.contact.value}`}
-                  className="text-violet-500 hover:underline"
-                >
-                  Написать: {ad.seller.contact.value}
-                </a>
-              )}
+              {/* Контакты продавца */}
+              <div className="space-y-1">
+                {ad.seller.contact.phone && (
+                  <a
+                    href={`tel:${ad.seller.contact.phone}`}
+                    className="text-violet-500 hover:underline block"
+                  >
+                    📞 {ad.seller.contact.phone}
+                  </a>
+                )}
+                {ad.seller.contact.email && (
+                  <a
+                    href={`mailto:${ad.seller.contact.email}`}
+                    className="text-violet-500 hover:underline block"
+                  >
+                    ✉️ {ad.seller.contact.email}
+                  </a>
+                )}
+              </div>
             </div>
 
             <div className="p-4 border border-amber-300 rounded-md">

@@ -10,8 +10,8 @@ export interface Seller {
   name: string;
   rating: number; // 0–5
   contact: {
-    type: ContactType;
-    value: string;
+    phone?: string;
+    email?: string;
   };
 }
 

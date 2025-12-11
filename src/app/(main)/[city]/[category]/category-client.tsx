@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback, useRef } from 'react';
 import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import Link from 'next/link';
 import TopPanel from '@/components/gallery-top-panel/gallery-top-panel';
@@ -41,48 +41,108 @@ export default function CategoryClient({
   const [viewType, setViewType] = useState('default');
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   const setLocation = useLocationStore((s) => s.setLocation);
+  const observerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLocation(cityLabel, cityName, cityNamePrep, lat, lon);
   }, [cityLabel, cityName, cityNamePrep, lat, lon, setLocation]);
 
-  useEffect(() => {
-    async function fetchAds() {
+  // Функция для загрузки объявлений
+  const fetchAds = async (isLoadMore = false, skip = 0) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
       setLoading(true);
+      setAds([]);
+      setHasMore(true);
+    }
 
-      // Строим параметры запроса на основе searchParams
-      const params = new URLSearchParams();
+    // Строим параметры запроса на основе searchParams
+    const params = new URLSearchParams();
 
-      // Добавляем параметры фильтрации
-      const sp = Object.fromEntries(searchParams.entries());
-      Object.entries(sp).forEach(([key, value]) => {
-        if (value) params.set(key, value);
-      });
+    // Добавляем параметры фильтрации
+    const sp = Object.fromEntries(searchParams.entries());
+    Object.entries(sp).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
 
-      // Добавляем город и категорию
-      params.set('cityLabel', cityLabel);
-      params.set('category', categoryKey);
+    // Добавляем город и категорию
+    params.set('cityLabel', cityLabel);
+    params.set('category', categoryKey);
 
-      try {
-        const res = await fetch(`/api/ads?${params.toString()}`);
-        if (res.ok) {
-          const data: AdBase[] = await res.json();
-          setAds(data);
+    // Добавляем пагинацию
+    params.set('skip', skip.toString());
+    params.set('limit', '24');
+
+    try {
+      const res = await fetch(`/api/ads?${params.toString()}`);
+      if (res.ok) {
+        const data: AdBase[] = await res.json();
+
+        if (isLoadMore) {
+          setAds((prevAds) => [...prevAds, ...data]);
         } else {
-          console.error('Failed to fetch ads:', res.statusText);
-          setAds(mockAds); // Fallback to mock data
+          setAds(data);
         }
-      } catch (error) {
-        console.error('Error fetching ads:', error);
-        setAds(mockAds); // Fallback to mock data
-      }
 
+        // Если загружено меньше 24 объявлений, значит это последняя страница
+        setHasMore(data.length === 24);
+      } else {
+        console.error('Failed to fetch ads:', res.statusText);
+        if (!isLoadMore) {
+          setAds(mockAds); // Fallback to mock data only for initial load
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching ads:', error);
+      if (!isLoadMore) {
+        setAds(mockAds); // Fallback to mock data only for initial load
+      }
+    }
+
+    if (isLoadMore) {
+      setLoadingMore(false);
+    } else {
       setLoading(false);
     }
+  };
+
+  // Функция для загрузки следующих объявлений
+  const loadMoreAds = () => {
+    if (!loadingMore && hasMore) {
+      fetchAds(true, ads.length);
+    }
+  };
+
+  useEffect(() => {
     fetchAds();
   }, [cityLabel, categoryKey, searchParams]);
+
+  // Настройка Intersection Observer для бесконечной прокрутки
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMoreAds();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [hasMore, loadingMore, ads.length]);
 
   return (
     <Suspense>
@@ -171,6 +231,34 @@ export default function CategoryClient({
                   <AdCardsGallery ads={ads} />
                 ) : (
                   <AdCardsDefault ads={ads} />
+                )}
+
+                {/* Элемент для Intersection Observer */}
+                {hasMore && (
+                  <div
+                    ref={observerRef}
+                    className="flex justify-center items-center py-8"
+                  >
+                    {loadingMore ? (
+                      <FidgetSpinner
+                        ariaLabel="fidget-spinner-loading"
+                        width={'100%'}
+                        height={'100%'}
+                        wrapperClass="w-16 sm:w-20"
+                        backgroundColor="#A684FF"
+                        ballColors={['#D5FF4D', '#FE9A00', '#737373']}
+                      />
+                    ) : (
+                      <div className="h-4" />
+                    )}
+                  </div>
+                )}
+
+                {/* Сообщение о конце списка */}
+                {!hasMore && ads.length > 0 && (
+                  <div className="text-center py-8 text-neutral-500">
+                    <p className="text-sm">Это все объявления</p>
+                  </div>
                 )}
               </>
             )}

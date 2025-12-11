@@ -7,50 +7,51 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // Модель продавца
 model Seller {
-  id       String @id @default(cuid())
-  name     String
-  avatar   String?
-  rating   Float  @default(0) // 0-5
-  contactType String // "phone" | "email"
-  contactValue String
+  id         String   @id @default(cuid())
+  name       String
+  avatar     String?
+  rating     Float    @default(0) // 0-5
+  phone      String?
+  email      String?
 
   // Связь с объявлениями
-  ads      Ad[]
+  ads        Ad[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("sellers")
 }
 
 // Модель объявления
 model Ad {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   category    Category
   title       String
   description String
-  city        String   // человекочитаемое название
-  cityLabel   String   // метка для URL
+  city        String    // человекочитаемое название
+  cityLabel   String    // метка для URL
   address     String
   lat         Float
   lng         Float
   price       Int?
   currency    Currency?
-  datePosted  DateTime @default(now())
-  photos      String[] // массив URL или имен файлов
+  datePosted  DateTime  @default(now())
+  photos      String[]  // массив URL или имен файлов
   details     String
-  isVip       Boolean  @default(false)
+  isVip       Boolean   @default(false)
 
   // Связь с продавцом
   sellerId    String
-  seller      Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("ads")
 }
