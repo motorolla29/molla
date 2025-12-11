@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Модель продавца
+model Seller {
+  id       String @id @default(cuid())
+  name     String
+  avatar   String?
+  rating   Float  @default(0) // 0-5
+  contactType String // "phone" | "email"
+  contactValue String
+
+  // Связь с объявлениями
+  ads      Ad[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sellers")
+}
+
+// Модель объявления
+model Ad {
+  id          String   @id @default(cuid())
+  category    Category
+  title       String
+  description String
+  city        String   // человекочитаемое название
+  cityLabel   String   // метка для URL
+  address     String
+  lat         Float
+  lng         Float
+  price       Int?
+  currency    Currency?
+  datePosted  DateTime @default(now())
+  photos      String[] // массив URL или имен файлов
+  details     String
+  isVip       Boolean  @default(false)
+
+  // Связь с продавцом
+  sellerId    String
+  seller      Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ads")
+}
+
+// Перечисления
+enum Category {
+  goods
+  services
+  realestate
+  auto
+}
+
+enum Currency {
+  RUB
+  USD
+  EUR
+}

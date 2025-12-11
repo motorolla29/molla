@@ -49,16 +49,33 @@ export default function CityClient({
   useEffect(() => {
     async function fetchAds() {
       setLoading(true);
+
+      // Строим параметры запроса на основе searchParams
       const params = new URLSearchParams();
 
-      const res = await fetch(`/api/ads?${params.toString()}`);
-      if (res.ok) {
-        const data: AdBase[] = await res.json();
-        setAds(data);
-      } else {
-        setAds([]);
-        setAds(mockAds);
+      // Добавляем параметры фильтрации
+      const sp = Object.fromEntries(searchParams.entries());
+      Object.entries(sp).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+      });
+
+      // Добавляем город
+      params.set('cityLabel', cityLabel);
+
+      try {
+        const res = await fetch(`/api/ads?${params.toString()}`);
+        if (res.ok) {
+          const data: AdBase[] = await res.json();
+          setAds(data);
+        } else {
+          console.error('Failed to fetch ads:', res.statusText);
+          setAds(mockAds); // Fallback to mock data
+        }
+      } catch (error) {
+        console.error('Error fetching ads:', error);
+        setAds(mockAds); // Fallback to mock data
       }
+
       setLoading(false);
     }
     fetchAds();
