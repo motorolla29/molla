@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
       include: {
         seller: false, // Не нужны данные продавца для маркеров
       },
-      take: 200, // Максимум 200 маркеров
+      take: 100, // Максимум 100 маркеров
       orderBy: {
         datePosted: 'desc',
       },

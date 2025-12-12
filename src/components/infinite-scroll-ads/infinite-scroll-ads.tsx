@@ -157,8 +157,17 @@ export default function InfiniteScrollAds({
           )}
         </div>
       ) : (
-        <div className="text-center py-12 text-neutral-500">
-          <p>Объявления не найдены</p>
+        <div className="w-full flex flex-col justify-center items-center text-neutral-500">
+          <div className="flex flex-col justify-center items-center max-w-75">
+            <img
+              className="w-16 md:w-20"
+              src="https://ik.imagekit.io/motorolla29/molla/icons/%D0%BD%D0%B8%D1%87%D0%B5%D0%B3%D0%BE-%D0%BD%D0%B5-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BE-100.png"
+              alt="nothing-found"
+            />
+            <p className="text-sm md:text-base text-center">
+              Нет объявлений по выбранным параметрам.
+            </p>
+          </div>
         </div>
       )}
 

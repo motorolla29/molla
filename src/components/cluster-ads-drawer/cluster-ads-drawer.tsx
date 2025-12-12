@@ -17,6 +17,7 @@ export default function ClusterAdsDrawer({
   onClose,
   cityLabel,
 }: ClusterAdsDrawerProps) {
+  const isSingleAd = adIds.length === 1;
   const [ads, setAds] = useState<AdBase[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -109,9 +110,11 @@ export default function ClusterAdsDrawer({
   }, [hasMore, loadingMore, loading, ads.length, fetchAds]);
 
   return (
-    <div className="absolute bg-white shadow-lg overflow-auto z-10 bottom-0 left-0 w-full h-1/2 lg:top-0 lg:bottom-0 lg:left-0 lg:w-1/4 lg:h-full custom-scrollbar">
+    <div className="absolute bg-white shadow-lg overflow-auto z-10 bottom-12 left-0 w-full h-2/5 lg:top-0 lg:bottom-0 lg:left-0 lg:w-1/4 lg:h-full custom-scrollbar">
       <div className="flex justify-between items-center p-4 shadow-md sticky top-0 bg-violet-100 z-10">
-        <h2 className="text-lg font-medium">Объявления ({adIds.length})</h2>
+        <h2 className="text-lg font-medium">
+          {isSingleAd ? 'Объявление' : `Объявления (${adIds.length})`}
+        </h2>
         <button
           onClick={onClose}
           className="text-2xl hover:bg-[#d3caef] rounded p-1"
@@ -167,7 +170,7 @@ export default function ClusterAdsDrawer({
             </div>
 
             {/* Элемент для Intersection Observer - под всем блоком карточек */}
-            {hasMore && (
+            {hasMore && !isSingleAd && (
               <div
                 ref={observerRef}
                 className="flex justify-center items-center py-4 px-4"
@@ -188,7 +191,7 @@ export default function ClusterAdsDrawer({
             )}
 
             {/* Сообщение о конце списка - под всем блоком карточек */}
-            {!hasMore && ads.length > 0 && (
+            {!hasMore && ads.length > 0 && !isSingleAd && (
               <div className="text-center py-4 px-4 text-neutral-500">
                 <p className="text-sm">Это все объявления в кластере</p>
               </div>

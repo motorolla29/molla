@@ -40,6 +40,7 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   const [maxPrice, setMaxPrice] = useState('');
   const [isVip, setIsVip] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | '7' | '24'>('all');
+  const [isResetting, setIsResetting] = useState(false);
   const prevStoreRef = useRef({
     cityLabel: storeCityLabel,
     cityName: storeCityName,
@@ -186,24 +187,22 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   };
 
   const handleReset = () => {
-    setMinPrice('');
-    setMaxPrice('');
-    setIsVip(false);
-    setTimeFilter('all');
-    setCategoryKey(null); // Сбрасываем категорию
-    const params = new URLSearchParams(searchParams.toString());
+    setIsResetting(true);
 
-    // удаляем только фильтры
+    // Сначала удаляем параметры из URL
+    const params = new URLSearchParams(searchParams.toString());
     params.delete('minPrice');
     params.delete('maxPrice');
     params.delete('vip');
     params.delete('time');
-    // НЕ трогаем search и sort
 
     // При сбросе переходим на страницу города без категории
     const cityPath = cityLabel ? `/${cityLabel}` : '/russia';
     const qs = params.toString();
     router.push(cityPath + (qs ? `?${qs}` : ''));
+
+    // Снимаем флаг через 500ms, чтобы избежать мерцания кнопок
+    setTimeout(() => setIsResetting(false), 500);
   };
 
   return (
@@ -241,6 +240,10 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
             placeholder="От"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
+            onWheel={(e) => {
+              (e.target as HTMLInputElement).blur();
+              e.preventDefault();
+            }}
             className="w-1/2 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
             min={0}
           />
@@ -249,6 +252,10 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
             placeholder="До"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
+            onWheel={(e) => {
+              (e.target as HTMLInputElement).blur();
+              e.preventDefault();
+            }}
             className="w-1/2 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
             min={0}
           />
@@ -335,7 +342,7 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
       </div>
       {/* Кнопки */}
       <div className="flex flex-col gap-2 pt-2">
-        {hasUnsavedChanges && (
+        {hasUnsavedChanges && !isResetting && (
           <button
             onClick={handleApply}
             className="text-white bg-violet-400 rounded-md hover:bg-violet-500 w-full h-10"
@@ -345,7 +352,8 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
         )}
         <button
           onClick={handleReset}
-          className="text-neutral-800 bg-neutral-200 rounded-md w-full h-10"
+          disabled={isResetting}
+          className="text-neutral-800 bg-neutral-200 rounded-md w-full h-10 disabled:opacity-50"
         >
           Сбросить фильтры
         </button>

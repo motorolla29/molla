@@ -180,14 +180,18 @@ export default function MapGl({
 
   // Перезагружаем маркеры при изменении фильтров
   useEffect(() => {
-    if (mapRef.current && ads.length === 0 && initialLoadDone) {
-      const map = mapRef.current;
-      if (typeof map.getBounds === 'function') {
-        const bounds = map.getBounds();
-        loadMarkersForViewport(bounds);
+    if (initialLoadDone) {
+      // Очищаем старые маркеры перед загрузкой новых
+      setMarkers([]);
+      if (mapRef.current) {
+        const map = mapRef.current;
+        if (typeof map.getBounds === 'function') {
+          const bounds = map.getBounds();
+          loadMarkersForViewport(bounds);
+        }
       }
     }
-  }, [searchParams, loadMarkersForViewport, ads.length, initialLoadDone]);
+  }, [searchParams, loadMarkersForViewport, initialLoadDone]);
 
   // Вычисляем пропорциональную высоту и смещение
   const aspectRatio = ORIGINAL_SIZE[1] / ORIGINAL_SIZE[0];
