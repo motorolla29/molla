@@ -4,7 +4,6 @@ import MapSlot from '@/components/map-slot/map-slot';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 import HomePageFreshAndRecommendedAdsBlock from '@/components/home-page-fresh-and-recommended-ads-block/home-page-fresh-and-recommended-ads-block';
-import { mockAds } from '@/data/mockAds';
 import { useState, Suspense } from 'react';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 
@@ -24,7 +23,7 @@ export default function Home() {
           </div>
         </div>
         <div className="mx-4 my-4 space-y-6">
-          <MapSlot ads={mockAds} />
+          <MapSlot ads={[]} />
         </div>
         <HomePageFreshAndRecommendedAdsBlock />
         {/* Модал/Overlay с фильтрами во весь экран для мобильных */}

@@ -96,7 +96,7 @@ export default function CategoryClient({
           {/* Основной блок */}
           <main className="flex-1">
             <div className="mb-6">
-              <MapSlot ads={[]} />
+              <MapSlot ads={[]} cityLabel={cityLabel} category={categoryKey} />
             </div>
             <GalleryTopPanel viewType={viewType} setViewType={setViewType} />
 

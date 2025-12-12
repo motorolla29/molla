@@ -5,12 +5,6 @@ import { AdBase, CategoryKey, Currency } from '@/types/ad';
 // Конвертация Prisma модели в AdBase тип
 function convertToAdBase(ad: any): AdBase {
   try {
-    console.log(`🔄 Converting ad ${ad.id}:`, {
-      category: ad.category,
-      sellerPhone: ad.seller?.phone,
-      sellerEmail: ad.seller?.email,
-    });
-
     const result = {
       id: ad.id,
       category: ad.category.toLowerCase() as CategoryKey,
@@ -40,7 +34,6 @@ function convertToAdBase(ad: any): AdBase {
       details: ad.details,
     };
 
-    console.log(`✅ Converted ad ${ad.id} successfully`);
     return result;
   } catch (error) {
     console.error(`❌ Error converting ad ${ad.id}:`, error);
@@ -50,9 +43,7 @@ function convertToAdBase(ad: any): AdBase {
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔍 API /api/ads called');
     const { searchParams } = new URL(request.url);
-    console.log('📋 Query params:', Object.fromEntries(searchParams.entries()));
 
     // Получаем параметры фильтрации из URL
     const cityLabel = searchParams.get('cityLabel');
@@ -65,17 +56,6 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'datePosted';
     const skip = parseInt(searchParams.get('skip') || '0');
     const limit = parseInt(searchParams.get('limit') || '24');
-
-    console.log('🔎 Parsed params:', {
-      cityLabel,
-      category,
-      minPrice,
-      maxPrice,
-      search,
-      isVip,
-      timeFilter,
-      sort,
-    });
 
     // Строим условия фильтрации
     const where: any = {};
@@ -136,11 +116,6 @@ export async function GET(request: NextRequest) {
       orderBy = { price: 'asc' };
     }
 
-    console.log('📊 Built where clause:', JSON.stringify(where, null, 2));
-    console.log('🔄 Order by:', orderBy);
-
-    // Получаем объявления из базы данных
-    console.log('🔍 Executing database query...', { skip, limit });
     const ads = await prisma.ad.findMany({
       where,
       include: {
@@ -151,14 +126,8 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    console.log(`📈 Found ${ads.length} ads in database`);
-
     // Конвертируем в формат AdBase
-    console.log('🔄 Converting ads to AdBase format...');
     const convertedAds = ads.map(convertToAdBase);
-
-    console.log(`✅ Successfully converted ${convertedAds.length} ads`);
-    console.log('📤 Returning response...');
 
     return NextResponse.json(convertedAds);
   } catch (error) {
