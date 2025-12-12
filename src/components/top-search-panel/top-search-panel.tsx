@@ -77,7 +77,7 @@ export default function TopSearchPanel({
                 {categoryOptions.map((opt) => (
                   <div key={opt.key} className="flex items-center px-2">
                     <Link
-                      className="flex items-center"
+                      className="flex w-full items-center"
                       href={`/${cityLabel}/${opt.key}`}
                     >
                       <img
@@ -85,7 +85,7 @@ export default function TopSearchPanel({
                         alt="cat-icon"
                         className="w-6 h-6 aspect-auto mr-1"
                       />
-                      <span className="flex items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
+                      <span className="flex grow items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
                         {opt.label}
                       </span>
                     </Link>

@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { mockAds } from '@/data/mockAds';
-import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
+import InfiniteScrollAds from '../infinite-scroll-ads/infinite-scroll-ads';
 
 export default function HomePageFreshAndRecommendedAdsBlock() {
   const [activeTab, setActiveTab] = useState<'recommend' | 'fresh'>(
     'recommend'
   );
-  const [ads, setAds] = useState(mockAds);
 
   return (
     <div className="bg-white mx-4 mb-10">
@@ -32,15 +30,13 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
           Свежие
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
-        {ads.map((ad) => {
-          return (
-            <div key={ad.id} className="h-full">
-              <GalleryAdCard ad={ad} />
-            </div>
-          );
-        })}
-      </div>
+
+      <InfiniteScrollAds
+        cityLabel="russia"
+        sort={activeTab === 'fresh' ? 'new' : undefined}
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8"
+        showEndMessage={true}
+      />
     </div>
   );
 }

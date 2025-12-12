@@ -16,10 +16,10 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden z-50 shadow-md"
+      className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden z-50 shadow-md h-12"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="flex">
+      <div className="flex h-full">
         {navItems.map(({ href, Icon, label }) => {
           const isActive =
             href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -28,7 +28,7 @@ export default function MobileBottomNav() {
             <Link
               key={href}
               href={href}
-              className={`flex-1 min-w-0 flex flex-col items-center justify-center pt-1 ${colorClass}`}
+              className={`flex-1 min-w-0 flex flex-col items-center justify-center mt-1 ${colorClass}`}
             >
               <Icon size={18} className={colorClass} />
               {/* Показываем подпись только на ширине >=640px, иначе скрываем */}

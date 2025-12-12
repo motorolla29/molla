@@ -1,0 +1,194 @@
+'use client';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { AdBase } from '@/types/ad';
+import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
+import { FidgetSpinner } from 'react-loader-spinner';
+
+interface InfiniteScrollAdsProps {
+  // Параметры для API запроса
+  cityLabel?: string;
+  category?: string;
+  searchParams?: URLSearchParams;
+  sort?: string;
+
+  // Количество объявлений на странице
+  limit?: number;
+
+  // Компонент для отображения объявлений
+  renderAd?: (ad: AdBase) => React.ReactNode;
+
+  // CSS классы для контейнера
+  className?: string;
+
+  // Показывать ли сообщение "Это все объявления"
+  showEndMessage?: boolean;
+}
+
+export default function InfiniteScrollAds({
+  cityLabel,
+  category,
+  searchParams,
+  sort,
+  limit = 24,
+  renderAd,
+  className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8',
+  showEndMessage = true,
+}: InfiniteScrollAdsProps) {
+  const [ads, setAds] = useState<AdBase[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const observerRef = useRef<HTMLDivElement>(null);
+
+  // Функция для загрузки объявлений
+  const fetchAds = useCallback(
+    async (isLoadMore = false, skip = 0) => {
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setAds([]);
+        setHasMore(true);
+      }
+
+      // Строим параметры запроса
+      const params = new URLSearchParams(searchParams?.toString() || '');
+
+      // Добавляем базовые параметры
+      if (cityLabel) params.set('cityLabel', cityLabel);
+      if (category) params.set('category', category);
+      if (sort) params.set('sort', sort);
+
+      // Добавляем пагинацию
+      params.set('skip', skip.toString());
+      params.set('limit', limit.toString());
+
+      try {
+        const res = await fetch(`/api/ads?${params.toString()}`);
+        if (res.ok) {
+          const data: AdBase[] = await res.json();
+
+          if (isLoadMore) {
+            setAds((prevAds) => [...prevAds, ...data]);
+          } else {
+            setAds(data);
+          }
+
+          // Если загружено меньше limit объявлений, значит это последняя страница
+          setHasMore(data.length === limit);
+        } else {
+          console.error('Failed to fetch ads:', res.statusText);
+          if (!isLoadMore) {
+            setAds([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching ads:', error);
+        if (!isLoadMore) {
+          setAds([]);
+        }
+      }
+
+      if (isLoadMore) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
+    },
+    [cityLabel, category, searchParams, sort, limit]
+  );
+
+  // Загрузка начальных данных
+  useEffect(() => {
+    fetchAds();
+  }, [fetchAds]);
+
+  // Настройка Intersection Observer для бесконечной прокрутки
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          fetchAds(true, ads.length);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [hasMore, loadingMore, loading, ads.length, fetchAds]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <FidgetSpinner
+          ariaLabel="fidget-spinner-loading"
+          width={'100%'}
+          height={'100%'}
+          wrapperClass="w-16 sm:w-20"
+          backgroundColor="#A684FF"
+          ballColors={['#D5FF4D', '#FE9A00', '#737373']}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {ads.length > 0 ? (
+        <div className={className}>
+          {ads.map((ad) =>
+            renderAd ? (
+              renderAd(ad)
+            ) : (
+              <div key={ad.id} className="h-full">
+                <GalleryAdCard ad={ad} />
+              </div>
+            )
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-12 text-neutral-500">
+          <p>Объявления не найдены</p>
+        </div>
+      )}
+
+      {/* Элемент для Intersection Observer */}
+      {hasMore && (
+        <div
+          ref={observerRef}
+          className="flex justify-center items-center py-8"
+        >
+          {loadingMore ? (
+            <FidgetSpinner
+              ariaLabel="fidget-spinner-loading"
+              width={'100%'}
+              height={'100%'}
+              wrapperClass="w-16 sm:w-20"
+              backgroundColor="#A684FF"
+              ballColors={['#D5FF4D', '#FE9A00', '#737373']}
+            />
+          ) : (
+            <div className="h-4" />
+          )}
+        </div>
+      )}
+
+      {/* Сообщение о конце списка */}
+      {showEndMessage && !hasMore && ads.length > 0 && (
+        <div className="text-center py-8 text-neutral-500">
+          <p className="text-sm">Это все объявления</p>
+        </div>
+      )}
+    </>
+  );
+}

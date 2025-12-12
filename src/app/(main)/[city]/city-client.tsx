@@ -1,23 +1,18 @@
 'use client';
 
-import { useEffect, useState, Suspense, useCallback, useRef } from 'react';
-import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
-import { categoryOptions, getCategoryLabelByKey } from '@/const';
-import { FidgetSpinner } from 'react-loader-spinner';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { mockAds } from '@/data/mockAds';
 import AsideFilters from '@/components/aside-filters/aside-filters';
-import TopPanel from '@/components/gallery-top-panel/gallery-top-panel';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 import { useSearchParams } from 'next/navigation';
 import { useLocationStore } from '@/store/useLocationStore';
 import GalleryTopPanel from '@/components/gallery-top-panel/gallery-top-panel';
-import { AdBase } from '@/types/ad';
 import MapSlot from '@/components/map-slot/map-slot';
-import AdCardsGallery from '@/components/ad-cards-gallery/ad-cards-gallery';
+import InfiniteScrollAds from '@/components/infinite-scroll-ads/infinite-scroll-ads';
 import AdCardsDefault from '@/components/ad-cards-default/ad-cards-default';
+import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 
 interface CityClientProps {
   cityLabel: string;
@@ -34,111 +29,14 @@ export default function CityClient({
   lat = null,
   lon = null,
 }: CityClientProps) {
-  const [ads, setAds] = useState<AdBase[]>([]);
   const [viewType, setViewType] = useState('default');
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   const setLocation = useLocationStore((s) => s.setLocation);
-  const observerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLocation(cityLabel, cityName, cityNamePrep, lat, lon);
   }, [cityLabel, cityName, cityNamePrep, lat, lon, setLocation]);
-
-  // Функция для загрузки объявлений
-  const fetchAds = async (isLoadMore = false, skip = 0) => {
-    if (isLoadMore) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      setAds([]);
-      setHasMore(true);
-    }
-
-    // Строим параметры запроса на основе searchParams
-    const params = new URLSearchParams();
-
-    // Добавляем параметры фильтрации
-    const sp = Object.fromEntries(searchParams.entries());
-    Object.entries(sp).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-    });
-
-    // Добавляем город
-    params.set('cityLabel', cityLabel);
-
-    // Добавляем пагинацию
-    params.set('skip', skip.toString());
-    params.set('limit', '24');
-
-    try {
-      const res = await fetch(`/api/ads?${params.toString()}`);
-      if (res.ok) {
-        const data: AdBase[] = await res.json();
-
-        if (isLoadMore) {
-          setAds((prevAds) => [...prevAds, ...data]);
-        } else {
-          setAds(data);
-        }
-
-        // Если загружено меньше 24 объявлений, значит это последняя страница
-        setHasMore(data.length === 24);
-      } else {
-        console.error('Failed to fetch ads:', res.statusText);
-        if (!isLoadMore) {
-          setAds(mockAds); // Fallback to mock data only for initial load
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching ads:', error);
-      if (!isLoadMore) {
-        setAds(mockAds); // Fallback to mock data only for initial load
-      }
-    }
-
-    if (isLoadMore) {
-      setLoadingMore(false);
-    } else {
-      setLoading(false);
-    }
-  };
-
-  // Функция для загрузки следующих объявлений
-  const loadMoreAds = () => {
-    if (!loadingMore && hasMore) {
-      fetchAds(true, ads.length);
-    }
-  };
-
-  useEffect(() => {
-    fetchAds();
-  }, [cityLabel, searchParams]);
-
-  // Настройка Intersection Observer для бесконечной прокрутки
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          loadMoreAds();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
-      }
-    };
-  }, [hasMore, loadingMore, ads.length]);
 
   return (
     <Suspense>
@@ -184,71 +82,28 @@ export default function CityClient({
 
           <main className="flex-1">
             <div className="mb-6">
-              <MapSlot ads={ads} />
+              <MapSlot ads={[]} />
             </div>
             <GalleryTopPanel viewType={viewType} setViewType={setViewType} />
 
-            {loading ? (
-              <div className="w-full flex justify-center mt-30 sm:mt-20">
-                <FidgetSpinner
-                  ariaLabel="fidget-spinner-loading"
-                  width={'100%'}
-                  height={'100%'}
-                  wrapperClass="w-16 sm:w-20"
-                  backgroundColor="#A684FF"
-                  ballColors={['#D5FF4D', '#FE9A00', '#737373']}
-                />
-              </div>
-            ) : ads.length === 0 ? (
-              <div className="w-full flex flex-col justify-center items-center mt-20 text-neutral-500">
-                <div className="flex flex-col justify-center items-center max-w-75">
-                  <img
-                    className="w-16 md:w-20"
-                    src="https://ik.imagekit.io/motorolla29/molla/icons/%D0%BD%D0%B8%D1%87%D0%B5%D0%B3%D0%BE-%D0%BD%D0%B5-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BE-100.png"
-                    alt="nothing-found"
-                  />
-                  <p className="text-sm md:text-base font-semibold text-center">
-                    Нет объявлений по выбранным параметрам.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {viewType === 'gallery' ? (
-                  <AdCardsGallery ads={ads} />
+            <InfiniteScrollAds
+              cityLabel={cityLabel}
+              searchParams={searchParams}
+              renderAd={(ad) =>
+                viewType === 'gallery' ? (
+                  <div key={ad.id} className="h-full">
+                    <GalleryAdCard ad={ad} />
+                  </div>
                 ) : (
-                  <AdCardsDefault ads={ads} />
-                )}
-
-                {/* Элемент для Intersection Observer */}
-                {hasMore && (
-                  <div
-                    ref={observerRef}
-                    className="flex justify-center items-center py-8"
-                  >
-                    {loadingMore ? (
-                      <FidgetSpinner
-                        ariaLabel="fidget-spinner-loading"
-                        width={'100%'}
-                        height={'100%'}
-                        wrapperClass="w-16 sm:w-20"
-                        backgroundColor="#A684FF"
-                        ballColors={['#D5FF4D', '#FE9A00', '#737373']}
-                      />
-                    ) : (
-                      <div className="h-4" />
-                    )}
-                  </div>
-                )}
-
-                {/* Сообщение о конце списка */}
-                {!hasMore && ads.length > 0 && (
-                  <div className="text-center py-8 text-neutral-500">
-                    <p className="text-sm">Это все объявления</p>
-                  </div>
-                )}
-              </>
-            )}
+                  <AdCardsDefault key={ad.id} ads={[ad]} />
+                )
+              }
+              className={
+                viewType === 'gallery'
+                  ? 'grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4'
+                  : 'space-y-6'
+              }
+            />
           </main>
         </div>
         {/* Модал/Overlay с фильтрами во весь экран для мобильных */}
