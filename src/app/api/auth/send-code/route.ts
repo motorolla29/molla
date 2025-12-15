@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendVerificationCode } from '@/lib/email';
-import { saveTempRegistration } from '@/lib/tempStorage';
+import { registrationCache, connectRedis } from '@/lib/redis';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
@@ -51,13 +51,17 @@ export async function POST(request: NextRequest) {
       // Хэшируем пароль
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Сохраняем данные регистрации во временное хранилище
-      saveTempRegistration(email, {
-        name: name.trim(),
-        password: hashedPassword,
-        verificationCode,
-        verificationCodeExpires: expiresAt,
-      });
+      // Сохраняем данные регистрации в Redis
+      await registrationCache.set(
+        email,
+        {
+          name: name.trim(),
+          password: hashedPassword,
+          verificationCode,
+          verificationCodeExpires: expiresAt,
+        },
+        600
+      ); // 10 минут
     } else {
       // Вход - проверяем, что пользователь существует
       const user = await prisma.seller.findUnique({

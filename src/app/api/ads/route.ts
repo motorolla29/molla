@@ -119,7 +119,16 @@ export async function GET(request: NextRequest) {
     const ads = await prisma.ad.findMany({
       where,
       include: {
-        seller: true,
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            rating: true,
+            phone: true,
+            email: true,
+          },
+        },
       },
       orderBy,
       skip,

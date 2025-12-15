@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateToken } from '@/lib/jwt';
-import { getTempRegistration, deleteTempRegistration } from '@/lib/tempStorage';
+import { registrationCache, connectRedis } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,10 +17,11 @@ export async function POST(request: NextRequest) {
     let user;
 
     if (isRegistration) {
-      // Регистрация - проверяем временное хранилище
-      const tempData = await getTempRegistration(email);
+      // Регистрация - проверяем данные в Redis
+      const tempData = await registrationCache.get(email);
 
       if (!tempData) {
+        console.log('No temp data found in Redis');
         return NextResponse.json(
           {
             error:
@@ -39,8 +40,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Проверяем срок действия кода
-      if (tempData.verificationCodeExpires < new Date()) {
-        await deleteTempRegistration(email);
+      if (new Date(tempData.verificationCodeExpires) < new Date()) {
+        await registrationCache.delete(email);
         return NextResponse.json(
           { error: 'Код подтверждения истек' },
           { status: 400 }
@@ -51,13 +52,13 @@ export async function POST(request: NextRequest) {
       user = await prisma.seller.create({
         data: {
           name: tempData.name,
-          email: tempData.email,
+          email: email, // Используем email из параметра запроса
           password: tempData.password,
         },
       });
 
-      // Удаляем временные данные
-      await deleteTempRegistration(email);
+      // Удаляем временные данные из Redis
+      await registrationCache.delete(email);
     } else {
       // Вход - проверяем существующего пользователя
       user = await prisma.seller.findUnique({
