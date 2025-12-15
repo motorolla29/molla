@@ -166,9 +166,8 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
     setLon(storeLon ?? null);
 
     if (changed) {
-      pushFilters({
-        cityLabel: storeCityLabel ?? null,
-      });
+      // Не перезаписываем URL при инициализации, чтобы сохранить параметры из ссылки
+      // pushFilters вызывается только при явном изменении города пользователем
       prevStoreRef.current = {
         cityLabel: storeCityLabel,
         cityName: storeCityName,
@@ -177,7 +176,14 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
         lon: storeLon,
       };
     }
-  }, [storeCityLabel, storeCityName, storeCityPrep, storeLat, storeLon]);
+  }, [
+    storeCityLabel,
+    storeCityName,
+    storeCityPrep,
+    storeLat,
+    storeLon,
+    searchParams,
+  ]);
 
   const handleApply = () => {
     if (cityLabel && cityName && cityPrep) {
