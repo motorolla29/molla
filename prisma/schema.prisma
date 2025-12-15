@@ -17,7 +17,12 @@ model Seller {
   avatar     String?
   rating     Float    @default(0) // 0-5
   phone      String?
-  email      String?
+  email      String?  @unique
+  password   String?  // Хэшированный пароль
+
+  // Поля для верификации email
+  verificationCode       String?
+  verificationCodeExpires DateTime?
 
   // Связь с объявлениями
   ads        Ad[]

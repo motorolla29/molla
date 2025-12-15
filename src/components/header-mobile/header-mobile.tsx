@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 import LocationModal from '../location-modal/location-modal';
 import { useLocationStore } from '@/store/useLocationStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import Link from 'next/link';
 
 export default function HeaderMobile() {
   const { cityName, setLocation } = useLocationStore();
+  const { isLoggedIn, user } = useAuthStore();
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   return (
@@ -23,8 +26,8 @@ export default function HeaderMobile() {
           </span>
         </button>
 
-        {/* Правая иконка уведомлений */}
-        <div className="flex items-center flex-shrink-0">
+        {/* Правая часть: уведомления и аватар/вход */}
+        <div className="flex items-center flex-shrink-0 gap-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -37,6 +40,29 @@ export default function HeaderMobile() {
               clipRule="evenodd"
             />
           </svg>
+
+          {isLoggedIn && user ? (
+            <Link href="/profile" className="flex items-center">
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-6 h-6 rounded-full object-cover border border-white shadow-sm"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-white font-semibold text-xs border border-white shadow-sm">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <Link
+              href="/auth"
+              className="text-sm font-medium text-neutral-500 hover:opacity-80"
+            >
+              Войти
+            </Link>
+          )}
         </div>
       </div>
 

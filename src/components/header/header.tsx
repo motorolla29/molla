@@ -1,13 +1,18 @@
+'use client';
+
 import Link from 'next/link';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function Header() {
+  const { isLoggedIn, user, logout } = useAuthStore();
+
   return (
     <div className="w-full hidden lg:block sticky top-0 z-10 bg-neutral-100 h-15">
       <div className="container px-4 mx-auto h-15 flex items-center justify-between">
         <Link className="flex h-[60%]" href="/">
           <img src="/logo/molla-logo.svg" />
         </Link>
-        <div className="flex">
+        <div className="flex items-center">
           <Link href="/favorites">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -45,12 +50,32 @@ export default function Header() {
               />
             </svg>
           </Link>
-          <Link
-            href="/auth"
-            className="font-semibold text-neutral-500 hover:opacity-80 cursor-pointer ml-1"
-          >
-            Войти
-          </Link>
+
+          {isLoggedIn && user ? (
+            <Link
+              href="/profile"
+              className="flex items-center ml-1 hover:opacity-80 transition-opacity"
+            >
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-violet-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <Link
+              href="/auth"
+              className="font-semibold text-neutral-500 hover:opacity-80 cursor-pointer ml-1"
+            >
+              Войти
+            </Link>
+          )}
         </div>
       </div>
     </div>
