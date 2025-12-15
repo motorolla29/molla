@@ -16,7 +16,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       className="flex w-full overflow-hidden h-full mb-4 p-4 rounded-xl hover:bg-neutral-100"
     >
       {/* Фото */}
-      <div className="rounded-xl relative w-26 h-26 sm:w-36 sm:h-36 overflow-hidden">
+      <div className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 overflow-hidden">
         <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'

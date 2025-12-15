@@ -15,7 +15,7 @@ export const mockAds: AdBase[] = [
     price: 120000,
     currency: 'RUB',
     datePosted: '2025-12-10T14:30:00Z',
-    photos: ['9.png', '10.jpg'],
+    photos: [],
     seller: mockSellers[0],
     details: 'Продается новый iPhone 15 Pro 256GB в фирменной упаковке.',
   },

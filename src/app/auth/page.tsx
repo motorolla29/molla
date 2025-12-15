@@ -8,6 +8,16 @@ import Link from 'next/link';
 export default function AuthPage() {
   const router = useRouter();
   const { isLoggedIn, login } = useAuthStore();
+  const [redirectTo, setRedirectTo] = useState('/personal/profile');
+
+  useEffect(() => {
+    // Получаем redirect параметр после монтирования компонента
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirect = searchParams.get('redirect');
+    if (redirect) {
+      setRedirectTo(decodeURIComponent(redirect));
+    }
+  }, []);
   const initialize = useAuthStore((state) => state.initialize);
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -23,8 +33,10 @@ export default function AuthPage() {
 
   useEffect(() => {
     initialize();
-    if (isLoggedIn) router.replace('/profile');
-  }, [isLoggedIn, router, initialize]);
+    if (isLoggedIn) {
+      router.replace(redirectTo);
+    }
+  }, [isLoggedIn, router, initialize, redirectTo]);
 
   // Таймер для повторной отправки кода
   useEffect(() => {
@@ -74,7 +86,7 @@ export default function AuthPage() {
         }
 
         login(data.user, data.token);
-        router.replace('/profile');
+        router.replace(redirectTo);
       } catch (error) {
         setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
       } finally {
@@ -141,7 +153,7 @@ export default function AuthPage() {
       }
 
       login(data.user, data.token);
-      router.replace('/profile');
+      router.replace(redirectTo);
     } catch (error) {
       setErrors({ code: 'Ошибка сети. Попробуйте позже.' });
     } finally {

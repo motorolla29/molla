@@ -7,9 +7,9 @@ import { Home, Heart, List, MessageCircle, User } from 'lucide-react';
 const navItems = [
   { href: '/', Icon: Home, label: 'Главная' },
   { href: '/favorites', Icon: Heart, label: 'Избранное' },
-  { href: '/ads', Icon: List, label: 'Объявления' },
+  { href: '/personal/my-adds', Icon: List, label: 'Объявления' },
   { href: '/chats', Icon: MessageCircle, label: 'Сообщения' },
-  { href: '/profile', Icon: User, label: 'Профиль' },
+  { href: '/personal/profile', Icon: User, label: 'Профиль' },
 ];
 
 export default function MobileBottomNav() {
@@ -21,8 +21,7 @@ export default function MobileBottomNav() {
     >
       <div className="flex h-full">
         {navItems.map(({ href, Icon, label }) => {
-          const isActive =
-            href === '/' ? pathname === '/' : pathname.startsWith(href);
+          const isActive = pathname === href;
           const colorClass = isActive ? 'text-violet-500' : 'text-neutral-400';
           return (
             <Link

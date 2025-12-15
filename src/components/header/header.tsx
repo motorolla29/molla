@@ -53,7 +53,7 @@ export default function Header() {
 
           {isLoggedIn && user ? (
             <Link
-              href="/profile"
+              href="/personal/profile"
               className="flex items-center ml-1 hover:opacity-80 transition-opacity"
             >
               {user.avatar ? (
