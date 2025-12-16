@@ -6,7 +6,8 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, name, password, isRegistration } = await request.json();
+    const { email, name, password, city, isRegistration } =
+      await request.json();
 
     if (!email || !email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
       return NextResponse.json(
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
         {
           name: name.trim(),
           password: hashedPassword,
+          city: city || null,
           verificationCode,
           verificationCodeExpires: expiresAt,
         },

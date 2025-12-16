@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
           name: tempData.name,
           email: email, // Используем email из параметра запроса
           password: tempData.password,
+          city: tempData.city,
         },
       });
 
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
         avatar: user.avatar,
         phone: user.phone,
         rating: user.rating,
+        city: (user as any).city,
       },
       token,
     });

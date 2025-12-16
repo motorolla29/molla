@@ -1,0 +1,503 @@
+import { useState, useEffect, useRef } from 'react';
+import { loadCitiesData } from '@/utils';
+import { CityRaw } from '@/types/city-raw';
+import { useAuthStore } from '@/store/useAuthStore';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+  phone: string | null;
+  rating: number;
+  city: string | null;
+}
+
+interface EditProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: User;
+  cityName: string | null;
+  onSave: (updates: {
+    name?: string;
+    phone?: string | null;
+    city?: string | null;
+    email?: string;
+    verificationCode?: string;
+  }) => void;
+}
+
+export function EditProfileModal({
+  isOpen,
+  onClose,
+  user,
+  cityName,
+  onSave,
+}: EditProfileModalProps) {
+  const [formData, setFormData] = useState({
+    name: user.name,
+    phone: user.phone || '',
+    city: cityName || '',
+    email: user.email,
+  });
+
+  const [emailStep, setEmailStep] = useState<'input' | 'verify'>('input');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [cities, setCities] = useState<CityRaw[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  // Отдельные состояния: отправка кода и сохранение профиля
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const { token } = useAuthStore();
+
+  // Проверяем, есть ли изменения
+  const hasChanges =
+    formData.name !== user.name ||
+    formData.phone !== (user.phone || '') ||
+    formData.city !== (cityName || '') ||
+    (formData.email !== user.email && emailStep === 'verify');
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: user.name,
+        phone: user.phone || '',
+        city: cityName || '',
+        email: user.email,
+      });
+      setEmailStep('input');
+      setVerificationCode('');
+      setError('');
+      setResendTimer(0);
+      loadCities();
+    }
+  }, [isOpen, user, cityName]);
+
+  // Блокируем скролл страницы при открытом модальном окне
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
+
+  // Закрытие по клику вне модального окна
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  const loadCities = async () => {
+    try {
+      const citiesData = await loadCitiesData();
+      setCities(citiesData);
+    } catch (error) {
+      console.error('Error loading cities:', error);
+    }
+  };
+
+  const formatPhoneNumber = (value: string) => {
+    // Если пользователь начинает с +7, игнорируем это и ждем ввода номера
+    if (value.startsWith('+7') && value.length <= 2) {
+      return '';
+    }
+
+    // Если пользователь ввел +7 и еще символы, берем только цифры после +7
+    let cleaned = '';
+    if (value.startsWith('+7')) {
+      cleaned = value.slice(2).replace(/\D/g, '');
+    } else {
+      cleaned = value.replace(/\D/g, '');
+    }
+
+    // Форматируем номер
+    if (cleaned.length === 0) return '';
+    if (cleaned.length <= 3) return `+7 (${cleaned}`;
+    if (cleaned.length <= 6)
+      return `+7 (${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    if (cleaned.length <= 8)
+      return `+7 (${cleaned.slice(0, 3)}) ${cleaned.slice(
+        3,
+        6
+      )}-${cleaned.slice(6)}`;
+    return `+7 (${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
+      6,
+      8
+    )}-${cleaned.slice(8, 10)}`;
+  };
+
+  const filteredCities = cities
+    .filter((city) => {
+      const cityName = city.namecase?.nominative || city.name;
+      return (
+        cityName && cityName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    })
+    .slice(0, 10);
+
+  const handleSendEmailCode = async () => {
+    if (!token) {
+      setError('Ошибка авторизации. Попробуйте войти в аккаунт заново.');
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError('Введите email');
+      return;
+    }
+
+    if (!formData.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+      setError('Введите корректный email адрес');
+      return;
+    }
+
+    if (formData.email === user.email) {
+      setError('Новый email должен отличаться от текущего');
+      return;
+    }
+
+    setIsSendingCode(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/send-email-change-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ newEmail: formData.email.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка отправки кода');
+      }
+
+      setEmailStep('verify');
+      setResendTimer(60);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка при отправке кода');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!hasChanges) return;
+
+    // Валидация
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      setError('Имя не может быть пустым');
+      return;
+    }
+
+    // Имя должно быть минимум из 2 букв (латиница или кириллица)
+    const lettersMatch = trimmedName.match(/[A-Za-zА-Яа-яЁё]/g);
+    if (!lettersMatch || lettersMatch.length < 2) {
+      setError('Имя должно содержать минимум 2 буквы');
+      return;
+    }
+
+    if (
+      formData.phone &&
+      !/^\+7\s?\(\d{3}\)\s?\d{3}-\d{2}-\d{2}$/.test(formData.phone)
+    ) {
+      setError('Введите корректный номер телефона');
+      return;
+    }
+
+    // Если email изменился, проверяем формат и код подтверждения
+    if (formData.email !== user.email) {
+      if (!formData.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+        setError('Введите корректный email адрес');
+        return;
+      }
+
+      if (emailStep !== 'verify' || !verificationCode.trim()) {
+        setError('Подтвердите новый email кодом');
+        return;
+      }
+
+      if (verificationCode.length !== 6) {
+        setError('Код должен содержать 6 цифр');
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    setError('');
+
+    try {
+      const updates: any = {};
+
+      // Добавляем только измененные поля
+      if (formData.name !== user.name) {
+        updates.name = formData.name.trim();
+      }
+
+      if (formData.phone !== (user.phone || '')) {
+        updates.phone = formData.phone.trim() || null;
+      }
+
+      if (formData.city !== (cityName || '')) {
+        updates.city = formData.city.trim() || null;
+      }
+
+      if (formData.email !== user.email) {
+        updates.email = formData.email.trim();
+        updates.verificationCode = verificationCode.trim();
+      }
+
+      await onSave(updates);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Ошибка при сохранении');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCitySelect = (city: CityRaw) => {
+    const cityName = city.namecase?.nominative || city.name || '';
+    setFormData((prev) => ({ ...prev, city: cityName }));
+    setSearchTerm(cityName);
+    setShowSuggestions(false);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      >
+        <div className="p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-6">
+            Редактировать профиль
+          </h3>
+
+          <div className="space-y-6">
+            {/* Имя */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Имя *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                placeholder="Введите имя"
+              />
+            </div>
+
+            {/* Город */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Город
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => {
+                    setFormData((prev) => ({ ...prev, city: e.target.value }));
+                    setSearchTerm(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  placeholder="Начните вводить название города"
+                />
+
+                {showSuggestions && searchTerm && filteredCities.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {filteredCities.map((city, index) => {
+                      const cityName =
+                        city.namecase?.nominative || city.name || '';
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => handleCitySelect(city)}
+                          className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                        >
+                          {cityName}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Оставьте пустым, чтобы не указывать город
+              </p>
+            </div>
+
+            {/* Телефон */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Телефон
+              </label>
+              <div className="flex items-center px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-transparent">
+                <span className="mr-1 select-none">+7</span>
+                <input
+                  type="tel"
+                  value={
+                    formData.phone ? formData.phone.replace(/^\+7\s?/, '') : ''
+                  }
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    const formattedLocal = (() => {
+                      if (digits.length === 0) return '';
+                      if (digits.length <= 3) return `(${digits}`;
+                      if (digits.length <= 6)
+                        return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+                      if (digits.length <= 8)
+                        return `(${digits.slice(0, 3)}) ${digits.slice(
+                          3,
+                          6
+                        )}-${digits.slice(6)}`;
+                      return `(${digits.slice(0, 3)}) ${digits.slice(
+                        3,
+                        6
+                      )}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
+                    })();
+
+                    setFormData((prev) => ({
+                      ...prev,
+                      phone: formattedLocal ? `+7 ${formattedLocal}` : '',
+                    }));
+                  }}
+                  className="w-full border-none outline-none focus:ring-0 placeholder:text-gray-400"
+                  placeholder="(XXX) XXX-XX-XX"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Введите номер в формате (XXX) XXX-XX-XX. Оставьте пустым, чтобы
+                не указывать телефон
+              </p>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+
+              {emailStep === 'input' ? (
+                <div className="space-y-2">
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    placeholder="example@email.com"
+                  />
+                  {formData.email !== user.email && formData.email && (
+                    <button
+                      onClick={handleSendEmailCode}
+                      disabled={isSendingCode}
+                      className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                    >
+                      {isSendingCode
+                        ? 'Отправка...'
+                        : 'Отправить код подтверждения'}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    Код подтверждения отправлен на{' '}
+                    <strong>{formData.email}</strong>
+                  </p>
+                  <input
+                    type="text"
+                    value={verificationCode}
+                    onChange={(e) =>
+                      setVerificationCode(
+                        e.target.value.replace(/[^\d]/g, '').slice(0, 6)
+                      )
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-center text-lg font-mono"
+                    placeholder="000000"
+                    maxLength={6}
+                  />
+                  <div className="flex justify-between items-center">
+                    <button
+                      onClick={() => setEmailStep('input')}
+                      className="text-sm text-gray-600 hover:text-gray-700"
+                    >
+                      Изменить email
+                    </button>
+                    <button
+                      onClick={handleSendEmailCode}
+                      disabled={resendTimer > 0 || isSendingCode}
+                      className="text-sm text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {resendTimer > 0
+                        ? `Отправить повторно (${resendTimer}с)`
+                        : 'Отправить повторно'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
+
+          <div className="flex space-x-3 mt-8">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              disabled={isSaving}
+            >
+              Отмена
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!hasChanges || isSaving}
+              className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

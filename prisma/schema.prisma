@@ -19,6 +19,7 @@ model Seller {
   phone      String?
   email      String?  @unique
   password   String?  // Хэшированный пароль
+  city       String?  // Город пользователя
 
   // Связь с объявлениями
   ads        Ad[]

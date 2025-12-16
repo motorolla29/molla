@@ -6,12 +6,16 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useLocationStore } from '@/store/useLocationStore';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
+import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-modal';
 
 export default function Profile() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const { cityName } = useLocationStore();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Состояние для модального окна редактирования профиля
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   // Layout уже проверил авторизацию
   if (!user) return null;
@@ -46,37 +50,62 @@ export default function Profile() {
             {user.name.charAt(0).toUpperCase()}
           </div>
         )}
-        <div className="ml-4 sm:ml-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
-            {user.name}
-          </h2>
-          <p className="text-gray-600 text-xs sm:text-sm mb-2">
-            ID: {user.id.toString().slice(-8).toUpperCase()}
-          </p>
-          <div className="flex items-center space-x-1">
-            {/* Stars with underlying outline and overlay fill */}
-            {Array.from({ length: 5 }).map((_, idx) => {
-              const starPos = idx + 1;
-              const fillPercent = Math.min(
-                Math.max((user.rating - (starPos - 1)) * 100, 0),
-                100
-              );
-              return (
-                <div key={idx} className="relative w-4 h-4">
-                  <OutlineStarIcon className="w-4 h-4 text-yellow-400" />
-                  {fillPercent > 0 && (
-                    <SolidStarIcon
-                      className="absolute top-0 left-0 w-4 h-4 text-yellow-400 overflow-hidden"
-                      style={{ clipPath: `inset(0 ${100 - fillPercent}% 0 0)` }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-            {/* Rating number */}
-            <span className="text-xs sm:text-sm text-gray-600 ml-1">
-              {user.rating.toFixed(1)}
-            </span>
+        <div className="ml-4 sm:ml-6 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-700 mb-1 line-clamp-2 break-words">
+                {user.name}
+              </h2>
+              <p className="text-gray-600 text-xs sm:text-sm mb-2">
+                ID: {user.id.toString().slice(-8).toUpperCase()}
+              </p>
+              <div className="flex items-center space-x-1">
+                {/* Stars with underlying outline and overlay fill */}
+                {Array.from({ length: 5 }).map((_, idx) => {
+                  const starPos = idx + 1;
+                  const fillPercent = Math.min(
+                    Math.max((user.rating - (starPos - 1)) * 100, 0),
+                    100
+                  );
+                  return (
+                    <div key={idx} className="relative w-4 h-4">
+                      <OutlineStarIcon className="w-4 h-4 text-yellow-400" />
+                      {fillPercent > 0 && (
+                        <SolidStarIcon
+                          className="absolute top-0 left-0 w-4 h-4 text-yellow-400 overflow-hidden"
+                          style={{
+                            clipPath: `inset(0 ${100 - fillPercent}% 0 0)`,
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+                {/* Rating number */}
+                <span className="text-xs sm:text-sm text-gray-600 ml-1">
+                  {user.rating.toFixed(1)}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowEditProfile(true)}
+              className="p-3 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all duration-200 hover:scale-105 ml-3 shrink-0"
+              aria-label="Редактировать профиль"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -110,13 +139,17 @@ export default function Profile() {
                   />
                 </svg>
               </div>
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
-                  Город
-                </p>
-                <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
-                  {cityName || 'Не указан'}
-                </p>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
+                      Город
+                    </p>
+                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                      {user.city || 'Не указан'}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -198,6 +231,16 @@ export default function Profile() {
           {isLoading ? 'Выход...' : 'Выйти из профиля'}
         </button>
       </div>
+
+      {/* Модальное окно редактирования профиля */}
+      <EditProfileModal
+        isOpen={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+        user={user}
+        // В модалку передаём город из профиля; стора локации не используем
+        cityName={user.city}
+        onSave={(updates) => updateUser(updates)}
+      />
     </div>
   );
 }

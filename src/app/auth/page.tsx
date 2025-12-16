@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useLocationStore } from '@/store/useLocationStore';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export default function AuthPage() {
   const router = useRouter();
   const { isLoggedIn, login } = useAuthStore();
+  const { cityName } = useLocationStore();
   const [redirectTo, setRedirectTo] = useState('/');
 
   useEffect(() => {
@@ -110,6 +112,7 @@ export default function AuthPage() {
             email,
             name: name.trim(),
             password,
+            city: cityName,
             isRegistration: true,
           }),
         });
@@ -358,7 +361,7 @@ export default function AuthPage() {
                       handleVerifyCode();
                     }
                   }}
-                  className="w-full text-xs sm:text-sm mt-1 p-2 border border-neutral-400 rounded focus:outline-none focus:ring-2 focus:ring-violet-300 text-center text-lg font-mono"
+                  className="w-full sm:text-sm mt-1 p-2 border border-neutral-400 rounded focus:outline-none focus:ring-2 focus:ring-violet-300 text-center text-lg font-mono"
                   placeholder="000000"
                   maxLength={6}
                 />

@@ -8,6 +8,7 @@ interface User {
   avatar: string | null;
   phone: string | null;
   rating: number;
+  city: string | null;
 }
 
 interface AuthState {
@@ -17,6 +18,7 @@ interface AuthState {
   login: (user: User, token: string) => void;
   logout: () => void;
   setUser: (user: User) => void;
+  updateUser: (updates: Partial<User> & { verificationCode?: string }) => Promise<void>;
   initialize: () => void;
 }
 
@@ -35,6 +37,33 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoggedIn: false, user: null, token: null });
       },
       setUser: (user) => set((state) => ({ ...state, user })),
+      updateUser: async (updates) => {
+        const { token } = get();
+        if (!token) {
+          throw new Error('Не авторизован');
+        }
+
+        const response = await fetch('/api/auth/update-user', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(updates),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Ошибка обновления данных');
+        }
+
+        // Обновляем пользователя в store
+        set((state) => ({
+          ...state,
+          user: data.user,
+        }));
+      },
       initialize: () => {
         // Проверяем токен при инициализации
         const { token } = get();

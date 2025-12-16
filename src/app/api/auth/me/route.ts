@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     const user = await prisma.seller.findUnique({
-      where: { id: decoded.userId },
+      where: { id: Number(decoded.userId) },
     });
 
     if (!user) {
@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
         avatar: user.avatar,
         phone: user.phone,
         rating: user.rating,
+        city: (user as any).city,
       },
     });
   } catch (error) {

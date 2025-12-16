@@ -100,14 +100,14 @@ export default function MyAddsPage() {
         <div className="flex items-center justify-between mb-6">
           <Link
             href="/ad/create"
-            className="w-full text-center inline-flex items-center justify-center px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors lg:hidden"
+            className="w-full text-center inline-flex items-center justify-center px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-lg hover:bg-violet-600 active:bg-violet-700 transition-colors lg:hidden"
           >
             <Plus size={16} className="mr-2" />
             <span className="whitespace-nowrap">Создать объявление</span>
           </Link>
           <Link
             href="/ad/create"
-            className="hidden lg:inline-flex items-center px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors"
+            className="hidden lg:inline-flex items-center px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-lg hover:bg-violet-600 active:bg-violet-700 transition-colors"
           >
             <Plus size={16} className="mr-2" />
             Создать объявление
