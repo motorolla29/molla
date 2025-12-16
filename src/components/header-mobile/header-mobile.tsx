@@ -13,7 +13,7 @@ export default function HeaderMobile() {
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   return (
-    <div className="w-full lg:hidden sticky top-0 z-10 bg-neutral-100">
+    <div className="w-full lg:hidden sticky top-0 z-10 bg-neutral-100 h-12">
       <div className="container px-4 mx-auto h-12 flex items-center justify-between">
         {/* Левая кнопка: выбор города */}
         <button

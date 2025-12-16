@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -205,10 +206,19 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-neutral-100 z-10 shadow-md">
-        <div className="h-15 flex items-center justify-center">
+        <div className="h-15 flex items-center justify-between px-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center ml-1 sm:ml-8 p-1 xs:p-2 text-gray-600 hover:text-gray-900 transition-colors"
+            aria-label="Вернуться назад"
+          >
+            <ArrowLeft className="h-8 w-8" />
+          </button>
           <Link className="flex h-[60%]" href="/">
             <img src="/logo/molla-logo.svg" alt="logo" />
           </Link>
+          <div className="w-6 xs:w-10 sm:w-16"></div>{' '}
+          {/* Пустой элемент для центрирования логотипа */}
         </div>
       </header>
       <main className="flex-grow flex items-center justify-center bg-gray-50">
@@ -311,7 +321,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2 bg-violet-400 text-white rounded-lg hover:bg-violet-500 active:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
+                className="w-full py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
               >
                 {isLoading
                   ? 'Загрузка...'
@@ -343,6 +353,11 @@ export default function AuthPage() {
                       e.target.value.replace(/\D/g, '').slice(0, 6)
                     )
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && verificationCode.length === 6) {
+                      handleVerifyCode();
+                    }
+                  }}
                   className="w-full text-xs sm:text-sm mt-1 p-2 border border-neutral-400 rounded focus:outline-none focus:ring-2 focus:ring-violet-300 text-center text-lg font-mono"
                   placeholder="000000"
                   maxLength={6}
@@ -358,7 +373,7 @@ export default function AuthPage() {
               <button
                 onClick={handleVerifyCode}
                 disabled={isLoading || verificationCode.length !== 6}
-                className="w-full py-2 bg-violet-400 text-white rounded-lg hover:bg-violet-500 active:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
+                className="w-full py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
               >
                 {isLoading ? 'Проверка...' : 'Подтвердить'}
               </button>

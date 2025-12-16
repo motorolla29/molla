@@ -212,7 +212,7 @@ export default function MyAddsPage() {
                       </div>
 
                       {/* Цена справа на sm и выше */}
-                      <div className="hidden sm:block text-right ml-4 flex-shrink-0">
+                      <div className="hidden px-1 sm:block text-right ml-4 flex-shrink-0">
                         <div className="text-lg font-semibold text-gray-900">
                           {formatPrice(ad.price, ad.currency)}
                         </div>

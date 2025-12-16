@@ -32,7 +32,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-2 lg:p-4">
+    <div className="p-2 lg:px-6">
       {/* Аватар и имя */}
       <div className="flex items-center mb-8 sm:mb-12">
         {user.avatar ? (

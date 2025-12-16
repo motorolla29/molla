@@ -47,7 +47,7 @@ export default function TopSearchPanel({
   }, [showFilterDropdown]);
 
   return (
-    <div className="hidden lg:block bg-white sticky top-15 z-9">
+    <div className="hidden lg:block bg-white sticky top-15 z-45">
       <div className="mx-auto py-3 flex items-center gap-2">
         <div className="relative" ref={dropdownRef}>
           <button
