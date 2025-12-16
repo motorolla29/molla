@@ -60,20 +60,22 @@ export async function POST(request: NextRequest) {
       // Удаляем временные данные из Redis
       await registrationCache.delete(email);
     } else {
-      // Вход - проверяем существующего пользователя
-      user = await prisma.seller.findUnique({
-        where: { email },
-      });
+      // Вход - проверяем данные в Redis
+      const tempData = await registrationCache.get(email);
 
-      if (!user) {
+      if (!tempData) {
+        console.log('No temp data found in Redis for login');
         return NextResponse.json(
-          { error: 'Пользователь не найден' },
+          {
+            error:
+              'Данные для входа не найдены. Повторите процесс авторизации.',
+          },
           { status: 404 }
         );
       }
 
       // Проверяем код
-      if (!user.verificationCode || user.verificationCode !== code) {
+      if (tempData.verificationCode !== code) {
         return NextResponse.json(
           { error: 'Неверный код подтверждения' },
           { status: 400 }
@@ -81,24 +83,29 @@ export async function POST(request: NextRequest) {
       }
 
       // Проверяем срок действия кода
-      if (
-        !user.verificationCodeExpires ||
-        user.verificationCodeExpires < new Date()
-      ) {
+      if (new Date(tempData.verificationCodeExpires) < new Date()) {
+        await registrationCache.delete(email);
         return NextResponse.json(
           { error: 'Код подтверждения истек' },
           { status: 400 }
         );
       }
 
-      // Очищаем код верификации
-      await prisma.seller.update({
+      // Находим пользователя в БД
+      user = await prisma.seller.findUnique({
         where: { email },
-        data: {
-          verificationCode: null,
-          verificationCodeExpires: null,
-        },
       });
+
+      if (!user) {
+        await registrationCache.delete(email);
+        return NextResponse.json(
+          { error: 'Пользователь не найден' },
+          { status: 404 }
+        );
+      }
+
+      // Удаляем временные данные из Redis
+      await registrationCache.delete(email);
     }
 
     // Генерируем JWT токен

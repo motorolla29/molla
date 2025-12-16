@@ -19,8 +19,11 @@ export default function Profile() {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      logout();
       router.replace('/');
+      // Небольшая задержка перед очисткой состояния, чтобы router успел выполнить перенаправление
+      setTimeout(() => {
+        logout();
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -48,7 +51,7 @@ export default function Profile() {
             {user.name}
           </h2>
           <p className="text-gray-600 text-xs sm:text-sm mb-2">
-            ID: {user.id.slice(-8).toUpperCase()}
+            ID: {user.id.toString().slice(-8).toUpperCase()}
           </p>
           <div className="flex items-center space-x-1">
             {/* Stars with underlying outline and overlay fill */}

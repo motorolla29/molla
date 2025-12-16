@@ -75,13 +75,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Обновляем код верификации
-      await prisma.seller.update({
-        where: { email },
-        data: {
-          verificationCode,
-          verificationCodeExpires: expiresAt,
-        },
+      // Сохраняем код верификации в Redis для входа
+      await registrationCache.set(email, {
+        verificationCode,
+        verificationCodeExpires: expiresAt.toISOString(),
       });
     }
 

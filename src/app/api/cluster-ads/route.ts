@@ -25,7 +25,16 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        seller: true,
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            rating: true,
+            phone: true,
+            email: true,
+          },
+        },
       },
       skip,
       take: limit,

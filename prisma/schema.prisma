@@ -12,17 +12,13 @@ datasource db {
 
 // Модель продавца
 model Seller {
-  id         String   @id @default(cuid())
+  id         Int      @id @default(autoincrement())
   name       String
   avatar     String?
   rating     Float    @default(0) // 0-5
   phone      String?
   email      String?  @unique
   password   String?  // Хэшированный пароль
-
-  // Поля для верификации email
-  verificationCode       String?
-  verificationCodeExpires DateTime?
 
   // Связь с объявлениями
   ads        Ad[]
@@ -52,7 +48,7 @@ model Ad {
   isVip       Boolean   @default(false)
 
   // Связь с продавцом
-  sellerId    String
+  sellerId    Int
   seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime  @default(now())

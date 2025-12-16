@@ -215,7 +215,7 @@ export default function MapGl({
       photos: marker.photos,
       datePosted: new Date().toISOString(),
       seller: {
-        id: '',
+        id: 0,
         name: '',
         avatar: null,
         rating: 0,

@@ -73,15 +73,15 @@ export default function MyAddsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="px-4 sm:px-6 lg:px-8">
       {/* Заголовок для мобильных */}
-      <div className="mb-6 lg:mb-0">
+      <div className="mb-4 lg:mb-0">
         {isLoading ? (
-          <div className="flex items-center mt-4 lg:hidden">
+          <div className="flex items-center lg:hidden">
             <div className="h-7 bg-gray-200 rounded w-44 animate-pulse"></div>
           </div>
         ) : (
-          <h1 className="relative text-lg sm:text-xl w-fit font-medium mt-4 mb-6 lg:hidden">
+          <h1 className="relative text-lg sm:text-xl w-fit font-medium mb-4 lg:hidden">
             Мои объявления
             <span className="absolute text-xs sm:text-sm font-bold text-neutral-500 -right-4 top-0">
               {ads.length}
@@ -131,15 +131,18 @@ export default function MyAddsPage() {
             <div key={i} className="rounded-lg animate-pulse">
               <div className="flex min-w-0">
                 {/* Фото */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-gray-200 rounded-lg"></div>
+                <div className="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0 bg-gray-200 rounded-lg"></div>
 
                 {/* Контент */}
-                <div className="flex-1 px-4 py-1 min-w-0 ml-4">
+                <div className="flex-1 px-4 py-1 min-w-0 ml-1">
                   <div className="flex items-start justify-between mb-1">
                     <div className="flex-1 min-w-0">
                       <div className="h-5.5 bg-gray-200 rounded-md w-2/5 mb-2"></div>
+                      {/* Цена под титлом только на самых маленьких экранах */}
+                      <div className="sm:hidden h-4 bg-gray-200 rounded w-20 mb-2"></div>
                     </div>
-                    <div className="h-5.5 bg-gray-200 rounded-md w-16 ml-2 flex-shrink-0"></div>
+                    {/* Цена справа на sm и выше */}
+                    <div className="hidden sm:block h-5.5 bg-gray-200 rounded-md w-16 ml-2 flex-shrink-0"></div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-4">
                     <div className="h-3.5 bg-gray-200 rounded w-20"></div>
@@ -175,12 +178,16 @@ export default function MyAddsPage() {
                   </div>
 
                   {/* Контент */}
-                  <div className="hover:bg-neutral-100 rounded-xl flex-1 px-2 ml-2 py-1 min-w-0">
+                  <div className="hover:bg-neutral-100 rounded-xl flex-1 px-2 ml-2 min-w-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1 break-words overflow-hidden">
                           {ad.title}
                         </h3>
+                        {/* Цена под титлом только на самых маленьких экранах */}
+                        <div className="sm:hidden text-base font-semibold text-gray-900 mb-2">
+                          {formatPrice(ad.price, ad.currency)}
+                        </div>
                         <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600 gap-2 sm:gap-4">
                           <div className="flex items-center">
                             <MapPin size={12} className="mr-1 flex-shrink-0" />
@@ -204,8 +211,9 @@ export default function MyAddsPage() {
                         </div>
                       </div>
 
-                      <div className="text-right mx-2 sm:ml-4 flex-shrink-0">
-                        <div className="text-base sm:text-lg font-semibold text-gray-900">
+                      {/* Цена справа на sm и выше */}
+                      <div className="hidden sm:block text-right ml-4 flex-shrink-0">
+                        <div className="text-lg font-semibold text-gray-900">
                           {formatPrice(ad.price, ad.currency)}
                         </div>
                       </div>
@@ -222,20 +230,13 @@ export default function MyAddsPage() {
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <List size={32} className="text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
             У вас пока нет объявлений
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 text-sm sm:text-base">
             Создайте первое объявление и начните продавать или обмениваться
             вещами
           </p>
-          <Link
-            href="/ad/create"
-            className="inline-flex items-center px-6 py-3 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors"
-          >
-            <Plus size={16} className="mr-2" />
-            Создать первое объявление
-          </Link>
         </div>
       )}
     </div>

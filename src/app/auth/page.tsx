@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function AuthPage() {
   const router = useRouter();
   const { isLoggedIn, login } = useAuthStore();
-  const [redirectTo, setRedirectTo] = useState('/personal/profile');
+  const [redirectTo, setRedirectTo] = useState('/');
 
   useEffect(() => {
     // Получаем redirect параметр после монтирования компонента
@@ -86,7 +86,7 @@ export default function AuthPage() {
         }
 
         login(data.user, data.token);
-        router.replace(redirectTo);
+        router.replace('/');
       } catch (error) {
         setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
       } finally {
@@ -153,7 +153,7 @@ export default function AuthPage() {
       }
 
       login(data.user, data.token);
-      router.replace(redirectTo);
+      router.replace('/');
     } catch (error) {
       setErrors({ code: 'Ошибка сети. Попробуйте позже.' });
     } finally {
