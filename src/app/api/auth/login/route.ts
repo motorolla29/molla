@@ -7,7 +7,10 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
-    if (!email || !password) {
+    // Нормализуем email к нижнему регистру
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (!normalizedEmail || !password) {
       return NextResponse.json(
         { error: 'Email и пароль обязательны' },
         { status: 400 }
@@ -16,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Находим пользователя
     const user = await prisma.seller.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user || !user.password) {

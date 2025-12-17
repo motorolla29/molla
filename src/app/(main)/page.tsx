@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <Suspense>
       <div className="min-h-screen">
-        <div className="sticky top-10 lg:top-15 z-9 bg-white">
+        <div className="sticky top-12 lg:top-15 z-9 bg-white">
           <div className="mx-4">
             <TopSearchPanel categoryKey={null} categoryName={null} />
             <TopSearchPanelMobile

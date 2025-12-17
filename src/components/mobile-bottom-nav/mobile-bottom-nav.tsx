@@ -14,6 +14,15 @@ const navItems = [
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+
+  const nonHomePaths = [
+    '/favorites',
+    '/personal/my-adds',
+    '/chats',
+    '/personal/profile',
+  ];
+  const isHomeActive = pathname === '/' || !nonHomePaths.includes(pathname);
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden z-50 shadow-md h-12"
@@ -21,7 +30,7 @@ export default function MobileBottomNav() {
     >
       <div className="flex h-full">
         {navItems.map(({ href, Icon, label }) => {
-          const isActive = pathname === href;
+          const isActive = href === '/' ? isHomeActive : pathname === href;
           const colorClass = isActive ? 'text-violet-500' : 'text-neutral-400';
           return (
             <Link

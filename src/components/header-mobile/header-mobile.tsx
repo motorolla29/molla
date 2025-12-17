@@ -14,25 +14,25 @@ export default function HeaderMobile() {
 
   return (
     <div className="w-full lg:hidden sticky top-0 z-10 bg-neutral-100 h-12">
-      <div className="container px-4 mx-auto h-12 flex items-center justify-between">
+      <div className="container px-4 mx-auto flex items-center justify-between">
         {/* Левая кнопка: выбор города */}
         <button
           onClick={() => setShowLocationModal(true)}
-          className="flex items-center flex-shrink-0 text-neutral-500 hover:opacity-80 cursor-pointer"
+          className="flex items-center shrink-0 text-neutral-500 hover:opacity-80 cursor-pointer"
         >
-          <MapPinIcon className="h-5 w-5 flex-shrink-0" />
+          <MapPinIcon className="h-5 w-5 shrink-0" />
           <span className="ml-1 leading-none min-w-0 max-w-[200px] truncate font-light text-md">
             {cityName || 'Город'}
           </span>
         </button>
 
         {/* уведомления */}
-        <div className="flex items-center flex-shrink-0 gap-3">
+        <div className="flex items-center shrink-0 gap-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="h-12 w-12 fill-neutral-500 cursor-pointer hover:opacity-80 flex-shrink-0 p-2"
+            className="h-12 w-12 fill-neutral-500 cursor-pointer hover:opacity-80 shrink-0 p-2"
           >
             <path
               fillRule="evenodd"

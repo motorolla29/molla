@@ -9,7 +9,13 @@ export async function POST(request: NextRequest) {
     const { email, name, password, city, isRegistration } =
       await request.json();
 
-    if (!email || !email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+    // Нормализуем email к нижнему регистру
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (
+      !normalizedEmail ||
+      !normalizedEmail.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+    ) {
       return NextResponse.json(
         { error: 'Некорректный email адрес' },
         { status: 400 }
@@ -23,7 +29,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 минут
 
     if (isRegistration) {
-      // Регистрация - проверяем, что email не занят
+      // Регистрация - проверяем, что normalizedEmail не занят
       if (!name || name.trim() === '') {
         return NextResponse.json(
           { error: 'Имя обязательно для регистрации' },
@@ -39,7 +45,7 @@ export async function POST(request: NextRequest) {
       }
 
       const existingUser = await prisma.seller.findUnique({
-        where: { email },
+        where: { email: normalizedEmail },
       });
 
       if (existingUser) {
@@ -54,7 +60,7 @@ export async function POST(request: NextRequest) {
 
       // Сохраняем данные регистрации в Redis
       await registrationCache.set(
-        email,
+        normalizedEmail,
         {
           name: name.trim(),
           password: hashedPassword,
@@ -67,7 +73,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Вход - проверяем, что пользователь существует
       const user = await prisma.seller.findUnique({
-        where: { email },
+        where: { email: normalizedEmail },
       });
 
       if (!user) {
@@ -78,14 +84,17 @@ export async function POST(request: NextRequest) {
       }
 
       // Сохраняем код верификации в Redis для входа
-      await registrationCache.set(email, {
+      await registrationCache.set(normalizedEmail, {
         verificationCode,
         verificationCodeExpires: expiresAt.toISOString(),
       });
     }
 
-    // Отправляем email
-    const emailSent = await sendVerificationCode(email, verificationCode);
+    // Отправляем normalizedEmail
+    const emailSent = await sendVerificationCode(
+      normalizedEmail,
+      verificationCode
+    );
 
     if (!emailSent) {
       return NextResponse.json(

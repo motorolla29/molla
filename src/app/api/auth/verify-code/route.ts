@@ -7,7 +7,10 @@ export async function POST(request: NextRequest) {
   try {
     const { email, code, isRegistration } = await request.json();
 
-    if (!email || !code || code.length !== 6) {
+    // Нормализуем email к нижнему регистру для нечувствительности к регистру
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (!normalizedEmail || !code || code.length !== 6) {
       return NextResponse.json(
         { error: 'Некорректные данные' },
         { status: 400 }
@@ -18,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (isRegistration) {
       // Регистрация - проверяем данные в Redis
-      const tempData = await registrationCache.get(email);
+      const tempData = await registrationCache.get(normalizedEmail);
 
       if (!tempData) {
         console.log('No temp data found in Redis');
@@ -41,7 +44,7 @@ export async function POST(request: NextRequest) {
 
       // Проверяем срок действия кода
       if (new Date(tempData.verificationCodeExpires) < new Date()) {
-        await registrationCache.delete(email);
+        await registrationCache.delete(normalizedEmail);
         return NextResponse.json(
           { error: 'Код подтверждения истек' },
           { status: 400 }
@@ -62,17 +65,17 @@ export async function POST(request: NextRequest) {
         data: {
           id: nextId,
           name: tempData.name,
-          email: email, // Используем email из параметра запроса
+          email: normalizedEmail, // Сохраняем нормализованный email
           password: tempData.password,
           city: tempData.city,
         },
       });
 
       // Удаляем временные данные из Redis
-      await registrationCache.delete(email);
+      await registrationCache.delete(normalizedEmail);
     } else {
       // Вход - проверяем данные в Redis
-      const tempData = await registrationCache.get(email);
+      const tempData = await registrationCache.get(normalizedEmail);
 
       if (!tempData) {
         console.log('No temp data found in Redis for login');
@@ -95,7 +98,7 @@ export async function POST(request: NextRequest) {
 
       // Проверяем срок действия кода
       if (new Date(tempData.verificationCodeExpires) < new Date()) {
-        await registrationCache.delete(email);
+        await registrationCache.delete(normalizedEmail);
         return NextResponse.json(
           { error: 'Код подтверждения истек' },
           { status: 400 }
@@ -104,11 +107,11 @@ export async function POST(request: NextRequest) {
 
       // Находим пользователя в БД
       user = await prisma.seller.findUnique({
-        where: { email },
+        where: { email: normalizedEmail },
       });
 
       if (!user) {
-        await registrationCache.delete(email);
+        await registrationCache.delete(normalizedEmail);
         return NextResponse.json(
           { error: 'Пользователь не найден' },
           { status: 404 }
@@ -116,7 +119,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Удаляем временные данные из Redis
-      await registrationCache.delete(email);
+      await registrationCache.delete(normalizedEmail);
     }
 
     // Генерируем JWT токен
