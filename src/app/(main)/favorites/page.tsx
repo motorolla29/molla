@@ -1,47 +1,55 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { AdBase } from '@/types/ad';
 import FavoriteAdsList from '@/components/favorite-ads-list/favorite-ads-list';
 
 export default function FavoritesPage() {
-  const router = useRouter();
-  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const favoritesFromStore = useFavoritesStore((s) => s.favorites);
 
   // Локальная копия избранных объявлений - инициализируется только при первой загрузке
   const [favoritesSnapshot, setFavoritesSnapshot] = useState<AdBase[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [hasCheckedInitialData, setHasCheckedInitialData] = useState(false);
 
-  // При загрузке — если не в системе, идём на /auth
-  useEffect(() => {
-    if (!isLoggedIn) {
-      router.replace('/auth');
-    }
-  }, [isLoggedIn, router]);
+  // Определяем состояние загрузки
+  const isLoading = !isInitialized && !hasCheckedInitialData;
 
-  // Инициализируем локальную копию избранных только при первом рендере страницы
+  // Инициализируем локальную копию - проверяем данные сразу и через небольшую задержку
   useEffect(() => {
-    if (favoritesSnapshot.length === 0 && favoritesFromStore.length > 0) {
+    // Проверяем данные сразу (для persist состояния)
+    if (favoritesFromStore.length > 0 && !isInitialized) {
       setFavoritesSnapshot([...favoritesFromStore]);
+      setIsInitialized(true);
+      setHasCheckedInitialData(true);
+      return;
     }
-  }, []); // Пустой массив зависимостей - выполняется только при первом рендере
 
-  // Пока идёт проверка auth, можно ничего не рендерить
-  if (!isLoggedIn) return null;
+    // Если данных нет сразу, ждем небольшую задержку и считаем инициализацию завершенной
+    const timer = setTimeout(() => {
+      if (!isInitialized) {
+        setFavoritesSnapshot([...favoritesFromStore]); // Может быть пустым массивом
+        setIsInitialized(true);
+      }
+      setHasCheckedInitialData(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [favoritesFromStore, isInitialized]);
 
   return (
     <Suspense>
       <div className="container text-neutral-800 mx-auto px-4">
-        <h1 className="relative text-xl w-fit sm:text-2xl font-medium mt-4 mb-6">
-          Избранное
-          <span className="absolute text-sm sm:text-lg font-bold text-neutral-500 -right-3 sm:-right-4 top-0">
-            {favoritesSnapshot.length}
-          </span>
+        <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-medium mt-4 mb-6">
+          <span>Избранное</span>
+          {!isLoading && (
+            <span className="text-xs sm:text-sm font-bold text-neutral-500 ml-2">
+              {favoritesSnapshot.length}
+            </span>
+          )}
         </h1>
-        <FavoriteAdsList ads={favoritesSnapshot} />
+        <FavoriteAdsList ads={favoritesSnapshot} isLoading={isLoading} />
       </div>
     </Suspense>
   );

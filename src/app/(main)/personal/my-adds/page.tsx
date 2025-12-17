@@ -81,9 +81,9 @@ export default function MyAddsPage() {
             <div className="h-7 bg-gray-200 rounded w-44 animate-pulse"></div>
           </div>
         ) : (
-          <h1 className="relative text-lg sm:text-xl w-fit font-medium mb-4 lg:hidden">
-            Мои объявления
-            <span className="absolute text-xs sm:text-sm font-bold text-neutral-500 -right-4 top-0">
+          <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-medium mb-4 lg:hidden">
+            <span>Мои объявления</span>
+            <span className="text-xs sm:text-sm font-bold text-neutral-500 ml-2">
               {ads.length}
             </span>
           </h1>

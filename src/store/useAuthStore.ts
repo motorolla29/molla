@@ -37,11 +37,25 @@ export const useAuthStore = create<AuthState>()(
           await useFavoritesStore.getState().migrateFromLocalStorage();
         });
       },
-      logout: () => {
+      logout: async () => {
         // Очищаем localStorage при выходе
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth-storage');
+          localStorage.removeItem('favorites-storage');
         }
+
+        // Очищаем состояние избранного
+        import('./useFavoritesStore').then(({ useFavoritesStore }) => {
+          useFavoritesStore.getState().clearLocalFavorites();
+        });
+
+        // Очищаем cookies
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+          console.error('Ошибка при выходе:', error);
+        }
+
         set({ isLoggedIn: false, user: null, token: null });
       },
       setUser: (user) => set((state) => ({ ...state, user })),
@@ -83,6 +97,10 @@ export const useAuthStore = create<AuthState>()(
           import('./useFavoritesStore').then(({ useFavoritesStore }) => {
             useFavoritesStore.getState().loadFavorites();
           });
+        } else {
+          // Если токена нет, просто сбрасываем состояние авторизации
+          // НЕ очищаем избранное - оно должно сохраняться для неавторизованных пользователей
+          set({ isLoggedIn: false, user: null, token: null });
         }
       },
     }),

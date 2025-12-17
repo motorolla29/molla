@@ -125,7 +125,8 @@ export async function POST(request: NextRequest) {
       email: user.email,
     });
 
-    return NextResponse.json({
+    // Создаем response с токеном в cookies
+    const response = NextResponse.json({
       user: {
         id: user.id,
         name: user.name,
@@ -137,6 +138,17 @@ export async function POST(request: NextRequest) {
       },
       token,
     });
+
+    // Устанавливаем токен в httpOnly cookie для безопасности
+    response.cookies.set('token', token, {
+      httpOnly: true, // Защищает от XSS атак
+      secure: process.env.NODE_ENV === 'production', // Только HTTPS в продакшене
+      sameSite: 'lax', // Защита от CSRF
+      maxAge: 60 * 60 * 24 * 7, // 7 дней
+      path: '/', // Доступен для всего сайта
+    });
+
+    return response;
   } catch (error) {
     console.error('Verify code error:', error);
     return NextResponse.json(

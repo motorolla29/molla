@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import Link from 'next/link';
 import { User, List, ArrowLeft } from 'lucide-react';
@@ -13,15 +13,12 @@ const navItems = [
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { isLoggedIn } = useAuthStore();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn) {
-      // Сохраняем текущий путь для перенаправления после авторизации
-      const redirectUrl = encodeURIComponent(pathname);
-      router.replace(`/auth?redirect=${redirectUrl}`);
+      router.replace('/auth');
       return;
     }
 
@@ -38,13 +35,13 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
       {/* Header с кнопкой назад */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 lg:px-6">
         <div className="flex items-center">
-          <button
-            onClick={() => router.push('/')}
+          <Link
+            href="/"
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft size={20} className="mr-2" />
             <span className="text-sm font-medium">На главную</span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -54,28 +51,19 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
           <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)]">
             <nav className="p-4">
               <div className="space-y-1">
-                {navItems.map(({ href, Icon, label }) => {
-                  const isActive = pathname === href;
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        isActive
-                          ? 'bg-violet-50 text-violet-700'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
-                    >
-                      <Icon
-                        size={18}
-                        className={`mr-3 transition-colors ${
-                          isActive ? 'text-violet-700' : 'text-gray-400'
-                        }`}
-                      />
-                      {label}
-                    </Link>
-                  );
-                })}
+                {navItems.map(({ href, Icon, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  >
+                    <Icon
+                      size={18}
+                      className="mr-3 transition-colors text-gray-400"
+                    />
+                    {label}
+                  </Link>
+                ))}
               </div>
             </nav>
           </aside>
