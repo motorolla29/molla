@@ -295,7 +295,7 @@ export function EditProfileModal({
     <div className="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-white rounded-2xl max-w-2xl w-full max-h-[calc(100vh-6rem)] overflow-y-auto shadow-2xl"
       >
         <div className="p-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-6">
