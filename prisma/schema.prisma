@@ -24,6 +24,9 @@ model Seller {
   // Связь с объявлениями
   ads        Ad[]
 
+  // Связь с избранным
+  favorites  Favorite[]
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -52,6 +55,9 @@ model Ad {
   sellerId    Int
   seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 
+  // Связь с избранным
+  favorites   Favorite[]
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -70,4 +76,20 @@ enum Currency {
   RUB
   USD
   EUR
+}
+
+// Модель избранного
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  sellerId  Int
+  adId      String
+
+  // Связи
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([sellerId, adId]) // Один пользователь может добавить объявление в избранное только один раз
+  @@map("favorites")
 }

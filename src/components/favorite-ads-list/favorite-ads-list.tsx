@@ -1,3 +1,4 @@
+import { memo, useState, useEffect } from 'react';
 import { AdBase } from '@/types/ad';
 import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 
@@ -5,7 +6,17 @@ interface FavoriteAdsListProps {
   ads: AdBase[];
 }
 
-export default function FavoriteAdsList({ ads }: FavoriteAdsListProps) {
+const FavoriteAdsList = ({ ads }: FavoriteAdsListProps) => {
+  // Локальная копия списка для избранного - не меняется до перезагрузки страницы
+  const [localAds, setLocalAds] = useState<AdBase[]>([]);
+
+  useEffect(() => {
+    // Инициализируем локальную копию только при первом рендере или изменении ads
+    if (localAds.length === 0 && ads.length > 0) {
+      setLocalAds([...ads]);
+    }
+  }, [ads, localAds.length]);
+
   return (
     <>
       {ads.length === 0 ? (
@@ -29,4 +40,6 @@ export default function FavoriteAdsList({ ads }: FavoriteAdsListProps) {
       )}
     </>
   );
-}
+};
+
+export default FavoriteAdsList;

@@ -1,19 +1,248 @@
 // store/useFavoritesStore.ts
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { AdBase } from '@/types/ad';
-import { mockAds } from '@/data/mockAds';
+import { useAuthStore } from './useAuthStore';
 
 interface FavoritesState {
   favorites: AdBase[];
-  addFavorite: (ad: AdBase) => void;
-  removeFavorite: (id: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  favoriteIds: Set<string>; // Для быстрой проверки
+  loadFavorites: () => Promise<void>;
+  addFavorite: (ad: AdBase) => Promise<void>;
+  removeFavorite: (adId: string, skipStateUpdate?: boolean) => Promise<void>;
+  isFavorite: (adId: string) => boolean;
+  toggleFavorite: (ad: AdBase) => Promise<void>;
+  clearError: () => void;
+  migrateFromLocalStorage: () => Promise<void>; // Перенос из localStorage при авторизации
+  clearLocalFavorites: () => void; // Очистка локального состояния
 }
 
-export const useFavoritesStore = create<FavoritesState>((set) => ({
-  favorites: [],
-  addFavorite: (ad) => set((s) => ({ favorites: [...s.favorites, ad] })),
-  removeFavorite: (id) =>
-    set((s) => ({
-      favorites: s.favorites.filter((ad) => ad.id !== id),
-    })),
-}));
+export const useFavoritesStore = create<FavoritesState>()(
+  persist(
+    (set, get) => ({
+      favorites: [],
+      isLoading: false,
+      error: null,
+      favoriteIds: new Set(),
+
+      loadFavorites: async () => {
+        const { token } = useAuthStore.getState();
+        if (!token) return;
+
+        set({ isLoading: true, error: null });
+
+        try {
+          const response = await fetch('/api/favorites', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Не удалось загрузить избранное');
+          }
+
+          const data = await response.json();
+          const favorites: AdBase[] = data.favorites || [];
+          const favoriteIds = new Set(favorites.map((ad) => ad.id));
+
+          set({
+            favorites,
+            favoriteIds,
+            isLoading: false,
+          });
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Ошибка загрузки',
+            isLoading: false,
+          });
+        }
+      },
+
+      addFavorite: async (ad: AdBase) => {
+        const { token } = useAuthStore.getState();
+        const { favoriteIds, favorites } = get();
+
+        // Для авторизованных пользователей - синхронизация с API
+        if (token) {
+          set({ isLoading: true, error: null });
+
+          try {
+            const response = await fetch('/api/favorites', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ adId: ad.id }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(
+                errorData.error || 'Не удалось добавить в избранное'
+              );
+            }
+
+            const newFavoriteIds = new Set(favoriteIds);
+            newFavoriteIds.add(ad.id);
+
+            set({
+              favorites: [...favorites, ad],
+              favoriteIds: newFavoriteIds,
+              isLoading: false,
+            });
+          } catch (error) {
+            set({
+              error:
+                error instanceof Error ? error.message : 'Ошибка добавления',
+              isLoading: false,
+            });
+            throw error;
+          }
+        } else {
+          // Для неавторизованных пользователей - только localStorage
+          const newFavoriteIds = new Set(favoriteIds);
+          newFavoriteIds.add(ad.id);
+
+          set({
+            favorites: [...favorites, ad],
+            favoriteIds: newFavoriteIds,
+          });
+        }
+      },
+
+      removeFavorite: async (adId: string, skipStateUpdate = false) => {
+        const { token } = useAuthStore.getState();
+        const { favoriteIds, favorites } = get();
+
+        // Для авторизованных пользователей - синхронизация с API
+        if (token) {
+          set({ isLoading: true, error: null });
+
+          try {
+            const response = await fetch(`/api/favorites?adId=${adId}`, {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(
+                errorData.error || 'Не удалось удалить из избранного'
+              );
+            }
+
+            // Обновляем состояние только если не пропущено
+            if (!skipStateUpdate) {
+              const newFavoriteIds = new Set(favoriteIds);
+              newFavoriteIds.delete(adId);
+
+              set({
+                favorites: favorites.filter((ad) => ad.id !== adId),
+                favoriteIds: newFavoriteIds,
+                isLoading: false,
+              });
+            } else {
+              set({ isLoading: false });
+            }
+          } catch (error) {
+            set({
+              error: error instanceof Error ? error.message : 'Ошибка удаления',
+              isLoading: false,
+            });
+            throw error;
+          }
+        } else {
+          // Для неавторизованных пользователей - только localStorage
+          const newFavoriteIds = new Set(favoriteIds);
+          newFavoriteIds.delete(adId);
+
+          set({
+            favorites: favorites.filter((ad) => ad.id !== adId),
+            favoriteIds: newFavoriteIds,
+          });
+        }
+      },
+
+      isFavorite: (adId: string) => {
+        return get().favoriteIds.has(adId);
+      },
+
+      toggleFavorite: async (ad: AdBase) => {
+        const { isFavorite, addFavorite, removeFavorite } = get();
+
+        if (isFavorite(ad.id)) {
+          await removeFavorite(ad.id);
+        } else {
+          await addFavorite(ad);
+        }
+      },
+
+      migrateFromLocalStorage: async () => {
+        const { token } = useAuthStore.getState();
+        if (!token) return;
+
+        const { favorites } = get();
+        if (favorites.length === 0) return;
+
+        try {
+          // Отправляем все локальные избранные в базу данных
+          const promises = favorites.map(async (ad) => {
+            const response = await fetch('/api/favorites', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ adId: ad.id }),
+            });
+
+            if (!response.ok) {
+              console.warn(`Не удалось мигрировать объявление ${ad.id}`);
+            }
+          });
+
+          await Promise.all(promises);
+
+          // После успешной миграции загружаем актуальные данные из базы
+          await get().loadFavorites();
+        } catch (error) {
+          console.error('Ошибка миграции избранного:', error);
+        }
+      },
+
+      clearLocalFavorites: () => {
+        set({
+          favorites: [],
+          favoriteIds: new Set(),
+        });
+      },
+
+      clearError: () => set({ error: null }),
+    }),
+    {
+      name: 'favorites-storage',
+      // Сохраняем только локальные данные
+      partialize: (state) => ({
+        favorites: state.favorites,
+        favoriteIds: Array.from(state.favoriteIds), // Set не сериализуется, конвертируем в массив
+      }),
+      // При восстановлении конвертируем массив обратно в Set
+      onRehydrateStorage: () => (state) => {
+        if (state && Array.isArray(state.favoriteIds)) {
+          // Фильтруем только строковые значения для безопасности типов
+          state.favoriteIds = new Set(
+            state.favoriteIds.filter(
+              (id): id is string => typeof id === 'string'
+            )
+          );
+        }
+      },
+    }
+  )
+);

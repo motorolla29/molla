@@ -48,9 +48,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Находим максимальный ID среди существующих пользователей
+      const maxUser = await prisma.seller.findFirst({
+        orderBy: { id: 'desc' },
+        select: { id: true },
+      });
+
+      // Начальный ID для новых пользователей - 10000
+      const nextId = Math.max((maxUser?.id || 0) + 1, 10000);
+
       // Создаем пользователя в БД
       user = await prisma.seller.create({
         data: {
+          id: nextId,
           name: tempData.name,
           email: email, // Используем email из параметра запроса
           password: tempData.password,

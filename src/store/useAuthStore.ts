@@ -18,7 +18,9 @@ interface AuthState {
   login: (user: User, token: string) => void;
   logout: () => void;
   setUser: (user: User) => void;
-  updateUser: (updates: Partial<User> & { verificationCode?: string }) => Promise<void>;
+  updateUser: (
+    updates: Partial<User> & { verificationCode?: string }
+  ) => Promise<void>;
   initialize: () => void;
 }
 
@@ -28,7 +30,13 @@ export const useAuthStore = create<AuthState>()(
       isLoggedIn: false,
       user: null,
       token: null,
-      login: (user, token) => set({ isLoggedIn: true, user, token }),
+      login: (user, token) => {
+        set({ isLoggedIn: true, user, token });
+        // Переносим локальные избранные в базу данных и загружаем актуальные данные
+        import('./useFavoritesStore').then(async ({ useFavoritesStore }) => {
+          await useFavoritesStore.getState().migrateFromLocalStorage();
+        });
+      },
       logout: () => {
         // Очищаем localStorage при выходе
         if (typeof window !== 'undefined') {
@@ -47,7 +55,7 @@ export const useAuthStore = create<AuthState>()(
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(updates),
         });
@@ -71,6 +79,10 @@ export const useAuthStore = create<AuthState>()(
           // Здесь можно добавить проверку валидности токена через API
           // Пока просто проверяем наличие токена
           set({ isLoggedIn: true });
+          // Загружаем избранное при инициализации
+          import('./useFavoritesStore').then(({ useFavoritesStore }) => {
+            useFavoritesStore.getState().loadFavorites();
+          });
         }
       },
     }),

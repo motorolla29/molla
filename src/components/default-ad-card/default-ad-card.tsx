@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { AdBase } from '@/types/ad';
+import FavoriteButton from '../favorite-button/favorite-button';
 
 interface DefaultAdCardProps {
   ad: AdBase;
@@ -27,9 +28,11 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       </div>
 
       {/* Основная информация */}
-      <div className="flex-1 flex-col justify-between ml-3 sm:ml-4">
+      <div className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative">
+        {/* Кнопка избранного */}
+        <FavoriteButton ad={ad} className="absolute top-0 right-0" />
         <div>
-          <h2 className="text-base sm:text-lg font-semibold line-clamp-2 hover:text-violet-400">
+          <h2 className="text-base sm:text-lg font-semibold line-clamp-2 hover:text-violet-400 pr-8 leading-tight">
             {ad.title}
           </h2>
           <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-3">
