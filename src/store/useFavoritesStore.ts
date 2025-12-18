@@ -28,16 +28,14 @@ export const useFavoritesStore = create<FavoritesState>()(
       favoriteIds: new Set(),
 
       loadFavorites: async () => {
-        const { token } = useAuthStore.getState();
-        if (!token) return;
+        const { isLoggedIn } = useAuthStore.getState();
+        if (!isLoggedIn) return;
 
         set({ isLoading: true, error: null });
 
         try {
           const response = await fetch('/api/favorites', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: {},
           });
 
           if (!response.ok) {
@@ -62,11 +60,11 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       addFavorite: async (ad: AdBase) => {
-        const { token } = useAuthStore.getState();
+        const { isLoggedIn } = useAuthStore.getState();
         const { favoriteIds, favorites } = get();
 
         // Для авторизованных пользователей - синхронизация с API
-        if (token) {
+        if (isLoggedIn) {
           set({ isLoading: true, error: null });
 
           try {
@@ -74,7 +72,6 @@ export const useFavoritesStore = create<FavoritesState>()(
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ adId: ad.id }),
             });
@@ -115,19 +112,17 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       removeFavorite: async (adId: string, skipStateUpdate = false) => {
-        const { token } = useAuthStore.getState();
+        const { isLoggedIn } = useAuthStore.getState();
         const { favoriteIds, favorites } = get();
 
         // Для авторизованных пользователей - синхронизация с API
-        if (token) {
+        if (isLoggedIn) {
           set({ isLoading: true, error: null });
 
           try {
             const response = await fetch(`/api/favorites?adId=${adId}`, {
               method: 'DELETE',
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: {},
             });
 
             if (!response.ok) {
@@ -184,8 +179,8 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       migrateFromLocalStorage: async () => {
-        const { token } = useAuthStore.getState();
-        if (!token) return;
+        const { isLoggedIn } = useAuthStore.getState();
+        if (!isLoggedIn) return;
 
         const { favorites } = get();
         if (favorites.length === 0) return;
@@ -197,7 +192,6 @@ export const useFavoritesStore = create<FavoritesState>()(
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ adId: ad.id }),
             });

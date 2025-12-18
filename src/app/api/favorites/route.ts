@@ -7,12 +7,12 @@ const prisma = new PrismaClient();
 // GET /api/favorites - получить список избранных объявлений пользователя
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Получаем токен из httpOnly cookies
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const token = authHeader.substring(7);
     const payload = verifyToken(token);
 
     if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
@@ -77,12 +77,12 @@ export async function GET(request: NextRequest) {
 // POST /api/favorites - добавить объявление в избранное
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Получаем токен из httpOnly cookies
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const token = authHeader.substring(7);
     const payload = verifyToken(token);
 
     if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
@@ -151,12 +151,12 @@ export async function POST(request: NextRequest) {
 // DELETE /api/favorites - удалить объявление из избранного
 export async function DELETE(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Получаем токен из httpOnly cookies
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const token = authHeader.substring(7);
     const payload = verifyToken(token);
 
     if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
