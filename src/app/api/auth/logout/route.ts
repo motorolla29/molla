@@ -7,7 +7,7 @@ export async function POST() {
 
     // Удаляем токен из cookies
     response.cookies.set('token', '', {
-      httpOnly: true,
+      httpOnly: true, // Должен соответствовать настройкам при установке
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 0, // Устанавливаем maxAge в 0 для удаления

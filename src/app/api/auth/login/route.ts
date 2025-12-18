@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user: {
         id: user.id,
         name: user.name,
@@ -55,6 +55,17 @@ export async function POST(request: NextRequest) {
       },
       token,
     });
+
+    // Устанавливаем токен в httpOnly cookie для middleware (клиент не может читать для безопасности)
+    response.cookies.set('token', token, {
+      httpOnly: true, // Защищает от XSS атак
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 86400, // 24 часа
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

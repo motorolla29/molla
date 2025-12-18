@@ -35,11 +35,10 @@ export default function AuthPage() {
   const [resendTimer, setResendTimer] = useState(0);
 
   useEffect(() => {
-    initialize();
     if (isLoggedIn) {
       router.replace(redirectTo);
     }
-  }, [isLoggedIn, router, initialize, redirectTo]);
+  }, [isLoggedIn, router, redirectTo]);
 
   // Таймер для повторной отправки кода
   useEffect(() => {
@@ -55,7 +54,16 @@ export default function AuthPage() {
       errs.email = 'Некорректный email';
     if (password.length < 6) errs.password = 'Не менее 6 символов';
     if (mode === 'register') {
-      if (name.trim() === '') errs.name = 'Укажите имя';
+      const trimmedName = name.trim();
+      if (trimmedName === '') {
+        errs.name = 'Укажите имя';
+      } else {
+        // Имя должно быть минимум из 2 букв (латиница или кириллица)
+        const lettersMatch = trimmedName.match(/[A-Za-zА-Яа-яЁё]/g);
+        if (!lettersMatch || lettersMatch.length < 2) {
+          errs.name = 'Имя должно содержать минимум 2 буквы';
+        }
+      }
       if (confirm !== password) errs.confirm = 'Пароли не совпадают';
     }
     return errs;
@@ -89,7 +97,7 @@ export default function AuthPage() {
         }
 
         login(data.user, data.token);
-        router.replace('/');
+        router.replace(redirectTo);
       } catch (error) {
         setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
       } finally {
@@ -157,7 +165,7 @@ export default function AuthPage() {
       }
 
       login(data.user, data.token);
-      router.replace('/');
+      router.replace(redirectTo);
     } catch (error) {
       setErrors({ code: 'Ошибка сети. Попробуйте позже.' });
     } finally {

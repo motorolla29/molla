@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { verifyToken } from './src/lib/jwt';
 
 export function middleware(request: NextRequest) {
-  // Защищенные маршруты (только personal страницы)
+  // Защищенные маршруты
   const protectedRoutes = ['/personal/my-adds', '/personal/profile'];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
@@ -11,47 +11,49 @@ export function middleware(request: NextRequest) {
   );
 
   if (isProtectedRoute) {
-    // Получаем токен из cookies (предполагаем, что он там есть)
+    // Получаем токен из cookies
     const token = request.cookies.get('token')?.value;
+    console.log(
+      'Middleware: checking route',
+      request.nextUrl.pathname,
+      'has token:',
+      !!token
+    );
 
     if (!token) {
-      // Если токена нет, перенаправляем на страницу авторизации
-      return NextResponse.redirect(new URL('/auth', request.url));
+      console.log('Middleware: no token, redirecting to auth');
+      // Если токена нет, перенаправляем на авторизацию с сохранением URL
+      const authUrl = new URL('/auth', request.url);
+      authUrl.searchParams.set(
+        'redirect',
+        request.nextUrl.pathname + request.nextUrl.search
+      );
+      return NextResponse.redirect(authUrl);
     }
 
     try {
       // Проверяем валидность токена
       const payload = verifyToken(token);
       if (!payload) {
+        console.log('Middleware: invalid token, redirecting to auth');
         // Если токен невалидный, перенаправляем на авторизацию
-        return NextResponse.redirect(new URL('/auth', request.url));
+        const authUrl = new URL('/auth', request.url);
+        authUrl.searchParams.set(
+          'redirect',
+          request.nextUrl.pathname + request.nextUrl.search
+        );
+        return NextResponse.redirect(authUrl);
       }
+      console.log('Middleware: valid token, allowing access');
     } catch (error) {
-      // Если произошла ошибка при проверке токена, перенаправляем на авторизацию
-      return NextResponse.redirect(new URL('/auth', request.url));
-    }
-  }
-
-  // Публичные маршруты, которые не должны быть доступны авторизованным пользователям
-  const authRoutes = ['/auth'];
-  const isAuthRoute = authRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
-
-  if (isAuthRoute) {
-    // Проверяем, авторизован ли пользователь
-    const token = request.cookies.get('token')?.value;
-
-    if (token) {
-      try {
-        const payload = verifyToken(token);
-        if (payload) {
-          // Если пользователь авторизован, перенаправляем на главную
-          return NextResponse.redirect(new URL('/', request.url));
-        }
-      } catch (error) {
-        // Токен невалидный, продолжаем на страницу авторизации
-      }
+      console.log('Middleware: token error, redirecting to auth');
+      // Если ошибка при проверке токена, перенаправляем на авторизацию
+      const authUrl = new URL('/auth', request.url);
+      authUrl.searchParams.set(
+        'redirect',
+        request.nextUrl.pathname + request.nextUrl.search
+      );
+      return NextResponse.redirect(authUrl);
     }
   }
 

@@ -18,8 +18,10 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Для client-side navigation проверяем авторизацию
     if (!isLoggedIn) {
-      router.replace('/auth');
+      const currentPath = window.location.pathname + window.location.search;
+      router.replace(`/auth?redirect=${encodeURIComponent(currentPath)}`);
       return;
     }
 
@@ -29,7 +31,17 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', checkMobile);
   }, [isLoggedIn, router]);
 
-  if (!isLoggedIn) return null;
+  // Если не авторизован, показываем loading пока происходит редирект
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500 mx-auto mb-4"></div>
+          <p>Проверка авторизации...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

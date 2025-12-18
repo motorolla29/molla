@@ -14,14 +14,14 @@ interface User {
 interface AuthState {
   isLoggedIn: boolean;
   user: User | null;
-  token: string | null;
   login: (user: User, token: string) => void;
   logout: () => void;
   setUser: (user: User) => void;
   updateUser: (
     updates: Partial<User> & { verificationCode?: string }
   ) => Promise<void>;
-  initialize: () => void;
+  initialize: () => Promise<void>;
+  checkAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -29,15 +29,37 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       isLoggedIn: false,
       user: null,
-      token: null,
-      login: (user, token) => {
-        set({ isLoggedIn: true, user, token });
+      login: (user) => {
+        set({ isLoggedIn: true, user });
+
+        // Токен уже установлен в cookies сервером через API
         // Переносим локальные избранные в базу данных и загружаем актуальные данные
         import('./useFavoritesStore').then(async ({ useFavoritesStore }) => {
           await useFavoritesStore.getState().migrateFromLocalStorage();
         });
       },
+
+      checkAuth: async () => {
+        try {
+          const response = await fetch('/api/auth/check');
+          if (response.ok) {
+            const data = await response.json();
+            set({ isLoggedIn: true, user: data.user });
+          } else {
+            set({ isLoggedIn: false, user: null });
+          }
+        } catch (error) {
+          set({ isLoggedIn: false, user: null });
+        }
+      },
       logout: async () => {
+        // Очищаем cookies
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+          console.error('Ошибка при выходе:', error);
+        }
+
         // Очищаем localStorage при выходе
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth-storage');
@@ -49,27 +71,15 @@ export const useAuthStore = create<AuthState>()(
           useFavoritesStore.getState().clearLocalFavorites();
         });
 
-        // Очищаем cookies
-        try {
-          await fetch('/api/auth/logout', { method: 'POST' });
-        } catch (error) {
-          console.error('Ошибка при выходе:', error);
-        }
-
-        set({ isLoggedIn: false, user: null, token: null });
+        set({ isLoggedIn: false, user: null });
       },
       setUser: (user) => set((state) => ({ ...state, user })),
       updateUser: async (updates) => {
-        const { token } = get();
-        if (!token) {
-          throw new Error('Не авторизован');
-        }
-
+        // Токен берем из cookies на сервере
         const response = await fetch('/api/auth/update-user', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(updates),
         });
@@ -86,30 +96,23 @@ export const useAuthStore = create<AuthState>()(
           user: data.user,
         }));
       },
-      initialize: () => {
-        // Проверяем токен при инициализации
-        const { token } = get();
-        if (token) {
-          // Здесь можно добавить проверку валидности токена через API
-          // Пока просто проверяем наличие токена
-          set({ isLoggedIn: true });
-          // Загружаем избранное при инициализации
+      initialize: async () => {
+        // Проверяем авторизацию через API
+        await get().checkAuth();
+
+        // Если авторизован, загружаем избранное
+        if (get().isLoggedIn) {
           import('./useFavoritesStore').then(({ useFavoritesStore }) => {
             useFavoritesStore.getState().loadFavorites();
           });
-        } else {
-          // Если токена нет, просто сбрасываем состояние авторизации
-          // НЕ очищаем избранное - оно должно сохраняться для неавторизованных пользователей
-          set({ isLoggedIn: false, user: null, token: null });
         }
       },
     }),
     {
       name: 'auth-storage',
-      // Сохраняем только эти поля
+      // Сохраняем только user, токен в httpOnly cookies
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
       }),
     }
   )
