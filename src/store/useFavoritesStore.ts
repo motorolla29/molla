@@ -89,7 +89,9 @@ export const useFavoritesStore = create<FavoritesState>()(
             newFavoriteIds.add(ad.id);
 
             set({
-              favorites: [...favorites, ad],
+              // Для авторизованных также добавляем новое избранное в НАЧАЛО списка,
+              // чтобы порядок на клиенте совпадал с orderBy createdAt DESC на сервере.
+              favorites: [ad, ...favorites],
               favoriteIds: newFavoriteIds,
               isLoading: false,
             });
@@ -107,7 +109,7 @@ export const useFavoritesStore = create<FavoritesState>()(
           newFavoriteIds.add(ad.id);
 
           set({
-            favorites: [...favorites, ad],
+            favorites: [ad, ...favorites],
             favoriteIds: newFavoriteIds,
           });
         }
@@ -185,11 +187,18 @@ export const useFavoritesStore = create<FavoritesState>()(
         if (!isLoggedIn) return;
 
         const { favorites } = get();
-        if (favorites.length === 0) return;
+
+        // Если локальных избранных нет, просто загружаем актуальные данные из базы
+        if (favorites.length === 0) {
+          await get().loadFavorites();
+          return;
+        }
 
         try {
           // Отправляем все локальные избранные в базу данных
-          const promises = favorites.map(async (ad) => {
+          // ВАЖНО: отправляем в ОБРАТНОМ порядке, чтобы при сортировке по createdAt DESC
+          // порядок на сервере совпал с текущим порядком favorites на клиенте.
+          const promises = [...favorites].reverse().map(async (ad) => {
             const response = await fetch('/api/favorites', {
               method: 'POST',
               headers: {
