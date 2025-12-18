@@ -14,6 +14,7 @@ interface User {
 interface AuthState {
   isLoggedIn: boolean;
   user: User | null;
+  isAuthChecking: boolean; // Новое состояние для отслеживания проверки авторизации
   login: (user: User, token: string) => void;
   logout: () => void;
   setUser: (user: User) => void;
@@ -29,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       isLoggedIn: false,
       user: null,
+      isAuthChecking: false,
       login: (user) => {
         set({ isLoggedIn: true, user });
 
@@ -40,16 +42,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
+        set({ isAuthChecking: true });
         try {
           const response = await fetch('/api/auth/check');
           if (response.ok) {
             const data = await response.json();
-            set({ isLoggedIn: true, user: data.user });
+            set({ isLoggedIn: true, user: data.user, isAuthChecking: false });
           } else {
-            set({ isLoggedIn: false, user: null });
+            set({ isLoggedIn: false, user: null, isAuthChecking: false });
           }
         } catch (error) {
-          set({ isLoggedIn: false, user: null });
+          set({ isLoggedIn: false, user: null, isAuthChecking: false });
         }
       },
       logout: async () => {
@@ -114,6 +117,12 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
       }),
+      onRehydrateStorage: () => (state) => {
+        // После восстановления из localStorage сбрасываем isAuthChecking
+        if (state) {
+          state.isAuthChecking = false;
+        }
+      },
     }
   )
 );

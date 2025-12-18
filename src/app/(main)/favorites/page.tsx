@@ -6,37 +6,32 @@ import { AdBase } from '@/types/ad';
 import FavoriteAdsList from '@/components/favorite-ads-list/favorite-ads-list';
 
 export default function FavoritesPage() {
-  const favoritesFromStore = useFavoritesStore((s) => s.favorites);
+  const favorites = useFavoritesStore((s) => s.favorites);
+  const isStoreLoading = useFavoritesStore((s) => s.isLoading);
+  const hasHydrated = useFavoritesStore((s) => s.hasHydrated);
 
-  // Локальная копия избранных объявлений - инициализируется только при первой загрузке
+  // Снэпшот избранных: фиксируем список один раз после первой успешной загрузки/гидрации
   const [favoritesSnapshot, setFavoritesSnapshot] = useState<AdBase[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [hasCheckedInitialData, setHasCheckedInitialData] = useState(false);
+  const [hasSnapshot, setHasSnapshot] = useState(false);
 
-  // Определяем состояние загрузки
-  const isLoading = !isInitialized && !hasCheckedInitialData;
-
-  // Инициализируем локальную копию - проверяем данные сразу и через небольшую задержку
   useEffect(() => {
-    // Проверяем данные сразу (для persist состояния)
-    if (favoritesFromStore.length > 0 && !isInitialized) {
-      setFavoritesSnapshot([...favoritesFromStore]);
-      setIsInitialized(true);
-      setHasCheckedInitialData(true);
-      return;
-    }
+    // Если снэпшот уже зафиксирован – ничего не делаем
+    if (hasSnapshot) return;
+    // Ждём окончания persist‑гидрации
+    if (!hasHydrated) return;
+    // Ждём окончания загрузки из API для авторизованного пользователя
+    if (isStoreLoading) return;
 
-    // Если данных нет сразу, ждем небольшую задержку и считаем инициализацию завершенной
-    const timer = setTimeout(() => {
-      if (!isInitialized) {
-        setFavoritesSnapshot([...favoritesFromStore]); // Может быть пустым массивом
-        setIsInitialized(true);
-      }
-      setHasCheckedInitialData(true);
-    }, 100);
+    // Фиксируем текущее состояние избранных (может быть и пустым массивом)
+    setFavoritesSnapshot([...favorites]);
+    setHasSnapshot(true);
+  }, [favorites, hasHydrated, isStoreLoading, hasSnapshot]);
 
-    return () => clearTimeout(timer);
-  }, [favoritesFromStore, isInitialized]);
+  const adsToRender = hasSnapshot ? favoritesSnapshot : favorites;
+  // Лоадер показываем до появления первого снэпшота:
+  //  - для неавторизованного: пока не завершилась гидрация избранного из localStorage
+  //  - для авторизованного: пока идёт первая загрузка с сервера
+  const isLoading = !hasSnapshot && (!hasHydrated || isStoreLoading);
 
   return (
     <Suspense>
@@ -45,11 +40,11 @@ export default function FavoritesPage() {
           <span>Избранное</span>
           {!isLoading && (
             <span className="text-xs sm:text-sm font-bold text-neutral-500 ml-2">
-              {favoritesSnapshot.length}
+              {adsToRender.length}
             </span>
           )}
         </h1>
-        <FavoriteAdsList ads={favoritesSnapshot} isLoading={isLoading} />
+        <FavoriteAdsList ads={adsToRender} isLoading={isLoading} />
       </div>
     </Suspense>
   );

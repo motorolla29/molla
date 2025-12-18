@@ -9,6 +9,7 @@ interface FavoritesState {
   isLoading: boolean;
   error: string | null;
   favoriteIds: Set<string>; // Для быстрой проверки
+  hasHydrated: boolean; // Флаг окончания гидрации persist
   loadFavorites: () => Promise<void>;
   addFavorite: (ad: AdBase) => Promise<void>;
   removeFavorite: (adId: string, skipStateUpdate?: boolean) => Promise<void>;
@@ -26,6 +27,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       isLoading: false,
       error: null,
       favoriteIds: new Set(),
+      hasHydrated: false,
 
       loadFavorites: async () => {
         const { isLoggedIn } = useAuthStore.getState();
@@ -235,6 +237,11 @@ export const useFavoritesStore = create<FavoritesState>()(
               (id): id is string => typeof id === 'string'
             )
           );
+        }
+
+        // Помечаем, что persist-гидрация завершена
+        if (state) {
+          state.hasHydrated = true;
         }
       },
     }
