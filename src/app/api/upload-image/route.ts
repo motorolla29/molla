@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file');
     const folder =
-      (formData.get('folder') as string | null) || '/molla/ads/uploads';
+      (formData.get('folder') as string | null) || '/molla/mock-photos';
     const fileName =
       (formData.get('fileName') as string | null) || 'ad-image-' + Date.now();
 
@@ -71,9 +71,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Возвращаем только то, что нужно фронту
+    // Возвращаем только имя файла (без полного URL)
     return NextResponse.json({
-      url: data.url as string,
       fileId: data.fileId as string,
       name: data.name as string,
     });

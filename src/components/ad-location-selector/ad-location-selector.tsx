@@ -429,9 +429,13 @@ export default function AdLocationSelector({
       <h2 className="text-base sm:text-lg font-semibold">Локация</h2>
 
       <div>
-        <label className="block text-xs sm:text-sm font-medium mb-1">Город</label>
+        <label className="block text-xs sm:text-sm font-medium mb-1">
+          Город
+        </label>
         <div className="flex items-center justify-between gap-2">
-          <div className="text-sm sm:text-base text-gray-800">{cityName || 'Не выбран'}</div>
+          <div className="text-sm sm:text-base text-gray-800">
+            {cityName || 'Не выбран'}
+          </div>
           <button
             type="button"
             onClick={() => setShowLocationModal(true)}
@@ -469,7 +473,9 @@ export default function AdLocationSelector({
                 onClick={() => handleAddressSuggestionSelect(suggestion)}
                 className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
               >
-                <span className="text-sm sm:text-base text-gray-900">{suggestion.text}</span>
+                <span className="text-sm sm:text-base text-gray-900">
+                  {suggestion.text}
+                </span>
               </button>
             ))}
           </div>
@@ -505,10 +511,9 @@ export default function AdLocationSelector({
                 }}
               />
               {/* Пин по центру */}
-              {/* Пин по центру */}
               <button
                 onClick={handlePinClick}
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full focus:outline-none focus:ring-2 focus:ring-violet-300 rounded-full z-20"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full focus:outline-none focus:ring-2 focus:ring-violet-300 rounded-full z-1"
                 disabled={isMapOverlayVisible}
               >
                 <div className="w-6 h-6 bg-violet-500 rounded-full border-2 border-white shadow-lg hover:bg-violet-600 transition-colors" />
@@ -524,12 +529,12 @@ export default function AdLocationSelector({
 
         {/* Оверлей с кнопкой "Показать на карте" */}
         {isMapOverlayVisible && (
-          <div className="absolute inset-0 bg-white/50 flex items-end justify-center pb-6 z-30">
+          <div className="absolute inset-0 bg-white/50 flex items-end justify-center pb-6 z-2">
             <button
               onClick={() => setIsMapOverlayVisible(false)}
               className="px-5 py-3 text-xs sm:text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors font-medium shadow-lg"
             >
-              Показать на карте
+              Указать на карте
             </button>
           </div>
         )}

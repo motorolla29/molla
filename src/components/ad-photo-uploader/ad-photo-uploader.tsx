@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 interface UploadedPhoto {
   id: string;
   file: File;
+  previewUrl?: string;
   url?: string;
   status: 'pending' | 'uploading' | 'done' | 'error';
 }
@@ -59,6 +60,19 @@ export default function AdPhotoUploader({
     }));
 
     setPhotos((prev) => [...prev, ...newItems]);
+
+    // Создаем preview URL для каждого файла
+    newItems.forEach((item) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const previewUrl = e.target?.result as string;
+        setPhotos((prev) =>
+          prev.map((p) => (p.id === item.id ? { ...p, previewUrl } : p))
+        );
+      };
+      reader.readAsDataURL(item.file);
+    });
+
     newItems.forEach((item) => uploadPhoto(item));
 
     e.target.value = '';
@@ -73,7 +87,7 @@ export default function AdPhotoUploader({
       const formData = new FormData();
       formData.append('file', item.file);
       formData.append('fileName', item.file.name);
-      formData.append('folder', '/molla/ads');
+      formData.append('folder', '/molla/mock-photos');
 
       const res = await fetch('/api/upload-image', {
         method: 'POST',
@@ -89,7 +103,7 @@ export default function AdPhotoUploader({
       setPhotos((prev) =>
         prev.map((p) =>
           p.id === item.id
-            ? { ...p, status: 'done', url: data.url as string }
+            ? { ...p, status: 'done', url: data.name as string }
             : p
         )
       );
@@ -136,10 +150,13 @@ export default function AdPhotoUploader({
               key={p.id}
               className="relative group rounded-lg overflow-hidden border border-gray-200 bg-gray-50"
             >
-              {p.url ? (
+              {p.previewUrl || p.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={p.url}
+                  src={
+                    p.previewUrl ||
+                    `https://ik.imagekit.io/motorolla29/molla/mock-photos/${p.url}`
+                  }
                   alt={p.file.name}
                   className="w-full h-24 object-cover"
                 />
