@@ -113,7 +113,7 @@ export default function AdPhotoUploader({
         обложка.
       </p>
       <div className="border-2 border-dashed border-violet-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <label className="inline-flex items-center px-4 py-2 rounded-lg bg-violet-500 text-white text-xs sm:text-sm font-medium cursor-pointer hover:bg-violet-600 transition-colors">
+        <label className="inline-flex items-center px-4 py-2 rounded-lg bg-violet-500 text-white text-xs sm:text-sm font-medium cursor-pointer hover:bg-violet-600 transition-colors shrink-0">
           <span className="mr-2 text-lg leading-none">＋</span>
           Выбрать файлы
           <input
@@ -124,7 +124,7 @@ export default function AdPhotoUploader({
             onChange={handleSelectFiles}
           />
         </label>
-        <span className="text-xs sm:text-sm text-gray-500">
+        <span className="text-xs sm:text-sm text-gray-500 min-w-0 flex-1">
           Поддерживаются JPG, PNG, WebP. Максимум {maxPhotos} файлов.
         </span>
       </div>
