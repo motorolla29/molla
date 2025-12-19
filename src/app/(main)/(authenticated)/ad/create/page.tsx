@@ -15,9 +15,7 @@ import AdCategorySelector from '@/components/ad-category-selector/ad-category-se
 
 export default function AddCreatePage() {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuthStore();
-
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { user } = useAuthStore();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -37,16 +35,6 @@ export default function AddCreatePage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Приватность: редирект неавторизованных на /auth
-  useEffect(() => {
-    if (!isLoggedIn) {
-      const currentPath = window.location.pathname + window.location.search;
-      router.replace(`/auth?redirect=${encodeURIComponent(currentPath)}`);
-    } else {
-      setIsCheckingAuth(false);
-    }
-  }, [isLoggedIn, router]);
 
   const isFormValid = useMemo(() => {
     // Проверяем, что выбран хотя бы один доступный контакт
@@ -133,17 +121,6 @@ export default function AddCreatePage() {
       setIsSubmitting(false);
     }
   };
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500 mx-auto mb-4" />
-          <p>Проверка авторизации...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-neutral-800">

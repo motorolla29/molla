@@ -1,8 +1,7 @@
 'use client';
 
 import { ReactNode, useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { User, List, ArrowLeft } from 'lucide-react';
 
@@ -12,36 +11,15 @@ const navItems = [
 ];
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const { isLoggedIn } = useAuthStore();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Для client-side navigation проверяем авторизацию
-    if (!isLoggedIn) {
-      const currentPath = window.location.pathname + window.location.search;
-      router.replace(`/auth?redirect=${encodeURIComponent(currentPath)}`);
-      return;
-    }
-
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [isLoggedIn, router]);
-
-  // Если не авторизован, показываем loading пока происходит редирект
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500 mx-auto mb-4"></div>
-          <p>Проверка авторизации...</p>
-        </div>
-      </div>
-    );
-  }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

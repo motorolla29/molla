@@ -4,7 +4,11 @@ import { verifyToken } from './src/lib/jwt';
 
 export function middleware(request: NextRequest) {
   // Защищенные маршруты
-  const protectedRoutes = ['/personal/my-adds', '/personal/profile'];
+  const protectedRoutes = [
+    '/personal/my-adds',
+    '/personal/profile',
+    '/ad/create',
+  ];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)

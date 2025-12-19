@@ -38,10 +38,10 @@ function convertToAdBase(ad: any): AdBase {
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { adId: string } }
+  { params }: { params: Promise<{ adId: string }> }
 ) {
   try {
-    const { adId } = params;
+    const { adId } = await params;
 
     const ad = await prisma.ad.findUnique({
       where: { id: adId },

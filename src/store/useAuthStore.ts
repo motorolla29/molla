@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       isLoggedIn: false,
       user: null,
-      isAuthChecking: false,
+      isAuthChecking: true, // Начинаем с true, чтобы показать loading
       login: (user) => {
         set({ isLoggedIn: true, user });
 
@@ -118,9 +118,10 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
       }),
       onRehydrateStorage: () => (state) => {
-        // После восстановления из localStorage сбрасываем isAuthChecking
+        // После восстановления из localStorage оставляем isAuthChecking = true,
+        // чтобы AuthInitializer выполнил проверку токена
         if (state) {
-          state.isAuthChecking = false;
+          state.isAuthChecking = true;
         }
       },
     }
