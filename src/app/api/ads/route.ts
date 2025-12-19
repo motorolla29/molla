@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AdBase, CategoryKey, Currency } from '@/types/ad';
+import { verifyToken } from '@/lib/jwt';
 
 // Конвертация Prisma модели в AdBase тип
 function convertToAdBase(ad: any): AdBase {
@@ -152,5 +153,76 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
+      return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
+    }
+
+    const sellerId = Number((payload as any).userId);
+
+    const body = await request.json();
+    const {
+      title,
+      description,
+      category,
+      city,
+      cityLabel,
+      address,
+      lat,
+      lng,
+      price,
+      currency,
+      details,
+      photos,
+    } = body || {};
+
+    if (
+      !title ||
+      !description ||
+      !category ||
+      !city ||
+      !cityLabel ||
+      !address ||
+      typeof lat !== 'number' ||
+      typeof lng !== 'number'
+    ) {
+      return NextResponse.json(
+        { error: 'Отсутствуют обязательные поля' },
+        { status: 400 }
+      );
+    }
+
+    const ad = await prisma.ad.create({
+      data: {
+        title,
+        description,
+        category,
+        city,
+        cityLabel,
+        address,
+        lat,
+        lng,
+        price: typeof price === 'number' ? price : null,
+        currency: currency || null,
+        details: details || '',
+        photos: Array.isArray(photos) ? photos : [],
+        sellerId,
+      },
+    });
+
+    return NextResponse.json({ id: ad.id }, { status: 201 });
+  } catch (error) {
+    console.error('❌ Error creating ad:', error);
+    return NextResponse.json({ error: 'Failed to create ad' }, { status: 500 });
   }
 }

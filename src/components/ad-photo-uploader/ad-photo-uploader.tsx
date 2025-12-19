@@ -1,0 +1,176 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface UploadedPhoto {
+  id: string;
+  file: File;
+  url?: string;
+  status: 'pending' | 'uploading' | 'done' | 'error';
+}
+
+interface AdPhotoUploaderProps {
+  maxPhotos?: number;
+  initialUrls?: string[];
+  onChange?: (urls: string[]) => void;
+}
+
+export default function AdPhotoUploader({
+  maxPhotos = 10,
+  initialUrls = [],
+  onChange,
+}: AdPhotoUploaderProps) {
+  const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
+
+  // Инициализация из уже загруженных URL (например, при редактировании)
+  useEffect(() => {
+    if (initialUrls.length > 0 && photos.length === 0) {
+      const fromUrls: UploadedPhoto[] = initialUrls.map((url, index) => ({
+        id: `initial-${index}-${url}`,
+        file: new File([], `photo-${index}.jpg`),
+        url,
+        status: 'done',
+      }));
+      setPhotos(fromUrls);
+    }
+  }, [initialUrls, photos.length]);
+
+  // Репортим наружу только успешно загруженные URL
+  useEffect(() => {
+    const urls = photos
+      .filter((p) => p.status === 'done' && p.url)
+      .map((p) => p.url!);
+    onChange?.(urls);
+  }, [photos, onChange]);
+
+  const handleSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const remainingSlots = maxPhotos - photos.length;
+    if (remainingSlots <= 0) return;
+
+    const toAdd = files.slice(0, remainingSlots);
+
+    const newItems: UploadedPhoto[] = toAdd.map((file) => ({
+      id: `${file.name}-${file.size}-${file.lastModified}-${Math.random()}`,
+      file,
+      status: 'pending',
+    }));
+
+    setPhotos((prev) => [...prev, ...newItems]);
+    newItems.forEach((item) => uploadPhoto(item));
+
+    e.target.value = '';
+  };
+
+  const uploadPhoto = async (item: UploadedPhoto) => {
+    setPhotos((prev) =>
+      prev.map((p) => (p.id === item.id ? { ...p, status: 'uploading' } : p))
+    );
+
+    try {
+      const formData = new FormData();
+      formData.append('file', item.file);
+      formData.append('fileName', item.file.name);
+      formData.append('folder', '/molla/ads');
+
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Не удалось загрузить файл');
+      }
+
+      const data = await res.json();
+
+      setPhotos((prev) =>
+        prev.map((p) =>
+          p.id === item.id
+            ? { ...p, status: 'done', url: data.url as string }
+            : p
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      setPhotos((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, status: 'error' } : p))
+      );
+    }
+  };
+
+  const handleRemovePhoto = (id: string) => {
+    setPhotos((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  return (
+    <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
+      <h2 className="text-lg font-semibold mb-2">Фотографии</h2>
+      <p className="text-sm text-gray-500 mb-3">
+        Загрузите до {maxPhotos} фотографий. Первая будет использоваться как
+        обложка.
+      </p>
+      <div className="border-2 border-dashed border-violet-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <label className="inline-flex items-center px-4 py-2 rounded-lg bg-violet-500 text-white text-sm font-medium cursor-pointer hover:bg-violet-600 transition-colors">
+          <span className="mr-2 text-lg leading-none">＋</span>
+          Выбрать файлы
+          <input
+            type="file"
+            className="hidden"
+            accept="image/*"
+            multiple
+            onChange={handleSelectFiles}
+          />
+        </label>
+        <span className="text-xs text-gray-500">
+          Поддерживаются JPG, PNG, WebP. Максимум {maxPhotos} файлов.
+        </span>
+      </div>
+
+      {photos.length > 0 && (
+        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+          {photos.map((p) => (
+            <div
+              key={p.id}
+              className="relative group rounded-lg overflow-hidden border border-gray-200 bg-gray-50"
+            >
+              {p.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={p.url}
+                  alt={p.file.name}
+                  className="w-full h-24 object-cover"
+                />
+              ) : (
+                <div className="w-full h-24 flex items-center justify-center text-xs text-gray-400">
+                  {p.status === 'uploading' ? 'Загрузка...' : p.file.name}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => handleRemovePhoto(p.id)}
+                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                ✕
+              </button>
+
+              {p.status === 'uploading' && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-xs text-white">
+                  Загрузка...
+                </div>
+              )}
+              {p.status === 'error' && (
+                <div className="absolute inset-0 bg-red-500/60 flex items-center justify-center text-[10px] text-white text-center px-1">
+                  Ошибка
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
