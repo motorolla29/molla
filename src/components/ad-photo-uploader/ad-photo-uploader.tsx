@@ -107,13 +107,13 @@ export default function AdPhotoUploader({
 
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
-      <h2 className="text-lg font-semibold mb-2">Фотографии</h2>
-      <p className="text-sm text-gray-500 mb-3">
+      <h2 className="text-base sm:text-lg font-semibold mb-2">Фотографии</h2>
+      <p className="text-xs sm:text-sm text-gray-500 mb-3">
         Загрузите до {maxPhotos} фотографий. Первая будет использоваться как
         обложка.
       </p>
       <div className="border-2 border-dashed border-violet-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <label className="inline-flex items-center px-4 py-2 rounded-lg bg-violet-500 text-white text-sm font-medium cursor-pointer hover:bg-violet-600 transition-colors">
+        <label className="inline-flex items-center px-4 py-2 rounded-lg bg-violet-500 text-white text-xs sm:text-sm font-medium cursor-pointer hover:bg-violet-600 transition-colors">
           <span className="mr-2 text-lg leading-none">＋</span>
           Выбрать файлы
           <input
@@ -124,7 +124,7 @@ export default function AdPhotoUploader({
             onChange={handleSelectFiles}
           />
         </label>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs sm:text-sm text-gray-500">
           Поддерживаются JPG, PNG, WebP. Максимум {maxPhotos} файлов.
         </span>
       </div>
@@ -144,7 +144,7 @@ export default function AdPhotoUploader({
                   className="w-full h-24 object-cover"
                 />
               ) : (
-                <div className="w-full h-24 flex items-center justify-center text-xs text-gray-400">
+                <div className="w-full h-24 flex items-center justify-center text-xs sm:text-sm text-gray-400">
                   {p.status === 'uploading' ? 'Загрузка...' : p.file.name}
                 </div>
               )}
@@ -158,7 +158,7 @@ export default function AdPhotoUploader({
               </button>
 
               {p.status === 'uploading' && (
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-xs text-white">
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-xs sm:text-sm text-white">
                   Загрузка...
                 </div>
               )}

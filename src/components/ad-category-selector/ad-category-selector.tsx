@@ -40,11 +40,11 @@ export default function AdCategorySelector({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="block text-sm font-medium mb-1">Категория</label>
+      <label className="block text-xs sm:text-sm font-medium mb-1">Категория</label>
       <button
         type="button"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm bg-white flex items-center justify-between"
+        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base bg-white flex items-center justify-between"
       >
         <div className="flex items-center">
           {selectedCategory ? (
@@ -94,7 +94,7 @@ export default function AdCategorySelector({
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
               />
-              <span className="text-sm text-gray-900">{opt.label}</span>
+              <span className="text-sm sm:text-base text-gray-900">{opt.label}</span>
             </button>
           ))}
         </div>

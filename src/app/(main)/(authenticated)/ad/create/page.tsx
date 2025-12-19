@@ -125,7 +125,7 @@ export default function AddCreatePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-neutral-800">
       <div className="container mx-auto px-4 py-6 max-w-5xl">
-        <h1 className="text-2xl sm:text-3xl font-semibold mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold mb-6">
           Создать объявление
         </h1>
 
@@ -141,21 +141,21 @@ export default function AddCreatePage() {
             {/* Основные данные */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-medium mb-1">
                   Заголовок объявления
                 </label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Например, «Продам Nintendo Switch OLED»"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base"
                 />
               </div>
 
               <AdCategorySelector value={category} onChange={setCategory} />
 
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-medium mb-1">
                   Описание
                 </label>
                 <textarea
@@ -163,18 +163,18 @@ export default function AddCreatePage() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
                   placeholder="Расскажите подробно о товаре или услуге..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm resize-none"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Детали</label>
+                <label className="block text-xs sm:text-sm font-medium mb-1">Детали</label>
                 <textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   rows={4}
                   placeholder="Укажите важные характеристики, условия продажи и т.п."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm resize-none"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base resize-none"
                 />
               </div>
             </section>
@@ -190,10 +190,10 @@ export default function AddCreatePage() {
 
             {/* Цена */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-3">
-              <h2 className="text-lg font-semibold">Цена</h2>
+              <h2 className="text-base sm:text-lg font-semibold">Цена</h2>
               <div className="flex gap-3 items-center">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-xs sm:text-sm font-medium mb-1">
                     Стоимость
                   </label>
                   <input
@@ -203,17 +203,17 @@ export default function AddCreatePage() {
                     }
                     inputMode="numeric"
                     placeholder="Например, 35000"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-xs sm:text-sm font-medium mb-1">
                     Валюта
                   </label>
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value as Currency)}
-                    className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm bg-white"
+                    className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base bg-white"
                   >
                     <option value="RUB">₽ RUB</option>
                     <option value="USD">$ USD</option>

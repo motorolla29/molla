@@ -38,12 +38,12 @@ export default function AdContactsSelector({
 
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-4">
-      <h2 className="text-lg font-semibold">Контакты</h2>
+      <h2 className="text-base sm:text-lg font-semibold">Контакты</h2>
 
       <div className="space-y-3">
         {/* Настройки видимости контактов */}
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-3">
             Какие контакты показывать в объявлении?
           </h3>
 
@@ -62,10 +62,10 @@ export default function AdContactsSelector({
                   htmlFor="phone-checkbox"
                   className="flex-1 cursor-pointer"
                 >
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm sm:text-base font-medium text-gray-900">
                     Телефон: {user.phone}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs sm:text-sm text-gray-500">
                     Покупатели смогут позвонить напрямую
                   </div>
                 </label>
@@ -86,10 +86,10 @@ export default function AdContactsSelector({
                   htmlFor="email-checkbox"
                   className="flex-1 cursor-pointer"
                 >
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm sm:text-base font-medium text-gray-900">
                     Email: {user.email}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs sm:text-sm text-gray-500">
                     Покупатели смогут написать сообщение
                   </div>
                 </label>
@@ -98,7 +98,7 @@ export default function AdContactsSelector({
 
             {/* Сообщение если нет контактов */}
             {!user?.phone && !user?.email && (
-              <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+              <div className="text-xs sm:text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
                 У вас не указаны контакты в профиле. Добавьте телефон или email
                 в разделе «Профиль», чтобы настроить видимость контактов.
               </div>
@@ -108,16 +108,16 @@ export default function AdContactsSelector({
 
         {/* Информация о контактах */}
         <div className="pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-2">
+          <p className="text-xs sm:text-sm text-gray-500 mb-2">
             Контакты берутся из вашего профиля. Изменить их можно в разделе
             «Профиль».
           </p>
-          <div className="text-sm text-gray-800 space-y-1">
+          <div className="text-sm sm:text-base text-gray-800 space-y-1">
             <div>
               <span className="font-medium">Имя:</span> {user?.name || '—'}
             </div>
             {(showPhone || showEmail) && (
-              <div className="text-xs text-amber-600 mt-2">
+              <div className="text-xs sm:text-sm text-amber-600 mt-2">
                 ✓ В объявлении будут показаны:{' '}
                 {showPhone && showEmail
                   ? 'телефон и email'
@@ -127,7 +127,7 @@ export default function AdContactsSelector({
               </div>
             )}
             {!showPhone && !showEmail && (
-              <div className="text-xs text-red-600 mt-2">
+              <div className="text-xs sm:text-sm text-red-600 mt-2">
                 ⚠️ Не выбраны контакты для показа в объявлении
               </div>
             )}

@@ -426,16 +426,16 @@ export default function AdLocationSelector({
 
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-3">
-      <h2 className="text-lg font-semibold">Локация</h2>
+      <h2 className="text-base sm:text-lg font-semibold">Локация</h2>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Город</label>
+        <label className="block text-xs sm:text-sm font-medium mb-1">Город</label>
         <div className="flex items-center justify-between gap-2">
-          <div className="text-sm text-gray-800">{cityName || 'Не выбран'}</div>
+          <div className="text-sm sm:text-base text-gray-800">{cityName || 'Не выбран'}</div>
           <button
             type="button"
             onClick={() => setShowLocationModal(true)}
-            className="px-3 py-1.5 text-sm bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-colors font-medium"
+            className="px-3 py-1.5 text-xs sm:text-sm bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-colors font-medium"
           >
             Выбрать город
           </button>
@@ -443,7 +443,7 @@ export default function AdLocationSelector({
       </div>
 
       <div className="relative">
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-xs sm:text-sm font-medium mb-1">
           Адрес (улица, дом)
         </label>
         <input
@@ -457,7 +457,7 @@ export default function AdLocationSelector({
             setTimeout(() => setShowAddressSuggestions(false), 200);
           }}
           placeholder="Например, ул. Ленина, д. 10"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base"
         />
 
         {/* Подсказки адресов */}
@@ -469,7 +469,7 @@ export default function AdLocationSelector({
                 onClick={() => handleAddressSuggestionSelect(suggestion)}
                 className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
               >
-                <span className="text-sm text-gray-900">{suggestion.text}</span>
+                <span className="text-sm sm:text-base text-gray-900">{suggestion.text}</span>
               </button>
             ))}
           </div>
@@ -517,7 +517,7 @@ export default function AdLocationSelector({
             </div>
           </YMaps>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm text-gray-400">
+          <div className="w-full h-full flex items-center justify-center text-sm sm:text-base text-gray-400">
             Загрузка карты...
           </div>
         )}
@@ -527,7 +527,7 @@ export default function AdLocationSelector({
           <div className="absolute inset-0 bg-white/50 flex items-end justify-center pb-6 z-30">
             <button
               onClick={() => setIsMapOverlayVisible(false)}
-              className="px-5 py-3 text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors font-medium shadow-lg"
+              className="px-5 py-3 text-xs sm:text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors font-medium shadow-lg"
             >
               Показать на карте
             </button>
@@ -537,7 +537,7 @@ export default function AdLocationSelector({
         {/* Подсказка для выбора адреса */}
         {!isMapOverlayVisible && !showAddressConfirmPopup && (
           <div className="absolute top-4 left-4 right-4 z-20">
-            <div className="bg-black/70 text-white text-sm px-3 py-2 rounded-lg text-center">
+            <div className="bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-lg text-center">
               Переместите карту и нажмите на пин, чтобы выбрать адрес
             </div>
           </div>
@@ -548,12 +548,12 @@ export default function AdLocationSelector({
       {showAddressConfirmPopup && pendingAddressData && (
         <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
           <div className="bg-white rounded-lg p-4 shadow-xl border border-gray-200 min-w-80 relative pointer-events-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
               {pendingAddressData.address === 'Адрес не найден'
                 ? 'Сохранить место?'
                 : 'Выбрать этот адрес?'}
             </h3>
-            <div className="text-sm text-gray-600 mb-3">
+            <div className="text-xs sm:text-sm text-gray-600 mb-3">
               <strong>Адрес:</strong>{' '}
               {pendingAddressData.address === 'Адрес не найден'
                 ? 'Без адреса'
@@ -561,7 +561,7 @@ export default function AdLocationSelector({
             </div>
             {pendingAddressData.cityName &&
               pendingAddressData.cityName !== cityName && (
-                <div className="text-sm text-amber-600 mb-3">
+                <div className="text-xs sm:text-sm text-amber-600 mb-3">
                   <strong>Город изменится на:</strong>{' '}
                   {pendingAddressData.cityName}
                 </div>
@@ -572,13 +572,13 @@ export default function AdLocationSelector({
                   setShowAddressConfirmPopup(false);
                   setPendingAddressData(null);
                 }}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm"
               >
                 Отмена
               </button>
               <button
                 onClick={confirmAddressSelection}
-                className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-sm"
+                className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-xs sm:text-sm"
               >
                 Подтвердить
               </button>
