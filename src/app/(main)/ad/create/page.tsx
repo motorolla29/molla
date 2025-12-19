@@ -235,7 +235,7 @@ export default function AddCreatePage() {
               </div>
               {price && (
                 <p className="text-xs text-gray-500">
-                  Пример: {Number(price).toLocaleString('ru-RU')}{' '}
+                  Вы продаете за {Number(price).toLocaleString('ru-RU')}{' '}
                   {getCurrencySymbol(currency)}
                 </p>
               )}
