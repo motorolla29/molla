@@ -28,8 +28,8 @@ function convertToAdBase(ad: any): AdBase {
         name: ad.seller.name,
         rating: ad.seller.rating,
         contact: {
-          phone: ad.seller.phone || undefined,
-          email: ad.seller.email || undefined,
+          phone: ad.showPhone ? (ad.seller.phone || undefined) : undefined,
+          email: ad.showEmail ? (ad.seller.email || undefined) : undefined,
         },
       },
       details: ad.details,
@@ -184,6 +184,8 @@ export async function POST(request: NextRequest) {
       currency,
       details,
       photos,
+      showPhone,
+      showEmail,
     } = body || {};
 
     if (
@@ -216,6 +218,8 @@ export async function POST(request: NextRequest) {
         currency: currency || null,
         details: details || '',
         photos: Array.isArray(photos) ? photos : [],
+        showPhone: showPhone !== false, // по умолчанию true
+        showEmail: showEmail !== false, // по умолчанию true
         sellerId,
       },
     });

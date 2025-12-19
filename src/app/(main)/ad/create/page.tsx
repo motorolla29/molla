@@ -10,6 +10,7 @@ import AdPhotoUploader from '@/components/ad-photo-uploader/ad-photo-uploader';
 import AdLocationSelector, {
   AdLocationValue,
 } from '@/components/ad-location-selector/ad-location-selector';
+import AdContactsSelector from '@/components/ad-contacts-selector/ad-contacts-selector';
 
 export default function AddCreatePage() {
   const router = useRouter();
@@ -26,6 +27,13 @@ export default function AddCreatePage() {
 
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [location, setLocation] = useState<AdLocationValue | null>(null);
+  const [contacts, setContacts] = useState<{
+    showPhone: boolean;
+    showEmail: boolean;
+  }>({
+    showPhone: !!user?.phone, // true только если телефон указан
+    showEmail: !!user?.email, // true только если email указан
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +48,10 @@ export default function AddCreatePage() {
   }, [isLoggedIn, router]);
 
   const isFormValid = useMemo(() => {
+    // Проверяем, что выбран хотя бы один доступный контакт
+    const hasAvailableContacts = !!(user?.phone || user?.email);
+    const hasSelectedContacts = contacts.showPhone || contacts.showEmail;
+
     return (
       title.trim().length >= 5 &&
       description.trim().length >= 10 &&
@@ -49,9 +61,10 @@ export default function AddCreatePage() {
       location?.lat != null &&
       location?.lng != null &&
       location.address.trim().length >= 5 &&
-      photoUrls.length > 0
+      photoUrls.length > 0 &&
+      (!hasAvailableContacts || hasSelectedContacts) // Если контактов нет, пропускаем проверку
     );
-  }, [title, description, details, location, photoUrls]);
+  }, [title, description, details, location, photoUrls, contacts, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +91,8 @@ export default function AddCreatePage() {
         currency,
         details: details.trim(),
         photos: photoUrls,
+        showPhone: contacts.showPhone,
+        showEmail: contacts.showEmail,
       };
 
       const res = await fetch('/api/ads', {
@@ -242,26 +257,7 @@ export default function AddCreatePage() {
             </section>
 
             {/* Контакты */}
-            <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-2">
-              <h2 className="text-lg font-semibold">Контакты</h2>
-              <p className="text-xs text-gray-500 mb-1">
-                Покупатели увидят контакты из вашего профиля. Изменить их можно
-                в разделе &laquo;Профиль&raquo;.
-              </p>
-              <div className="text-sm text-gray-800 space-y-1">
-                <div>
-                  <span className="font-medium">Имя:</span> {user?.name || '—'}
-                </div>
-                <div>
-                  <span className="font-medium">Телефон:</span>{' '}
-                  {user?.phone || 'не указан'}
-                </div>
-                <div>
-                  <span className="font-medium">Email:</span>{' '}
-                  {user?.email || 'не указан'}
-                </div>
-              </div>
-            </section>
+            <AdContactsSelector onChange={setContacts} />
 
             {/* Ошибка и кнопка */}
             {error && (

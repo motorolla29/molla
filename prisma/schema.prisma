@@ -50,6 +50,8 @@ model Ad {
   photos      String[]  // массив URL или имен файлов
   details     String
   isVip       Boolean   @default(false)
+  showPhone   Boolean   @default(true)  // показывать ли телефон в объявлении
+  showEmail   Boolean   @default(true)  // показывать ли email в объявлении
 
   // Связь с продавцом
   sellerId    Int
