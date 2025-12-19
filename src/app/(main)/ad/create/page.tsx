@@ -11,6 +11,7 @@ import AdLocationSelector, {
   AdLocationValue,
 } from '@/components/ad-location-selector/ad-location-selector';
 import AdContactsSelector from '@/components/ad-contacts-selector/ad-contacts-selector';
+import AdCategorySelector from '@/components/ad-category-selector/ad-category-selector';
 
 export default function AddCreatePage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function AddCreatePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [details, setDetails] = useState('');
-  const [category, setCategory] = useState<CategoryKey>('goods');
+  const [category, setCategory] = useState<CategoryKey | ''>('');
   const [price, setPrice] = useState<string>('');
   const [currency, setCurrency] = useState<Currency>('RUB');
 
@@ -56,6 +57,7 @@ export default function AddCreatePage() {
       title.trim().length >= 5 &&
       description.trim().length >= 10 &&
       details.trim().length >= 10 &&
+      category !== '' && // Категория должна быть выбрана
       location?.cityLabel &&
       location?.cityName &&
       location?.lat != null &&
@@ -64,7 +66,16 @@ export default function AddCreatePage() {
       photoUrls.length > 0 &&
       (!hasAvailableContacts || hasSelectedContacts) // Если контактов нет, пропускаем проверку
     );
-  }, [title, description, details, location, photoUrls, contacts, user]);
+  }, [
+    title,
+    description,
+    details,
+    category,
+    location,
+    photoUrls,
+    contacts,
+    user,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,22 +175,7 @@ export default function AddCreatePage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Категория
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as CategoryKey)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm bg-white"
-                >
-                  {categoryOptions.map((opt) => (
-                    <option key={opt.key} value={opt.key}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <AdCategorySelector value={category} onChange={setCategory} />
 
               <div>
                 <label className="block text-sm font-medium mb-1">

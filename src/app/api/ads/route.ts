@@ -28,8 +28,8 @@ function convertToAdBase(ad: any): AdBase {
         name: ad.seller.name,
         rating: ad.seller.rating,
         contact: {
-          phone: ad.showPhone ? (ad.seller.phone || undefined) : undefined,
-          email: ad.showEmail ? (ad.seller.email || undefined) : undefined,
+          phone: ad.showPhone ? ad.seller.phone || undefined : undefined,
+          email: ad.showEmail ? ad.seller.email || undefined : undefined,
         },
       },
       details: ad.details,
