@@ -44,7 +44,7 @@ model Ad {
   address     String
   lat         Float
   lng         Float
-  price       Int?
+  price       BigInt?
   currency    Currency?
   datePosted  DateTime  @default(now())
   photos      String[]  // массив URL или имен файлов

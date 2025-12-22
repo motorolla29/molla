@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       },
       title: ad.title,
       category: ad.category.toLowerCase(),
-      price: ad.price || undefined,
+      price: ad.price ? Number(ad.price) : undefined,
       photos: ad.photos,
     }));
 

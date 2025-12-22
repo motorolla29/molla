@@ -43,7 +43,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
         </div>
         <div>
           <p className="text-lg sm:text-xl font-bold">
-            {ad.price} {getCurrencySymbol(ad.currency)}
+            {ad.price?.toLocaleString('ru-RU')} {getCurrencySymbol(ad.currency)}
           </p>
           <p className="text-xs sm:text-sm text-neutral-400 mt-2 flex items-center">
             <svg

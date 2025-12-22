@@ -16,7 +16,7 @@ function convertToAdBase(ad: any): AdBase {
       lat: ad.lat,
       lng: ad.lng,
     },
-    price: ad.price || undefined,
+    price: ad.price ? Number(ad.price) : undefined,
     currency: (ad.currency as Currency) || undefined,
     datePosted: ad.datePosted.toISOString(),
     photos: ad.photos,

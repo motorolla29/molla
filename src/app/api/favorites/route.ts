@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
         lat: favorite.ad.lat,
         lng: favorite.ad.lng,
       },
-      price: favorite.ad.price || undefined,
+      price: favorite.ad.price ? Number(favorite.ad.price) : undefined,
       currency: favorite.ad.currency || undefined,
       datePosted: favorite.ad.datePosted.toISOString(),
       photos: favorite.ad.photos || [],

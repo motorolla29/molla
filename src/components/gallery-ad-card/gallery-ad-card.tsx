@@ -8,7 +8,10 @@ interface GalleryAdCardProps {
 
 export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
   return (
-    <div key={ad.id} className="flex flex-col w-full overflow-hidden h-full">
+    <div
+      key={ad.id}
+      className="flex flex-col w-full overflow-hidden h-full min-w-0"
+    >
       <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg">
         <Link
           href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
@@ -25,22 +28,22 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-2 right-2" />
       </div>
-      <div className="flex-1 flex-col">
+      <div className="flex-1 flex-col min-w-0">
         <Link
           href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-          className="text-base sm:text-lg text-neutral-800 line-clamp-2 leading-[1.2] pb-1 hover:text-violet-400"
+          className="text-sm sm:text-base md:text-lg text-neutral-800 leading-[1.2] pb-1 hover:text-violet-400 block truncate min-w-0"
         >
           {ad.title}
         </Link>
-        <p className="text-sm sm:text-base font-semibold">
-          {ad.price} {getCurrencySymbol(ad.currency)}
+        <p className="text-xs sm:text-sm md:text-base font-semibold truncate">
+          {ad.price?.toLocaleString('ru-RU')} {getCurrencySymbol(ad.currency)}
         </p>
-        <p className="text-xs sm:text-sm flex items-center text-neutral-400 pt-1">
+        <p className="text-xs flex items-center text-neutral-400 pt-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="size-3.5 mr-1"
+            className="size-3.5 mr-1 shrink-0"
           >
             <path
               fillRule="evenodd"
@@ -48,7 +51,7 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
               clipRule="evenodd"
             />
           </svg>
-          {ad.city}
+          <span className="truncate">{ad.city}</span>
         </p>
       </div>
     </div>

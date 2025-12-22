@@ -83,7 +83,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
 
   return (
     <>
-      <div className="w-full lg:max-w-2xl mb-6">
+      <div className="w-full lg:max-w-2xl">
         {/* Main Carousel */}
         <div
           className="relative overflow-hidden cursor-grab group"
@@ -101,6 +101,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                     src={lowResImages[idx]}
                     alt=""
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-50"
                     aria-hidden="true"
                   />
@@ -110,6 +111,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                     alt={`Фото ${idx + 1}`}
                     loading="lazy"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="relative w-full h-full object-contain transition-opacity duration-500"
                     style={{ opacity: 1 }}
                   />
@@ -159,12 +161,12 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
 
         {/* Thumbnails */}
         <div className="mt-4 overflow-hidden" ref={emblaThumbsRef}>
-          <div className="flex gap-2 px-1">
+          <div className="flex gap-1 xs:gap-2 sm:gap-3 px-1 pb-2">
             {lowResImages.map((thumbSrc, idx) => (
               <button
                 key={idx}
                 onClick={() => onThumbClick(idx)}
-                className={`relative rounded-md overflow-hidden w-20 h-20 border-2 ${
+                className={`relative rounded-md overflow-hidden w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 border-2 shrink-0 ${
                   idx === selectedIndex
                     ? 'border-violet-400'
                     : 'border-neutral-100'
@@ -174,6 +176,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                   src={thumbSrc}
                   alt={`Миниатюра ${idx + 1}`}
                   fill
+                  sizes="(max-width: 640px) 64px, (max-width: 768px) 72px, 80px"
                   className="w-full h-full object-cover"
                 />
               </button>

@@ -38,3 +38,24 @@ button:not(:disabled) {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #cebeff;
 }
+
+/* Кастомизация скроллбара с отступами для модального окна */
+.custom-scrollbar-2::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar-2::-webkit-scrollbar-track {
+  border-radius: 4px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.custom-scrollbar-2::-webkit-scrollbar-thumb {
+  background-color: #bebec3;
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.custom-scrollbar-2::-webkit-scrollbar-thumb:hover {
+  background-color: #a3a2a9;
+}

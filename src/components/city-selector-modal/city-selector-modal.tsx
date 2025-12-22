@@ -129,7 +129,7 @@ export default function CitySelectorModal({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden"
+        className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar-2"
       >
         {/* Заголовок */}
         <div className="flex items-center justify-between p-4 sm:p-6 pb-3 sm:pb-4">
@@ -177,7 +177,7 @@ export default function CitySelectorModal({
 
           {/* Список городов */}
           {filteredCities.length > 0 && (
-            <div className="mt-3 max-h-64 overflow-y-auto">
+            <div className="mt-3 max-h-64 overflow-y-auto custom-scrollbar-2">
               <div className="space-y-1">
                 {filteredCities.map((city, index) => {
                   const cityName = city.namecase?.nominative || city.name || '';

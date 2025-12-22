@@ -153,7 +153,7 @@ export default function AddCreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-neutral-800">
+    <div className="min-h-screen bg-gray-50 text-neutral-800 my-6 rounded-4xl">
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <h1 className="text-xl sm:text-2xl font-semibold mb-6">
           Создать объявление
@@ -254,11 +254,17 @@ export default function AddCreatePage() {
                   <input
                     value={price}
                     onChange={(e) => {
-                      setPrice(e.target.value.replace(/[^\d]/g, ''));
+                      const rawValue = e.target.value.replace(/[^\d]/g, '');
+                      // Форматируем с пробелами для читабельности
+                      const formattedValue = rawValue.replace(
+                        /\B(?=(\d{3})+(?!\d))/g,
+                        ' '
+                      );
+                      setPrice(formattedValue);
                       clearValidationError('price');
                     }}
                     inputMode="numeric"
-                    placeholder="Например, 35000"
+                    placeholder="Например, 35 000"
                     className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base ${
                       validationErrors.price
                         ? 'border-red-500'
@@ -271,12 +277,6 @@ export default function AddCreatePage() {
               {validationErrors.price && (
                 <p className="text-xs text-red-500 mt-1">
                   {validationErrors.price}
-                </p>
-              )}
-              {price && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Вы продаете за {Number(price).toLocaleString('ru-RU')}{' '}
-                  {getCurrencySymbol(currency)}
                 </p>
               )}
             </section>
