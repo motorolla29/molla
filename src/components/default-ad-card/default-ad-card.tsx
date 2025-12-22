@@ -14,7 +14,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
     <Link
       href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
       key={ad.id}
-      className="flex w-full overflow-hidden h-full mb-4 p-4 rounded-xl hover:bg-neutral-100"
+      className="flex w-full overflow-hidden h-full p-0 sm:p-4 my-3 sm:my-0 rounded-xl sm:hover:bg-neutral-100"
     >
       {/* Фото */}
       <div className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 overflow-hidden">
@@ -28,16 +28,18 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       </div>
 
       {/* Основная информация */}
-      <div className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative">
+      <div className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative min-w-0">
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-0 right-0" />
-        <div>
-          <h2 className="text-base sm:text-lg font-semibold line-clamp-2 hover:text-violet-400 pr-8 leading-tight">
+        <div className="overflow-hidden">
+          <h2 className="text-base sm:text-lg font-semibold line-clamp-1 hover:text-violet-400 mr-10 mb-2 leading-tight max-w-full overflow-hidden break-words">
             {ad.title}
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-3">
-            {ad.description}
-          </p>
+          {ad.description && ad.description.trim() && (
+            <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-2 max-w-full overflow-hidden break-words">
+              {ad.description}
+            </p>
+          )}
         </div>
         <div>
           <p className="text-lg sm:text-xl font-bold">
@@ -62,7 +64,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       </div>
 
       {/* Информация о продавце */}
-      <div className="hidden w-32 sm:flex flex-col items-start justify-start ml-8">
+      <div className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden">
         <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
           <img
             className="w-full h-full object-cover"
@@ -72,7 +74,10 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             alt="avatar"
           />
         </div>
-        <span className="text-xs sm:text-sm font-medium truncate">
+        <span
+          className="text-xs sm:text-sm font-medium pr-1 max-w-full inline-block overflow-hidden whitespace-nowrap break-words"
+          style={{ textOverflow: 'ellipsis' }}
+        >
           {ad.seller.name}
         </span>
         <div className="flex items-center mt-2 space-x-1">

@@ -33,7 +33,10 @@ export default function CategoryClient({
   lat = null,
   lon = null,
 }: CategoryClientProps) {
-  const [viewType, setViewType] = useState('default');
+  const [viewType, setViewType] = useState<'gallery' | 'default'>('default');
+  const handleViewTypeChange = (type: 'gallery' | 'default') => {
+    setViewType(type);
+  };
   const searchParams = useSearchParams();
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   const setLocation = useLocationStore((s) => s.setLocation);
@@ -90,33 +93,28 @@ export default function CategoryClient({
           )}
         </h1>
 
-        <div className="flex gap-6">
+        <div className="flex gap-6 max-w-full flex-wrap lg:flex-nowrap">
           <AsideFilters category={categoryKey} />
 
           {/* Основной блок */}
-          <main className="flex-1">
+          <main className="flex-1 min-w-0">
             <div className="mb-6">
               <MapSlot ads={[]} cityLabel={cityLabel} category={categoryKey} />
             </div>
-            <GalleryTopPanel viewType={viewType} setViewType={setViewType} />
+            <GalleryTopPanel
+              viewType={viewType}
+              setViewType={handleViewTypeChange}
+            />
 
             <InfiniteScrollAds
               cityLabel={cityLabel}
               category={categoryKey}
               searchParams={searchParams}
-              renderAd={(ad) =>
-                viewType === 'gallery' ? (
-                  <div key={ad.id} className="h-full">
-                    <GalleryAdCard ad={ad} />
-                  </div>
-                ) : (
-                  <AdCardsDefault key={ad.id} ads={[ad]} />
-                )
-              }
+              viewType={viewType}
               className={
                 viewType === 'gallery'
                   ? 'grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4'
-                  : 'space-y-6'
+                  : ''
               }
             />
           </main>

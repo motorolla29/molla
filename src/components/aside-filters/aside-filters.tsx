@@ -212,7 +212,7 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   };
 
   return (
-    <aside className="hidden lg:flex w-1/3 h-fit flex-col flex-shrink-0 bg-amber-100 p-4 rounded-xl xl:w-1/4">
+    <aside className="hidden lg:flex w-80 xl:w-72 2xl:w-80 h-fit flex-col shrink-0 bg-amber-100 p-4 rounded-xl max-w-[300px]">
       {/* Город */}
       <div className="mb-4">
         <h2 className="text-lg font-medium mb-2">Город</h2>

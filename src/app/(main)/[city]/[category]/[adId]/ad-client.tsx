@@ -19,8 +19,8 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
     <Suspense>
       <div className="container mx-auto px-4 py-6">
         {/* Хлебные крошки */}
-        <nav className="text-sm mb-4" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2">
+        <nav className="text-sm mb-4 overflow-hidden" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 min-w-0 overflow-hidden">
             <li>
               <a href="/" className="text-blue-500 hover:underline">
                 Главная
@@ -46,14 +46,16 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </a>
             </li>
             <li>›</li>
-            <li className="text-gray-500 line-clamp-1">{ad.title}</li>
+            <li className="text-gray-500 truncate max-w-full overflow-hidden min-w-0 flex-1">
+              {ad.title}
+            </li>
           </ol>
         </nav>
 
         <div className="flex flex-col lg:flex-row gap-6 text-neutral-800">
           {/* Левая часть: фото и основные данные */}
           <div className="flex-1 space-y-6 lg:max-w-2xl">
-            <h1 className="text-3xl text-neutral-800 font-medium mb-8">
+            <h1 className="text-3xl text-neutral-800 font-medium mb-8 line-clamp-2 max-w-full overflow-hidden break-words">
               {ad.title}
             </h1>
 
@@ -66,16 +68,16 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               )}
             />
 
-            <p className="mb-4">{ad.description}</p>
+            <p className="mb-4 break-words">{ad.description}</p>
 
             <div className="mb-4">
               <h2 className="text-lg font-semibold mb-2">Детали</h2>
-              <p className="whitespace-pre-line">{ad.details}</p>
+              <p className="whitespace-pre-line break-words">{ad.details}</p>
             </div>
           </div>
 
           {/* Правая часть: карточка с ценой, контактами, локацией */}
-          <aside className="w-full lg:w-1/3 lg:px-8 flex-shrink-0 space-y-4">
+          <aside className="w-full lg:w-1/3 lg:px-8 shrink-0 space-y-4">
             {ad.price !== undefined && (
               <div className="p-4 border border-violet-400 rounded-md">
                 <span className="text-3xl font-bold ">

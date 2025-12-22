@@ -54,7 +54,7 @@ export default function FavoriteButton({ ad, className }: FavoriteButtonProps) {
   return (
     <button
       onClick={handleClick}
-      className={`p-1 hover:bg-black/8 rounded-md transition-colors ${
+      className={`p-1 sm:hover:bg-black/8 rounded-md transition-colors ${
         className || ''
       }`}
       aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}

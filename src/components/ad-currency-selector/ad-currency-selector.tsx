@@ -1,20 +1,23 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CategoryKey } from '@/types/ad';
-import { categoryOptions } from '@/const';
+import { Currency } from '@/types/ad';
 
-interface AdCategorySelectorProps {
-  value: CategoryKey | '';
-  onChange: (category: CategoryKey | '') => void;
-  error?: boolean;
+interface AdCurrencySelectorProps {
+  value: Currency;
+  onChange: (currency: Currency) => void;
 }
 
-export default function AdCategorySelector({
+const currencyOptions = [
+  { key: 'RUB' as Currency, label: '₽ RUB', symbol: '₽' },
+  { key: 'USD' as Currency, label: '$ USD', symbol: '$' },
+  { key: 'EUR' as Currency, label: '€ EUR', symbol: '€' },
+];
+
+export default function AdCurrencySelector({
   value,
   onChange,
-  error,
-}: AdCategorySelectorProps) {
+}: AdCurrencySelectorProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -38,36 +41,27 @@ export default function AdCategorySelector({
     };
   }, [isDropdownOpen]);
 
-  const selectedCategory = categoryOptions.find((opt) => opt.key === value);
+  const selectedCurrency = currencyOptions.find((opt) => opt.key === value);
 
   return (
     <div className="relative" ref={dropdownRef}>
       <label className="block text-xs sm:text-sm font-medium mb-1">
-        Категория
+        Валюта
       </label>
       <button
         type="button"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base bg-white flex items-center justify-between ${
-          error ? 'border-red-500' : 'border-gray-300'
-        }`}
+        className="w-full px-2 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base bg-white flex items-center justify-between"
       >
         <div className="flex items-center">
-          {selectedCategory ? (
-            <>
-              <img
-                src={`https://ik.imagekit.io/motorolla29/molla/icons/${selectedCategory.key}.png`}
-                alt="cat-icon"
-                className="w-5 h-5 mr-2"
-              />
-              <span>{selectedCategory.label}</span>
-            </>
+          {selectedCurrency ? (
+            <span>{selectedCurrency.label}</span>
           ) : (
-            <span className="text-gray-500">Выберите категорию</span>
+            <span className="text-gray-500">Выберите валюту</span>
           )}
         </div>
         <svg
-          className={`w-5 h-5 transition-transform ${
+          className={`w-5 h-5 ml-2 transition-transform ${
             isDropdownOpen ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -85,7 +79,7 @@ export default function AdCategorySelector({
 
       {isDropdownOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {categoryOptions.map((opt) => (
+          {currencyOptions.map((opt) => (
             <button
               key={opt.key}
               type="button"
@@ -95,11 +89,6 @@ export default function AdCategorySelector({
               }}
               className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none flex items-center border-b border-gray-100 last:border-b-0"
             >
-              <img
-                src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
-                alt="cat-icon"
-                className="w-5 h-5 mr-2"
-              />
               <span className="text-sm sm:text-base text-gray-900">
                 {opt.label}
               </span>

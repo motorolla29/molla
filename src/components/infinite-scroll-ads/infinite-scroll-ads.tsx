@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AdBase } from '@/types/ad';
 import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
+import AdCardsDefault from '../ad-cards-default/ad-cards-default';
 import { FidgetSpinner } from 'react-loader-spinner';
 
 interface InfiniteScrollAdsProps {
@@ -15,8 +16,8 @@ interface InfiniteScrollAdsProps {
   // Количество объявлений на странице
   limit?: number;
 
-  // Компонент для отображения объявлений
-  renderAd?: (ad: AdBase) => React.ReactNode;
+  // Тип отображения объявлений
+  viewType?: 'gallery' | 'default';
 
   // CSS классы для контейнера
   className?: string;
@@ -31,7 +32,7 @@ export default function InfiniteScrollAds({
   searchParams,
   sort,
   limit = 24,
-  renderAd,
+  viewType = 'gallery',
   className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8',
   showEndMessage = true,
 }: InfiniteScrollAdsProps) {
@@ -147,12 +148,12 @@ export default function InfiniteScrollAds({
       {ads.length > 0 ? (
         <div className={className}>
           {ads.map((ad) =>
-            renderAd ? (
-              renderAd(ad)
-            ) : (
+            viewType === 'gallery' ? (
               <div key={ad.id} className="h-full">
                 <GalleryAdCard ad={ad} />
               </div>
+            ) : (
+              <AdCardsDefault key={ad.id} ads={[ad]} />
             )
           )}
         </div>

@@ -188,21 +188,15 @@ export async function POST(request: NextRequest) {
       showEmail,
     } = body || {};
 
-    if (
-      !title ||
-      !description ||
-      !category ||
-      !city ||
-      !cityLabel ||
-      !address ||
-      typeof lat !== 'number' ||
-      typeof lng !== 'number'
-    ) {
+    // Обязательные поля: заголовок, категория, цена
+    if (!title || !category || typeof price !== 'number') {
       return NextResponse.json(
-        { error: 'Отсутствуют обязательные поля' },
+        { error: 'Отсутствуют обязательные поля: заголовок, категория, цена' },
         { status: 400 }
       );
     }
+
+    // Проверка контактов осуществляется на фронтенде
 
     // Функция транслитерации кириллицы в латиницу
     const transliterate = (text: string): string => {
@@ -293,13 +287,13 @@ export async function POST(request: NextRequest) {
       data: {
         id: generatedId,
         title,
-        description,
+        description: description || '',
         category,
-        city,
-        cityLabel,
-        address,
-        lat,
-        lng,
+        city: city || 'Москва', // дефолтное значение
+        cityLabel: cityLabel || 'moscow', // дефолтное значение
+        address: address || '', // опционально
+        lat: typeof lat === 'number' ? lat : 55.7558, // координаты Москвы по умолчанию
+        lng: typeof lng === 'number' ? lng : 37.6173, // координаты Москвы по умолчанию
         price: typeof price === 'number' ? price : null,
         currency: currency || null,
         details: details || '',

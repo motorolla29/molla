@@ -2,8 +2,8 @@ import { LayoutGrid, LayoutList } from 'lucide-react';
 import SortDropdown from '../sort-dropdown/sort-dropdown';
 
 interface GalleryTopPanelProps {
-  viewType: string;
-  setViewType: (type: string) => void;
+  viewType: 'gallery' | 'default';
+  setViewType: (type: 'gallery' | 'default') => void;
 }
 
 export default function GalleryTopPanel({
@@ -13,7 +13,7 @@ export default function GalleryTopPanel({
   return (
     <div>
       {/* Другие элементы панели */}
-      <div className="mb-8 flex items-center">
+      <div className="mb-4 flex items-center">
         <div className="flex mr-3">
           <div
             onClick={() => setViewType('default')}
