@@ -22,7 +22,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header с кнопкой назад */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 lg:px-6">
         <div className="flex items-center">
@@ -36,7 +36,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex flex-1">
         {/* Боковая навигация - скрыта на мобильных */}
         {!isMobile && (
           <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)]">

@@ -32,7 +32,7 @@ export default function HeaderMobile() {
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="h-12 w-12 fill-neutral-500 cursor-pointer hover:opacity-80 shrink-0 pl-2"
+            className="h-12 w-12 fill-neutral-500 cursor-pointer hover:opacity-80 shrink-0 pr-1 pl-3"
           >
             <path
               fillRule="evenodd"

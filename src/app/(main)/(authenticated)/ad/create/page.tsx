@@ -153,7 +153,7 @@ export default function AddCreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-neutral-800 my-6 rounded-4xl">
+    <div className="min-h-screen bg-gray-50 text-neutral-800 sm:my-6 sm:rounded-4xl">
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <h1 className="text-xl sm:text-2xl font-semibold mb-6">
           Создать объявление
