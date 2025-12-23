@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         id: {
           in: ids,
         },
+        status: 'active', // только активные объявления
       },
       include: {
         seller: {

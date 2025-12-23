@@ -10,6 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Перечисление для статуса объявления
+enum AdStatus {
+  active
+  archived
+}
+
 // Модель продавца
 model Seller {
   id         Int      @id @default(autoincrement())
@@ -38,17 +44,18 @@ model Ad {
   id          String    @id @default(cuid())
   category    Category
   title       String
-  description String
+  description String?
   city        String    // человекочитаемое название
   cityLabel   String    // метка для URL
-  address     String
-  lat         Float
-  lng         Float
+  address     String?
+  lat         Float?
+  lng         Float?
   price       BigInt?
   currency    Currency?
+  status      AdStatus  @default(active) // статус объявления
   datePosted  DateTime  @default(now())
   photos      String[]  // массив URL или имен файлов
-  details     String
+  details     String?
   isVip       Boolean   @default(false)
   showPhone   Boolean   @default(true)  // показывать ли телефон в объявлении
   showEmail   Boolean   @default(true)  // показывать ли email в объявлении

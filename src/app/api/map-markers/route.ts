@@ -48,7 +48,9 @@ export async function GET(request: NextRequest) {
     };
 
     // Строим условия фильтрации для базы данных
-    const where: any = {};
+    const where: any = {
+      status: 'active', // показываем только активные объявления
+    };
 
     // ВКЛЮЧАЕМ VIEWPORT ФИЛЬТР ОБРАТНО
     where.lat = {

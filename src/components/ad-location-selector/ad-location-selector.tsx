@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { YMaps, Map } from '@pbe/react-yandex-maps';
 import { loadCitiesData, findNearestCity } from '@/utils';
 import { useLocationStore } from '@/store/useLocationStore';
@@ -18,23 +18,29 @@ export interface AdLocationValue {
 interface AdLocationSelectorProps {
   profileCity?: string | null;
   onChange?: (value: AdLocationValue) => void;
+  initialValue?: AdLocationValue;
 }
 
 export default function AdLocationSelector({
   profileCity,
   onChange,
+  initialValue,
 }: AdLocationSelectorProps) {
   const locationStore = useLocationStore();
 
-  const [cityLabel, setCityLabel] = useState<string | null>(null);
-  const [cityName, setCityName] = useState<string | null>(null);
-  const [cityNamePreposition, setCityNamePreposition] = useState<string | null>(
-    null
+  const [cityLabel, setCityLabel] = useState<string | null>(
+    initialValue?.cityLabel ?? null
   );
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
+  const [cityName, setCityName] = useState<string | null>(
+    initialValue?.cityName ?? null
+  );
+  const [cityNamePreposition, setCityNamePreposition] = useState<string | null>(
+    initialValue?.cityNamePreposition ?? null
+  );
+  const [lat, setLat] = useState<number | null>(initialValue?.lat ?? null);
+  const [lng, setLng] = useState<number | null>(initialValue?.lng ?? null);
   const [zoom, setZoom] = useState<number>(13);
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(initialValue?.address ?? '');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<
     Array<{ text: string; lat: number; lng: number }>
@@ -42,6 +48,27 @@ export default function AdLocationSelector({
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const [addressDebounceTimer, setAddressDebounceTimer] =
     useState<NodeJS.Timeout | null>(null);
+  const isInitializedRef = useRef(false);
+
+  // Инициализация из initialValue
+  useEffect(() => {
+    if (initialValue && !isInitializedRef.current) {
+      isInitializedRef.current = true;
+
+      // Устанавливаем значения
+      setCityLabel(initialValue.cityLabel);
+      setCityName(initialValue.cityName);
+      setCityNamePreposition(initialValue.cityNamePreposition);
+      setAddress(initialValue.address);
+
+      // Устанавливаем координаты из initialValue, если они есть
+      if (initialValue.lat != null && initialValue.lng != null) {
+        setLat(initialValue.lat);
+        setLng(initialValue.lng);
+        setZoom(16); // Увеличиваем зум для детального просмотра адреса
+      }
+    }
+  }, [initialValue]);
 
   // Новые состояния для карты
   const [isMapOverlayVisible, setIsMapOverlayVisible] = useState(true);
@@ -57,6 +84,11 @@ export default function AdLocationSelector({
 
   // Инициализация города
   useEffect(() => {
+    // Не инициализируем город, если уже есть координаты из initialValue
+    if (initialValue && initialValue.lat != null && initialValue.lng != null) {
+      return;
+    }
+
     async function initCity() {
       const cities = await loadCitiesData();
 
@@ -123,6 +155,7 @@ export default function AdLocationSelector({
     locationStore.lat,
     locationStore.lon,
     locationStore.cityNamePreposition,
+    initialValue,
   ]);
 
   // Обработка выбора города в модале
@@ -138,6 +171,8 @@ export default function AdLocationSelector({
     setCityNamePreposition(selectedCityNamePreposition);
     setLat(selectedLat);
     setLng(selectedLon);
+    // Сбрасываем адрес при смене города
+    setAddress('');
     // Не сбрасываем зум при выборе города, оставляем текущий или устанавливаем оптимальный для города
     setZoom(selectedLat && selectedLon ? 12 : 13);
     setIsMapOverlayVisible(true); // Закрываем карту оверлеем
@@ -146,7 +181,6 @@ export default function AdLocationSelector({
 
   // Обработка изменения адреса с подсказками
   const handleAddressChange = (value: string) => {
-    console.log('✏️ Address changed to:', value);
     setAddress(value);
     setShowAddressSuggestions(false);
 
@@ -157,13 +191,11 @@ export default function AdLocationSelector({
 
     // Загружаем подсказки с дебаунсом
     if (value.length >= 3) {
-      console.log('⏳ Setting up debounce for suggestions...');
       const timeoutId = setTimeout(() => {
         loadAddressSuggestions(value);
       }, 300);
       setAddressDebounceTimer(timeoutId);
     } else {
-      console.log('❌ Query too short, clearing suggestions');
       setAddressSuggestions([]);
     }
   };
@@ -185,14 +217,16 @@ export default function AdLocationSelector({
 
   // Репортим текущее значение наружу
   useEffect(() => {
-    onChange?.({
-      cityLabel,
-      cityName,
-      cityNamePreposition,
-      lat,
-      lng,
-      address,
-    });
+    if (isInitializedRef.current) {
+      onChange?.({
+        cityLabel,
+        cityName,
+        cityNamePreposition,
+        lat,
+        lng,
+        address,
+      });
+    }
   }, [cityLabel, cityName, cityNamePreposition, lat, lng, address, onChange]);
 
   // Очистка таймера при размонтировании
@@ -216,13 +250,6 @@ export default function AdLocationSelector({
       return;
     }
 
-    console.log(
-      '🔍 Loading address suggestions for:',
-      query,
-      'in city:',
-      cityName
-    );
-
     try {
       const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY;
       if (!apiKey) return;
@@ -233,20 +260,10 @@ export default function AdLocationSelector({
         searchQuery
       )}&kind=house&results=10&lang=ru_RU`;
 
-      console.log('🌐 API URL:', url);
-
       const response = await fetch(url);
       const data = await response.json();
 
-      console.log('📦 API Response status:', response.status);
-      if (response.ok) {
-        console.log('📦 API Response data:', data);
-      } else {
-        console.log('❌ API Error:', data);
-      }
-
       const members = data.response?.GeoObjectCollection?.featureMember;
-      console.log('📋 Members found:', members?.length || 0);
 
       if (members && members.length > 0) {
         const suggestions = members
@@ -303,12 +320,9 @@ export default function AdLocationSelector({
           .filter((suggestion: any) => suggestion !== null)
           .slice(0, 5);
 
-        console.log('🎯 Final suggestions:', suggestions);
-
         setAddressSuggestions(suggestions);
         setShowAddressSuggestions(suggestions.length > 0);
       } else {
-        console.log('❌ No members found');
         setAddressSuggestions([]);
       }
     } catch (error) {

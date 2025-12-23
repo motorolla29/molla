@@ -10,26 +10,27 @@ interface AdContactsValue {
 
 interface AdContactsSelectorProps {
   onChange?: (value: AdContactsValue) => void;
+  initialValue?: AdContactsValue;
 }
 
 export default function AdContactsSelector({
   onChange,
+  initialValue,
 }: AdContactsSelectorProps) {
   const { user } = useAuthStore();
-  const [showPhone, setShowPhone] = useState(true);
-  const [showEmail, setShowEmail] = useState(true);
+  const [showPhone, setShowPhone] = useState(initialValue?.showPhone ?? true);
+  const [showEmail, setShowEmail] = useState(initialValue?.showEmail ?? true);
 
-  // Инициализируем состояние при загрузке или изменении пользователя
+  // Инициализируем состояние при загрузке или изменении пользователя/initialValue
   useEffect(() => {
-    const initialShowPhone = !!user?.phone;
-    const initialShowEmail = !!user?.email;
-
-    // Устанавливаем начальное состояние только если оно отличается от текущего
-    if (showPhone !== initialShowPhone || showEmail !== initialShowEmail) {
-      setShowPhone(initialShowPhone);
-      setShowEmail(initialShowEmail);
+    if (initialValue) {
+      setShowPhone(initialValue.showPhone);
+      setShowEmail(initialValue.showEmail);
+    } else {
+      setShowPhone(!!user?.phone);
+      setShowEmail(!!user?.email);
     }
-  }, [user]); // Зависимость от user
+  }, [user, initialValue]); // Зависимости только от user и initialValue
 
   // Уведомляем родительский компонент об изменениях
   useEffect(() => {

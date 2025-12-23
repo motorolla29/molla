@@ -59,7 +59,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '24');
 
     // Строим условия фильтрации
-    const where: any = {};
+    const where: any = {
+      status: 'active', // показываем только активные объявления
+    };
 
     // Фильтр по городу
     if (cityLabel && cityLabel !== 'russia') {
