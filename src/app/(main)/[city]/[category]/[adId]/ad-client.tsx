@@ -10,6 +10,7 @@ import { MapPinIcon } from '@heroicons/react/24/outline';
 import PhotoSlider from '@/components/photo-slider/photo-slider';
 import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapModal from '@/components/map-modal/map-modal';
+import SellerContacts from './components/seller-contacts';
 
 interface AdClientProps {
   ad: AdBase;
@@ -147,24 +148,10 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   </div>
                 </div>
               </div>
-              <div className="space-y-1">
-                {ad.seller.contact.phone && (
-                  <a
-                    href={`tel:${ad.seller.contact.phone}`}
-                    className="text-sm sm:text-base text-violet-500 hover:underline block break-all"
-                  >
-                    📞 {ad.seller.contact.phone}
-                  </a>
-                )}
-                {ad.seller.contact.email && (
-                  <a
-                    href={`mailto:${ad.seller.contact.email}`}
-                    className="text-sm sm:text-base text-violet-500 hover:underline block break-all"
-                  >
-                    ✉️ {ad.seller.contact.email}
-                  </a>
-                )}
-              </div>
+              <SellerContacts
+                phone={ad.seller.contact.phone}
+                email={ad.seller.contact.email}
+              />
             </div>
 
             <div className="p-4 border border-amber-300 rounded-md">
