@@ -12,6 +12,7 @@ import AdLocationSelector, {
 import AdContactsSelector from '@/components/ad-contacts-selector/ad-contacts-selector';
 import AdCategorySelector from '@/components/ad-category-selector/ad-category-selector';
 import AdCurrencySelector from '@/components/ad-currency-selector/ad-currency-selector';
+import AdEditSkeleton from './components/ad-edit-skeleton';
 
 export default function AdEditPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function AdEditPage() {
     lat: null,
     lng: null,
   });
+
   const [contacts, setContacts] = useState<{
     showPhone: boolean;
     showEmail: boolean;
@@ -254,37 +256,7 @@ export default function AdEditPage() {
 
   // Показываем loading пока проверяется авторизация или загружаются данные
   if (isAuthChecking || (!user && !isLoading) || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 text-neutral-800 sm:my-6 sm:rounded-4xl">
-        <div className="container mx-auto px-4 py-6 max-w-5xl">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-[2fr,1.4fr] gap-6">
-              <div className="space-y-6">
-                <div className="bg-white rounded-2xl p-4 sm:p-5">
-                  <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
-                  <div className="space-y-4">
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-20 bg-gray-200 rounded"></div>
-                    <div className="h-20 bg-gray-200 rounded"></div>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-6">
-                <div className="bg-white rounded-2xl p-4 sm:p-5">
-                  <div className="h-32 bg-gray-200 rounded"></div>
-                </div>
-                <div className="bg-white rounded-2xl p-4 sm:p-5">
-                  <div className="h-24 bg-gray-200 rounded"></div>
-                </div>
-                <div className="h-12 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <AdEditSkeleton />;
   }
 
   // Для отладки - показываем, что страница загружается

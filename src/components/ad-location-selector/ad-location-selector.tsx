@@ -39,6 +39,12 @@ export default function AdLocationSelector({
   );
   const [lat, setLat] = useState<number | null>(initialValue?.lat ?? null);
   const [lng, setLng] = useState<number | null>(initialValue?.lng ?? null);
+  const [confirmedLat, setConfirmedLat] = useState<number | null>(
+    initialValue?.lat ?? null
+  );
+  const [confirmedLng, setConfirmedLng] = useState<number | null>(
+    initialValue?.lng ?? null
+  );
   const [zoom, setZoom] = useState<number>(13);
   const [address, setAddress] = useState(initialValue?.address ?? '');
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -54,6 +60,7 @@ export default function AdLocationSelector({
   useEffect(() => {
     if (initialValue && !isInitializedRef.current) {
       isInitializedRef.current = true;
+      setIsUpdatingFromInitialValue(true);
 
       // Устанавливаем значения
       setCityLabel(initialValue.cityLabel);
@@ -65,8 +72,16 @@ export default function AdLocationSelector({
       if (initialValue.lat != null && initialValue.lng != null) {
         setLat(initialValue.lat);
         setLng(initialValue.lng);
+        setConfirmedLat(initialValue.lat);
+        setConfirmedLng(initialValue.lng);
         setZoom(16); // Увеличиваем зум для детального просмотра адреса
       }
+
+      // Даем время на обновление состояния, затем сбрасываем флаги
+      setTimeout(() => {
+        setIsUpdatingFromInitialValue(false);
+        setIsInitialized(true);
+      }, 0);
     }
   }, [initialValue]);
 
@@ -81,6 +96,10 @@ export default function AdLocationSelector({
     lat: number;
     lng: number;
   } | null>(null);
+  const [isConfirmingAddress, setIsConfirmingAddress] = useState(false);
+  const [isUpdatingFromInitialValue, setIsUpdatingFromInitialValue] =
+    useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Инициализация города
   useEffect(() => {
@@ -113,6 +132,8 @@ export default function AdLocationSelector({
           setCityNamePreposition(prep);
           setLat(fromProfile.coords.lat ?? null);
           setLng(fromProfile.coords.lon ?? null);
+          setConfirmedLat(fromProfile.coords.lat ?? null);
+          setConfirmedLng(fromProfile.coords.lon ?? null);
           setZoom(12); // Оптимальный зум для города
           return;
         }
@@ -125,6 +146,8 @@ export default function AdLocationSelector({
         setCityNamePreposition(locationStore.cityNamePreposition ?? null);
         setLat(locationStore.lat ?? null);
         setLng(locationStore.lon ?? null);
+        setConfirmedLat(locationStore.lat ?? null);
+        setConfirmedLng(locationStore.lon ?? null);
         setZoom(12); // Оптимальный зум для города
         return;
       }
@@ -143,11 +166,15 @@ export default function AdLocationSelector({
         setCityNamePreposition(prep);
         setLat(first.coords.lat ?? null);
         setLng(first.coords.lon ?? null);
+        setConfirmedLat(first.coords.lat ?? null);
+        setConfirmedLng(first.coords.lon ?? null);
         setZoom(12); // Оптимальный зум для города
       }
     }
 
-    initCity();
+    initCity().then(() => {
+      setIsInitialized(true);
+    });
   }, [
     profileCity,
     locationStore.cityLabel,
@@ -171,6 +198,8 @@ export default function AdLocationSelector({
     setCityNamePreposition(selectedCityNamePreposition);
     setLat(selectedLat);
     setLng(selectedLon);
+    setConfirmedLat(selectedLat);
+    setConfirmedLng(selectedLon);
     // Сбрасываем адрес при смене города
     setAddress('');
     // Не сбрасываем зум при выборе города, оставляем текущий или устанавливаем оптимальный для города
@@ -209,6 +238,8 @@ export default function AdLocationSelector({
     setAddress(suggestion.text);
     setLat(suggestion.lat);
     setLng(suggestion.lng);
+    setConfirmedLat(suggestion.lat);
+    setConfirmedLng(suggestion.lng);
     setZoom(16); // Увеличиваем зум для детального просмотра адреса
     setIsMapOverlayVisible(true); // Закрываем карту оверлеем
     setShowAddressSuggestions(false);
@@ -217,17 +248,46 @@ export default function AdLocationSelector({
 
   // Репортим текущее значение наружу
   useEffect(() => {
-    if (isInitializedRef.current) {
+    // Не вызываем onChange во время подтверждения адреса
+    if (isConfirmingAddress) {
+      return;
+    }
+
+    // Не вызываем onChange при обновлении из initialValue
+    if (isUpdatingFromInitialValue) {
+      return;
+    }
+
+    // Не вызываем onChange пока компонент не инициализирован
+    if (!isInitialized) {
+      return;
+    }
+
+    // Всегда вызываем onChange когда есть данные
+    // Для edit страницы initialValue обеспечивает правильную инициализацию
+    // Для create страницы initCity обеспечивает данные
+    if (confirmedLat != null || confirmedLng != null || cityLabel || cityName) {
       onChange?.({
         cityLabel,
         cityName,
         cityNamePreposition,
-        lat,
-        lng,
+        lat: confirmedLat,
+        lng: confirmedLng,
         address,
       });
     }
-  }, [cityLabel, cityName, cityNamePreposition, lat, lng, address, onChange]);
+  }, [
+    cityLabel,
+    cityName,
+    cityNamePreposition,
+    confirmedLat,
+    confirmedLng,
+    address,
+    onChange,
+    isConfirmingAddress,
+    isUpdatingFromInitialValue,
+    isInitialized,
+  ]);
 
   // Очистка таймера при размонтировании
   useEffect(() => {
@@ -365,6 +425,7 @@ export default function AdLocationSelector({
 
   // Показать попап выбора адреса
   const showAddressConfirm = async (newLat: number, newLng: number) => {
+    setIsConfirmingAddress(true);
     const address = await getAddressFromCoords(newLat, newLng);
 
     // Определяем город по координатам
@@ -418,11 +479,14 @@ export default function AdLocationSelector({
     // Обновляем координаты
     setLat(pendingAddressData.lat);
     setLng(pendingAddressData.lng);
+    setConfirmedLat(pendingAddressData.lat);
+    setConfirmedLng(pendingAddressData.lng);
 
     // Закрываем попап и возвращаем оверлей
     setShowAddressConfirmPopup(false);
     setPendingAddressData(null);
     setIsMapOverlayVisible(true);
+    setIsConfirmingAddress(false);
   };
 
   const handleMapCenterChange = (newLat: number, newLng: number) => {
@@ -483,6 +547,7 @@ export default function AdLocationSelector({
           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
             {addressSuggestions.map((suggestion, index) => (
               <button
+                type="button"
                 key={index}
                 onClick={() => handleAddressSuggestionSelect(suggestion)}
                 className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
@@ -526,6 +591,7 @@ export default function AdLocationSelector({
               />
               {/* Пин по центру */}
               <button
+                type="button"
                 onClick={handlePinClick}
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full focus:outline-none focus:ring-2 focus:ring-violet-300 rounded-full z-1"
                 disabled={isMapOverlayVisible}
@@ -545,6 +611,7 @@ export default function AdLocationSelector({
         {isMapOverlayVisible && (
           <div className="absolute inset-0 bg-white/50 flex items-end justify-center pb-6 z-2">
             <button
+              type="button"
               onClick={() => setIsMapOverlayVisible(false)}
               className="px-5 py-3 text-xs sm:text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors font-medium shadow-lg"
             >
@@ -556,8 +623,26 @@ export default function AdLocationSelector({
         {/* Подсказка для выбора адреса */}
         {!isMapOverlayVisible && !showAddressConfirmPopup && (
           <div className="absolute top-4 left-4 right-4 z-20">
-            <div className="bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-lg text-center">
-              Переместите карту и нажмите на пин, чтобы выбрать адрес
+            <div className="bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-lg relative">
+              <div className="text-center pr-16">
+                Переместите карту и нажмите на пин, чтобы выбрать адрес
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  // Возвращаем карту к подтвержденным координатам
+                  if (confirmedLat !== null && confirmedLng !== null) {
+                    setLat(confirmedLat);
+                    setLng(confirmedLng);
+                    setZoom(16); // Возвращаем зум для детального просмотра адреса
+                  }
+                  setIsMapOverlayVisible(true);
+                  setIsConfirmingAddress(false);
+                }}
+                className="absolute top-1/2 right-3 -translate-y-1/2 px-2 py-1 text-[11px] sm:text-xs bg-white/20 text-white rounded hover:bg-white/30 transition-colors"
+              >
+                Отмена
+              </button>
             </div>
           </div>
         )}
@@ -587,15 +672,18 @@ export default function AdLocationSelector({
               )}
             <div className="flex space-x-3">
               <button
+                type="button"
                 onClick={() => {
                   setShowAddressConfirmPopup(false);
                   setPendingAddressData(null);
+                  setIsConfirmingAddress(false);
                 }}
                 className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm"
               >
                 Отмена
               </button>
               <button
+                type="button"
                 onClick={confirmAddressSelection}
                 className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-xs sm:text-sm"
               >
