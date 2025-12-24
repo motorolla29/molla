@@ -23,7 +23,7 @@ export default function UserProfileSkeleton() {
                   <div className="h-8 bg-gray-200 rounded w-20"></div>
                   <div className="h-8 bg-gray-200 rounded w-24"></div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {Array.from({ length: 10 }).map((_, i) => (
                     <div
                       key={i}

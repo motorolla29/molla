@@ -32,7 +32,9 @@ export default function UserProfileSidebar({ user }: UserProfileSidebarProps) {
       <div className="flex flex-col items-center text-center mb-6">
         <div className="w-20 h-20 rounded-full overflow-hidden mb-4">
           <img
-            src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${user.avatar}`}
+            src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
+              user.avatar ? user.avatar : '765-default-avatar.png'
+            }`}
             alt={`Аватар ${user.name}`}
             className="w-full h-full object-cover"
           />
