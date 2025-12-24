@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AdBase } from '@/types/ad';
 import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 import { FidgetSpinner } from 'react-loader-spinner';
@@ -30,10 +30,10 @@ export default function PaginatedAds({
   showEndMessage = true,
 }: PaginatedAdsProps) {
   const [ads, setAds] = useState<AdBase[]>([]);
-  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Загрузка объявлений
   const loadAds = async (pageNum: number = 1, append: boolean = false) => {
@@ -68,8 +68,17 @@ export default function PaginatedAds({
 
   // Первоначальная загрузка
   useEffect(() => {
-    loadAds(1, false);
-    setLoading(false);
+    const loadData = async () => {
+      setIsLoading(true);
+
+      try {
+        await loadAds(1, false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, [userId, status]);
 
   // Загрузка следующей страницы
@@ -83,22 +92,7 @@ export default function PaginatedAds({
     setLoadingMore(false);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <FidgetSpinner
-          visible={true}
-          height="60"
-          width="60"
-          ariaLabel="fidget-spinner-loading"
-          wrapperStyle={{}}
-          wrapperClass="fidget-spinner-wrapper"
-        />
-      </div>
-    );
-  }
-
-  if (ads.length === 0) {
+  if (ads.length === 0 && !isLoading && !loadingMore) {
     const statusText = status === 'active' ? 'активных' : 'завершенных';
     return (
       <div className="text-center py-12">
@@ -107,6 +101,11 @@ export default function PaginatedAds({
         </div>
       </div>
     );
+  }
+
+  // Показываем скелетон во время загрузки
+  if (isLoading) {
+    return <AdsCardsSkeleton />;
   }
 
   return (
@@ -119,12 +118,12 @@ export default function PaginatedAds({
       </div>
 
       {/* Кнопка "Показать еще" */}
-      {hasMore && (
+      {hasMore && !isLoading && (
         <div className="flex justify-center">
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="px-6 py-3 bg-violet-500 text-white rounded-xl hover:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base shadow-sm"
+            className="mt-6 mb-2 px-5 py-2.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-xs sm:text-sm shadow-sm"
           >
             {loadingMore ? (
               <div className="flex items-center gap-2">
@@ -146,11 +145,32 @@ export default function PaginatedAds({
       )}
 
       {/* Сообщение о конце списка */}
-      {!hasMore && showEndMessage && ads.length > 0 && (
+      {!hasMore && showEndMessage && ads.length > 0 && !isLoading && (
         <div className="text-center py-8">
           <div className="text-gray-500 text-sm">Это все объявления</div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Скелетон для карточек объявлений
+function AdsCardsSkeleton() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex flex-col w-full overflow-hidden h-full min-w-0"
+        >
+          <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg bg-gray-200"></div>
+          <div className="flex-1 flex-col min-w-0">
+            <div className="h-4 bg-gray-200 rounded-md w-2/3 mb-1"></div>
+            <div className="h-4 bg-gray-200 rounded-md w-1/3 mb-2"></div>
+            <div className="h-3 bg-gray-200 rounded-md w-1/2"></div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

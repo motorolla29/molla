@@ -40,7 +40,7 @@ export default function UserProfileSidebar({ user }: UserProfileSidebarProps) {
           />
         </div>
 
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2 line-clamp-2">
           {user.name}
         </h2>
 

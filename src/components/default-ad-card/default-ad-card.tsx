@@ -64,7 +64,10 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       </div>
 
       {/* Информация о продавце */}
-      <div className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden">
+      <Link
+        href={`/user/${ad.seller.id}/active`}
+        className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
+      >
         <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
           <img
             className="w-full h-full object-cover"
@@ -105,7 +108,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             {ad.seller.rating.toFixed(1)}
           </span>
         </div>
-      </div>
+      </Link>
     </Link>
   );
 }

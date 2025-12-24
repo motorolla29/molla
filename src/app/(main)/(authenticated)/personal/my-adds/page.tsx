@@ -218,11 +218,11 @@ export default function MyAddsPage() {
       {/* Переключатель статуса */}
       {isLoading ? (
         <div className="flex border-b border-gray-200 mb-6">
-          <div className="pl-4 py-2">
-            <div className="h-5 bg-gray-200 rounded w-18 animate-pulse"></div>
+          <div className="relative pl-4 py-2">
+            <div className="h-5 bg-gray-200 rounded w-20 animate-pulse"></div>
           </div>
-          <div className="ml-4 pl-4 py-2">
-            <div className="h-5 bg-gray-200 rounded w-18 animate-pulse"></div>
+          <div className="relative ml-6 pl-4 py-2">
+            <div className="h-5 bg-gray-200 rounded w-16 animate-pulse"></div>
           </div>
         </div>
       ) : (
@@ -237,7 +237,7 @@ export default function MyAddsPage() {
           >
             Активные
             {activeCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-violet-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+              <span className="absolute -top-px -right-px sm:-top-[3px] sm:-right-[3px] bg-violet-500 text-white text-[8px] sm:text-[10px] font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 flex items-center justify-center px-[6px]">
                 {activeCount}
               </span>
             )}
@@ -252,7 +252,7 @@ export default function MyAddsPage() {
           >
             Архив
             {archivedCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gray-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+              <span className="absolute -top-px -right-px sm:-top-[3px] sm:-right-[3px] bg-gray-500 text-white text-[8px] sm:text-[10px] font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 flex items-center justify-center px-[6px]">
                 {archivedCount}
               </span>
             )}

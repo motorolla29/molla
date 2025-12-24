@@ -26,6 +26,10 @@ export default function UserProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [adsCounts, setAdsCounts] = useState<{
+    active: number;
+    archived: number;
+  } | null>(null);
 
   // Проверяем валидность статуса
   useEffect(() => {
@@ -39,18 +43,37 @@ export default function UserProfilePage() {
     const loadUserProfile = async () => {
       try {
         console.log('Client: Fetching user profile for ID:', userId);
-        const response = await fetch(`/api/users/${userId}`);
-        console.log('Client: Response status:', response.status);
 
-        if (!response.ok) {
-          const errorData = await response.json();
+        // Загружаем профиль пользователя и счетчики объявлений параллельно
+        const [userResponse, activeResponse, archivedResponse] =
+          await Promise.all([
+            fetch(`/api/users/${userId}`),
+            fetch(`/api/users/${userId}/ads?status=active&limit=1`),
+            fetch(`/api/users/${userId}/ads?status=archived&limit=1`),
+          ]);
+
+        if (!userResponse.ok) {
+          const errorData = await userResponse.json();
           console.log('Client: Error response:', errorData);
           throw new Error(errorData.error || 'Пользователь не найден');
         }
 
-        const userData = await response.json();
+        const userData = await userResponse.json();
         console.log('Client: User data received:', userData);
+
+        // Получаем количество объявлений из пагинации
+        const activeData = activeResponse.ok
+          ? await activeResponse.json()
+          : { pagination: { total: 0 } };
+        const archivedData = archivedResponse.ok
+          ? await archivedResponse.json()
+          : { pagination: { total: 0 } };
+
         setUser(userData);
+        setAdsCounts({
+          active: activeData.pagination?.total || 0,
+          archived: archivedData.pagination?.total || 0,
+        });
       } catch (err: any) {
         console.log('Client: Error occurred:', err);
         setError(err.message || 'Не удалось загрузить профиль пользователя');
@@ -94,7 +117,11 @@ export default function UserProfilePage() {
 
           {/* Правый блок с объявлениями */}
           <div className="flex-1">
-            <UserAdsContent userId={userId} currentStatus={status} />
+            <UserAdsContent
+              userId={userId}
+              currentStatus={status}
+              adsCounts={adsCounts || undefined}
+            />
           </div>
         </div>
       </div>

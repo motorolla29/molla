@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import { categoryOptions } from '@/const';
 import { getCurrencySymbol } from '@/utils';
@@ -108,7 +109,10 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 Продавец
               </h3>
               <div className="flex items-start space-x-3 py-3">
-                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+                <Link
+                  href={`/user/${ad.seller.id}/active`}
+                  className="w-12 h-12 rounded-lg overflow-hidden shrink-0 hover:opacity-90 transition-opacity"
+                >
                   <img
                     src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
                       ad.seller.avatar || '765-default-avatar.png'
@@ -116,11 +120,14 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                     alt="Аватар продавца"
                     className="w-full h-full object-cover"
                   />
-                </div>
+                </Link>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm sm:text-base font-semibold break-words">
+                  <Link
+                    href={`/user/${ad.seller.id}/active`}
+                    className="text-sm sm:text-base font-semibold break-words line-clamp-2 hover:opacity-90 transition-colors"
+                  >
                     {ad.seller.name}
-                  </p>
+                  </Link>
                   <div className="flex items-center space-x-1 mt-1">
                     {Array.from({ length: 5 }).map((_, idx) => {
                       const starPos = idx + 1;
