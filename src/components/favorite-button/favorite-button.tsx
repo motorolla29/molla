@@ -7,9 +7,16 @@ import { useFavoritesStore } from '@/store/useFavoritesStore';
 interface FavoriteButtonProps {
   ad: AdBase;
   className?: string;
+  solidIconClassName?: string; // Для кастомных классов заполненного сердца
+  outlineIconClassName?: string; // Для кастомных классов пустого сердца
 }
 
-export default function FavoriteButton({ ad, className }: FavoriteButtonProps) {
+export default function FavoriteButton({
+  ad,
+  className,
+  solidIconClassName,
+  outlineIconClassName,
+}: FavoriteButtonProps) {
   // Используем селектор для конкретного объявления
   const isFavoriteFromStore = useFavoritesStore((state) =>
     state.favoriteIds.has(ad.id)
@@ -60,9 +67,16 @@ export default function FavoriteButton({ ad, className }: FavoriteButtonProps) {
       aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
     >
       {isFavorite ? (
-        <SolidHeartIcon className="w-6 h-6 text-violet-400" />
+        <SolidHeartIcon
+          className={solidIconClassName || 'w-6 h-6 text-violet-400'}
+        />
       ) : (
-        <OutlineHeartIcon className="w-6 h-6 text-gray-600 fill-white/50 stroke-2" />
+        <OutlineHeartIcon
+          className={
+            outlineIconClassName ||
+            'w-6 h-6 text-gray-600 fill-white/50 stroke-2'
+          }
+        />
       )}
     </button>
   );

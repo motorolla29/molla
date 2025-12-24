@@ -66,6 +66,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       {/* Информация о продавце */}
       <Link
         href={`/user/${ad.seller.id}/active`}
+        onClick={(e) => e.stopPropagation()}
         className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
       >
         <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">

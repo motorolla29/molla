@@ -11,6 +11,7 @@ import { MapPinIcon } from '@heroicons/react/24/outline';
 import PhotoSlider from '@/components/photo-slider/photo-slider';
 import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapModal from '@/components/map-modal/map-modal';
+import FavoriteButton from '@/components/favorite-button/favorite-button';
 import SellerContacts from './components/seller-contacts';
 
 interface AdClientProps {
@@ -62,9 +63,16 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
         <div className="flex flex-col lg:flex-row gap-6 text-neutral-800">
           {/* Левая часть: фото и основные данные */}
           <div className="flex-1 space-y-6 lg:max-w-2xl">
-            <h1 className="text-2xl sm:text-3xl text-neutral-800 font-medium mb-6 sm:mb-8 line-clamp-2 max-w-full overflow-hidden break-words">
-              {ad.title}
-            </h1>
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <h1 className="text-2xl sm:text-3xl text-neutral-800 font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden break-words">
+                {ad.title}
+              </h1>
+              <FavoriteButton
+                ad={ad}
+                solidIconClassName="w-8 h-8 sm:w-10 sm:h-10 text-violet-400"
+                outlineIconClassName="w-8 h-8 sm:w-10 sm:h-10 text-gray-600 fill-white/50 stroke-2"
+              />
+            </div>
 
             <PhotoSlider
               images={photos.map(
