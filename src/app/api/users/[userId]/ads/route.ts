@@ -86,6 +86,7 @@ export async function GET(
         rating: ad.seller.rating,
       },
       details: ad.details,
+      status: ad.status,
     }));
 
     return NextResponse.json({

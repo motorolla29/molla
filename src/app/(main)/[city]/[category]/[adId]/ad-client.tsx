@@ -22,6 +22,7 @@ interface AdClientProps {
 export default function AdClient({ ad, similarAds }: AdClientProps) {
   const photos = ad.photos.length > 0 ? ad.photos : ['default.jpg'];
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const isArchived = ad.status === 'archived';
 
   return (
     <Suspense>
@@ -64,7 +65,11 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           {/* Левая часть: фото и основные данные */}
           <div className="flex-1 space-y-6 lg:max-w-2xl">
             <div className="flex items-start justify-between gap-4 mb-4">
-              <h1 className="text-2xl sm:text-3xl text-neutral-800 font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden break-words">
+              <h1
+                className={`text-2xl sm:text-3xl font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden break-words ${
+                  isArchived ? 'text-neutral-500' : 'text-neutral-700'
+                }`}
+              >
                 {ad.title}
               </h1>
               <FavoriteButton
@@ -74,14 +79,24 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               />
             </div>
 
-            <PhotoSlider
-              images={photos.map(
-                (src) =>
-                  `https://ik.imagekit.io/motorolla29/molla/mock-photos/${
-                    src || 'default.jpg'
-                  }`
-              )}
-            />
+            {isArchived && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p className="text-amber-800 font-medium text-center">
+                  Объявление снято с публикации
+                </p>
+              </div>
+            )}
+
+            <div className={isArchived ? 'opacity-50' : ''}>
+              <PhotoSlider
+                images={photos.map(
+                  (src) =>
+                    `https://ik.imagekit.io/motorolla29/molla/mock-photos/${
+                      src || 'default.jpg'
+                    }`
+                )}
+              />
+            </div>
 
             {ad.description && ad.description.trim() && (
               <p className="text-sm sm:text-base mb-4 break-words">

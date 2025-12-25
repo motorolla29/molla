@@ -7,35 +7,35 @@ interface GalleryAdCardProps {
 }
 
 export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
+  const isArchived = ad.status === 'archived';
+
   return (
-    <div
-      key={ad.id}
+    <Link
+      href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
       className="flex flex-col w-full overflow-hidden h-full min-w-0"
     >
       <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg">
-        <Link
-          href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-          className="block w-full h-full"
-        >
-          <img
-            src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
-              ad.photos[0] || 'default.jpg'
-            }`}
-            alt={ad.title}
-            className="w-full h-full object-cover"
-          />
-        </Link>
+        <img
+          src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
+            ad.photos[0] || 'default.jpg'
+          }`}
+          alt={ad.title}
+          className={`w-full h-full object-cover ${
+            isArchived ? 'opacity-50' : ''
+          }`}
+        />
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-2 right-2" />
       </div>
       <div className="flex-1 flex-col min-w-0">
-        <Link
-          href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-          className="text-sm sm:text-base md:text-lg text-neutral-800 leading-[1.2] pb-1 hover:text-violet-400 block truncate min-w-0"
-        >
+        <h3 className="text-sm sm:text-base md:text-lg text-neutral-800 leading-[1.2] pb-1 hover:text-violet-400 truncate min-w-0">
           {ad.title}
-        </Link>
-        <p className="text-xs sm:text-sm md:text-base font-semibold truncate">
+        </h3>
+        <p
+          className={`text-xs sm:text-sm md:text-base font-semibold truncate ${
+            isArchived ? 'opacity-50' : ''
+          }`}
+        >
           {ad.price?.toLocaleString('ru-RU')} {getCurrencySymbol(ad.currency)}
         </p>
         <p className="text-xs flex items-center text-neutral-400 pt-1">
@@ -54,6 +54,6 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
           <span className="truncate">{ad.city}</span>
         </p>
       </div>
-    </div>
+    </Link>
   );
 }

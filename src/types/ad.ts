@@ -35,6 +35,7 @@ export interface AdBase {
   photos: string[]; // массив URL или имён файлов
   seller: Seller;
   details: string;
+  status?: 'active' | 'archived';
   showPhone?: boolean;
   showEmail?: boolean;
 }

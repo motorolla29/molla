@@ -73,6 +73,7 @@ export default async function AdPage({ params }: Props) {
       },
     },
     details: adFromDb.details,
+    status: adFromDb.status,
   };
 
   // 4. Доп. проверка: чтобы URL-адрес совпадал с данными объявления
@@ -90,6 +91,7 @@ export default async function AdPage({ params }: Props) {
     where: {
       category: adFromDb.category,
       id: { not: ad.id },
+      status: 'active',
     },
     include: {
       seller: {
@@ -146,6 +148,7 @@ export default async function AdPage({ params }: Props) {
       },
     },
     details: item.details,
+    status: item.status,
   }));
 
   return <AdClient ad={ad} similarAds={similarAds} />;
