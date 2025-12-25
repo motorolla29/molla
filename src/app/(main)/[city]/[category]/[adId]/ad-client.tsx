@@ -5,13 +5,20 @@ import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import { categoryOptions } from '@/const';
 import { getCurrencySymbol } from '@/utils';
-import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
+import { StarIcon as SolidStarIcon, PlayIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
-import { MapPinIcon } from '@heroicons/react/24/outline';
+import {
+  MapPinIcon,
+  PencilIcon,
+  ArchiveBoxIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
 import PhotoSlider from '@/components/photo-slider/photo-slider';
 import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapModal from '@/components/map-modal/map-modal';
 import FavoriteButton from '@/components/favorite-button/favorite-button';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
 import SellerContacts from './components/seller-contacts';
 
 interface AdClientProps {
@@ -24,11 +31,128 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const isArchived = ad.status === 'archived';
 
+  // Проверка авторизации и владения объявлением
+  const { user, isLoggedIn } = useAuthStore();
+  const isOwner = isLoggedIn && user?.id && parseInt(user.id) === ad.seller.id;
+  const { removeFavorite } = useFavoritesStore();
+
+  // Состояния для операций с объявлением
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Форматирование даты размещения
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  // Функция изменения статуса объявления
+  const toggleAdStatus = async () => {
+    if (!isOwner) return;
+
+    const action = isArchived ? 'опубликовать' : 'снять с публикации';
+    if (!confirm(`Вы уверены, что хотите ${action} это объявление?`)) {
+      return;
+    }
+
+    try {
+      setIsUpdatingStatus(true);
+      const newStatus = isArchived ? 'active' : 'archived';
+
+      const response = await fetch('/api/user/ads', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adId: ad.id,
+          status: newStatus,
+        }),
+      });
+
+      if (response.ok) {
+        // Перезагрузка страницы для обновления данных
+        window.location.reload();
+      } else {
+        console.error('Failed to update ad status');
+      }
+    } catch (error) {
+      console.error('Error updating ad status:', error);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  // Функция удаления объявления
+  const deleteAd = async () => {
+    if (!isOwner || !isArchived) return;
+
+    if (
+      !confirm(
+        'Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsUpdatingStatus(true);
+      const response = await fetch(`/api/user/ads/${ad.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Перенаправление на главную страницу
+        window.location.href = '/';
+      } else {
+        console.error('Failed to delete ad');
+      }
+    } catch (error) {
+      console.error('Error deleting ad:', error);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   return (
     <Suspense>
       <div className="container mx-auto px-4 py-6">
+        {/* Блок уведомления для архивных объявлений владельца */}
+        {isOwner && isArchived && (
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 sm:p-4 mb-4 max-w-full lg:max-w-[960px] xl:max-w-[1080px] 2xl:max-w-[1166px]">
+            <div className="flex flex-col gap-3">
+              <p className="text-neutral-700 text-sm sm:text-base">
+                Вы перенесли объявление в архив
+              </p>
+              <div className="flex max-[350px]:flex-col gap-2 w-full sm:w-auto sm:justify-end">
+                <button
+                  onClick={toggleAdStatus}
+                  disabled={isUpdatingStatus}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-green-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <PlayIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                  Опубликовать
+                </button>
+                <button
+                  onClick={deleteAd}
+                  disabled={isUpdatingStatus}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-gray-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                  Удалить
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Хлебные крошки */}
-        <nav className="text-sm mb-4 overflow-hidden" aria-label="Breadcrumb">
+        <nav
+          className="text-xs sm:text-sm mb-4 overflow-hidden"
+          aria-label="Breadcrumb"
+        >
           <ol className="flex items-center space-x-2 min-w-0 overflow-hidden">
             <li>
               <a href="/" className="text-blue-500 hover:underline">
@@ -67,19 +191,49 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
             <div className="flex items-start justify-between gap-4 mb-4">
               <h1
                 className={`text-2xl sm:text-3xl font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden break-words ${
-                  isArchived ? 'text-neutral-500' : 'text-neutral-700'
+                  isArchived && !isOwner
+                    ? 'text-neutral-500'
+                    : 'text-neutral-700'
                 }`}
               >
                 {ad.title}
               </h1>
-              <FavoriteButton
-                ad={ad}
-                solidIconClassName="w-8 h-8 sm:w-10 sm:h-10 text-violet-400"
-                outlineIconClassName="w-8 h-8 sm:w-10 sm:h-10 text-gray-600 fill-white/50 stroke-2"
-              />
+              {!isOwner && (
+                <FavoriteButton
+                  ad={ad}
+                  solidIconClassName="w-8 h-8 sm:w-10 sm:h-10 text-violet-400"
+                  outlineIconClassName="w-8 h-8 sm:w-10 sm:h-10 text-gray-600 fill-white/50 stroke-2"
+                />
+              )}
             </div>
 
-            {isArchived && (
+            {/* Блок управления для владельца активного объявления */}
+            {isOwner && !isArchived && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Размещено {formatDate(ad.datePosted)}
+                </p>
+                <div className="flex max-[400px]:flex-col gap-2 w-full sm:w-auto sm:justify-end">
+                  <Link
+                    href={`/ad/edit/${ad.id}`}
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-violet-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-violet-600 transition-colors"
+                  >
+                    <PencilIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    Редактировать
+                  </Link>
+                  <button
+                    onClick={toggleAdStatus}
+                    disabled={isUpdatingStatus}
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-orange-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ArchiveBoxIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    Снять с публикации
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {isArchived && !isOwner && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
                 <p className="text-amber-800 font-medium text-center">
                   Объявление снято с публикации
@@ -87,7 +241,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </div>
             )}
 
-            <div className={isArchived ? 'opacity-50' : ''}>
+            <div className={isArchived && !isOwner ? 'opacity-50' : ''}>
               <PhotoSlider
                 images={photos.map(
                   (src) =>

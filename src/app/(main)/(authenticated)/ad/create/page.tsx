@@ -139,11 +139,11 @@ export default function AddCreatePage() {
       }
 
       const adId = data.id as string;
-      // Редирект на созданное объявление
-      if (location?.cityLabel) {
-        router.push(`/${location.cityLabel}/${category}/${adId}`);
-      } else {
-        router.push('/');
+      // Редирект на страницу активных объявлений пользователя
+      router.push('/personal/my-adds/active');
+      // Прокрутка страницы вверх
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err: any) {
       setError(err.message || 'Не удалось создать объявление');
@@ -235,77 +235,74 @@ export default function AddCreatePage() {
             </section>
           </div>
 
-          {/* Правая колонка: локация, цена, контакты */}
-          <div className="space-y-6">
-            {/* Локация и карта */}
-            <AdLocationSelector
-              profileCity={user?.city ?? null}
-              onChange={setLocation}
-            />
+          {/* Локация и карта */}
+          <AdLocationSelector
+            profileCity={user?.city ?? null}
+            onChange={setLocation}
+          />
 
-            {/* Цена */}
-            <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-3">
-              <h2 className="text-base sm:text-lg font-semibold">Цена</h2>
-              <div className="flex gap-3 items-center mb-0">
-                <div className="flex-1">
-                  <label className="block text-xs sm:text-sm font-medium mb-1">
-                    Стоимость *
-                  </label>
-                  <input
-                    value={price}
-                    onChange={(e) => {
-                      const rawValue = e.target.value.replace(/[^\d]/g, '');
-                      // Форматируем с пробелами для читабельности
-                      const formattedValue = rawValue.replace(
-                        /\B(?=(\d{3})+(?!\d))/g,
-                        ' '
-                      );
-                      setPrice(formattedValue);
-                      clearValidationError('price');
-                    }}
-                    inputMode="numeric"
-                    placeholder="Например, 35 000"
-                    className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base ${
-                      validationErrors.price
-                        ? 'border-red-500'
-                        : 'border-gray-300'
-                    }`}
-                  />
-                </div>
-                <AdCurrencySelector value={currency} onChange={setCurrency} />
+          {/* Цена */}
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-3">
+            <h2 className="text-base sm:text-lg font-semibold">Цена</h2>
+            <div className="flex gap-3 items-center mb-0">
+              <div className="flex-1">
+                <label className="block text-xs sm:text-sm font-medium mb-1">
+                  Стоимость *
+                </label>
+                <input
+                  value={price}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/[^\d]/g, '');
+                    // Форматируем с пробелами для читабельности
+                    const formattedValue = rawValue.replace(
+                      /\B(?=(\d{3})+(?!\d))/g,
+                      ' '
+                    );
+                    setPrice(formattedValue);
+                    clearValidationError('price');
+                  }}
+                  inputMode="numeric"
+                  placeholder="Например, 35 000"
+                  className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm sm:text-base ${
+                    validationErrors.price
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                  }`}
+                />
               </div>
-              {validationErrors.price && (
-                <p className="text-xs text-red-500 mt-1">
-                  {validationErrors.price}
-                </p>
-              )}
-            </section>
-
-            {/* Контакты */}
-            <div>
-              <AdContactsSelector onChange={handleContactsChange} />
-              {validationErrors.contacts && (
-                <p className="text-xs text-red-500 mt-2">
-                  {validationErrors.contacts}
-                </p>
-              )}
+              <AdCurrencySelector value={currency} onChange={setCurrency} />
             </div>
-
-            {/* Ошибка и кнопка */}
-            {error && (
-              <div className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                {error}
-              </div>
+            {validationErrors.price && (
+              <p className="text-xs text-red-500 mt-1">
+                {validationErrors.price}
+              </p>
             )}
+          </section>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-violet-500 text-white text-sm font-semibold shadow-sm hover:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? 'Публикация...' : 'Опубликовать объявление'}
-            </button>
+          {/* Контакты */}
+          <div>
+            <AdContactsSelector onChange={handleContactsChange} />
+            {validationErrors.contacts && (
+              <p className="text-xs text-red-500 mt-2">
+                {validationErrors.contacts}
+              </p>
+            )}
           </div>
+
+          {/* Ошибка и кнопка */}
+          {error && (
+            <div className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-3 rounded-xl bg-violet-500 text-white text-sm font-semibold shadow-sm hover:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
+          >
+            {isSubmitting ? 'Публикация...' : 'Опубликовать объявление'}
+          </button>
         </form>
       </div>
     </div>

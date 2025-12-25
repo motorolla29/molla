@@ -43,7 +43,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
             <nav className="p-4">
               <div className="space-y-1">
                 {navItems.map(({ href, Icon, label }) => {
-                  const isActive = pathname === href;
+                  const isActive = pathname.startsWith(href);
                   return (
                     <Link
                       key={href}
@@ -51,7 +51,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
                       className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-violet-50 text-violet-700'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
                       <Icon

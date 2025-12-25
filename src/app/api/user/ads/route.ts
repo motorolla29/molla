@@ -117,14 +117,22 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Обновляем статус
+    // Подготавливаем данные для обновления
+    const updateData: any = {
+      status: status as 'active' | 'archived',
+    };
+
+    // Если объявление публикуется заново (из archived в active), обновляем дату размещения
+    if (ad.status === 'archived' && status === 'active') {
+      updateData.datePosted = new Date();
+    }
+
+    // Обновляем статус (и возможно дату размещения)
     const updatedAd = await prisma.ad.update({
       where: {
         id: adId,
       },
-      data: {
-        status: status as 'active' | 'archived',
-      },
+      data: updateData,
     });
 
     return NextResponse.json({

@@ -561,7 +561,11 @@ export default function AdLocationSelector({
         )}
       </div>
 
-      <div className="mt-3 h-64 rounded-xl overflow-hidden border border-gray-200 relative">
+      <div
+        className={`mt-3 h-64 rounded-xl border border-gray-200 relative ${
+          showAddressConfirmPopup ? 'overflow-visible' : 'overflow-hidden'
+        }`}
+      >
         {lat != null && lng != null ? (
           <YMaps
             query={{
@@ -646,53 +650,53 @@ export default function AdLocationSelector({
             </div>
           </div>
         )}
-      </div>
 
-      {/* Попап подтверждения адреса над картой */}
-      {showAddressConfirmPopup && pendingAddressData && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div className="bg-white rounded-lg p-4 shadow-xl border border-gray-200 min-w-80 relative pointer-events-auto">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-              {pendingAddressData.address === 'Адрес не найден'
-                ? 'Сохранить место?'
-                : 'Выбрать этот адрес?'}
-            </h3>
-            <div className="text-xs sm:text-sm text-gray-600 mb-3">
-              <strong>Адрес:</strong>{' '}
-              {pendingAddressData.address === 'Адрес не найден'
-                ? 'Без адреса'
-                : pendingAddressData.address}
-            </div>
-            {pendingAddressData.cityName &&
-              pendingAddressData.cityName !== cityName && (
-                <div className="text-xs sm:text-sm text-amber-600 mb-3">
-                  <strong>Город изменится на:</strong>{' '}
-                  {pendingAddressData.cityName}
-                </div>
-              )}
-            <div className="flex space-x-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddressConfirmPopup(false);
-                  setPendingAddressData(null);
-                  setIsConfirmingAddress(false);
-                }}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm"
-              >
-                Отмена
-              </button>
-              <button
-                type="button"
-                onClick={confirmAddressSelection}
-                className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-xs sm:text-sm"
-              >
-                Подтвердить
-              </button>
+        {/* Попап подтверждения адреса над пином */}
+        {showAddressConfirmPopup && pendingAddressData && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full -mt-[60px] z-50 pointer-events-none">
+            <div className="bg-white rounded-lg p-4 shadow-xl border border-gray-200 min-w-80 max-w-80 relative pointer-events-auto">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                {pendingAddressData.address === 'Адрес не найден'
+                  ? 'Сохранить место?'
+                  : 'Выбрать этот адрес?'}
+              </h3>
+              <div className="text-xs sm:text-sm text-gray-600 mb-3">
+                <strong>Адрес:</strong>{' '}
+                {pendingAddressData.address === 'Адрес не найден'
+                  ? 'Без адреса'
+                  : pendingAddressData.address}
+              </div>
+              {pendingAddressData.cityName &&
+                pendingAddressData.cityName !== cityName && (
+                  <div className="text-xs sm:text-sm text-amber-600 mb-3">
+                    <strong>Город изменится на:</strong>{' '}
+                    {pendingAddressData.cityName}
+                  </div>
+                )}
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddressConfirmPopup(false);
+                    setPendingAddressData(null);
+                    setIsConfirmingAddress(false);
+                  }}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmAddressSelection}
+                  className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-xs sm:text-sm"
+                >
+                  Подтвердить
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Модальное окно выбора города */}
       {showLocationModal && (
