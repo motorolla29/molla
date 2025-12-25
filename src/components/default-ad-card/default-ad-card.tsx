@@ -64,10 +64,14 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       </div>
 
       {/* Информация о продавце */}
-      <Link
-        href={`/user/${ad.seller.id}/active`}
-        onClick={(e) => e.stopPropagation()}
-        className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Используем window.location для гарантированной навигации
+          window.location.href = `/user/${ad.seller.id}/active`;
+        }}
+        className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
       >
         <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
           <img
@@ -78,10 +82,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             alt="avatar"
           />
         </div>
-        <span
-          className="text-xs sm:text-sm font-medium pr-1 max-w-full inline-block overflow-hidden whitespace-nowrap break-words"
-          style={{ textOverflow: 'ellipsis' }}
-        >
+        <span className="text-xs sm:text-sm font-medium pr-1 max-w-full inline-block truncate wrap-break-words">
           {ad.seller.name}
         </span>
         <div className="flex items-center mt-2 space-x-1">
@@ -109,7 +110,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             {ad.seller.rating.toFixed(1)}
           </span>
         </div>
-      </Link>
+      </div>
     </Link>
   );
 }

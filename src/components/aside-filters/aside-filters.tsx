@@ -351,7 +351,7 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
         {hasUnsavedChanges && !isResetting && (
           <button
             onClick={handleApply}
-            className="text-white bg-violet-400 rounded-md hover:bg-violet-500 w-full h-10"
+            className="text-white bg-violet-500 rounded-md hover:bg-violet-600 active:bg-violet-700 w-full h-10"
           >
             Применить
           </button>

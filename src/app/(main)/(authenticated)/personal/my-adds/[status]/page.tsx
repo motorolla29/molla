@@ -55,13 +55,10 @@ export default function MyAddsPage() {
     }
   }, [status, router]);
 
-  // Сбрасываем состояние переключения через небольшой таймаут
+  // Обновляем данные при переключении табов
   useEffect(() => {
     if (isSwitching) {
-      const timer = setTimeout(() => {
-        setIsSwitching(false);
-      }, 250); // Небольшая задержка для плавного переключения
-      return () => clearTimeout(timer);
+      loadAllAds();
     }
   }, [isSwitching]);
 
@@ -76,9 +73,11 @@ export default function MyAddsPage() {
   const ads = allAds.filter((ad) => ad.status === activeTab);
 
   // Загрузка всех объявлений пользователя
-  const loadAllAds = async () => {
+  const loadAllAds = async (isInitialLoad = false) => {
     try {
-      setIsLoading(true);
+      if (isInitialLoad) {
+        setIsLoading(true);
+      }
       const response = await fetch('/api/user/ads?status=all');
       const data = await response.json();
 
@@ -92,12 +91,17 @@ export default function MyAddsPage() {
       console.error('Error loading ads:', error);
       setAllAds([]);
     } finally {
-      setIsLoading(false);
+      if (isInitialLoad) {
+        setIsLoading(false);
+      } else {
+        // При переключении табов сбрасываем состояние после загрузки данных
+        setIsSwitching(false);
+      }
     }
   };
 
   useEffect(() => {
-    loadAllAds();
+    loadAllAds(true); // Начальная загрузка
   }, []);
 
   // Закрытие попапа при клике вне
@@ -158,7 +162,6 @@ export default function MyAddsPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Обновляем локальное состояние
         setAllAds((prevAds) =>
           prevAds.map((ad) =>
             ad.id === adId ? { ...ad, status: newStatus } : ad
@@ -210,7 +213,7 @@ export default function MyAddsPage() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div className="sm:px-6 lg:px-8">
       {/* Заголовок для мобильных */}
       <div className="mb-4 lg:mb-0">
         <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-medium mb-4 lg:hidden">

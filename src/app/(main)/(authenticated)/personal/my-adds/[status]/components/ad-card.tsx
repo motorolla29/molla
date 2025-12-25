@@ -110,7 +110,7 @@ export default function AdCard({
                     onOpenPopup(openPopup === ad.id ? null : ad.id);
                   }}
                   data-popup
-                  className="m-1 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-lg transition-colors"
+                  className="m-1 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-lg transition-colors pointer-events-auto"
                 >
                   <MoreVertical size={16} />
                 </button>

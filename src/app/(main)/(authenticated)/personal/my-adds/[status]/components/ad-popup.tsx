@@ -25,7 +25,7 @@ export default function AdPopup({
   onClose,
 }: AdPopupProps) {
   return (
-    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+    <div className="absolute right-0 top-full mt-1 w-38 sm:w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 pointer-events-auto">
       <div className="py-1">
         <button
           onClick={(e) => {
@@ -33,7 +33,7 @@ export default function AdPopup({
             e.stopPropagation();
             onEdit(ad.id);
           }}
-          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+          className="w-full px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
         >
           <Edit size={12} className="sm:w-[14px] sm:h-[14px]" />
           Редактировать
@@ -50,7 +50,7 @@ export default function AdPopup({
             }
           }}
           disabled={isUpdating === ad.id}
-          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
+          className="w-full px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
         >
           {isUpdating === ad.id ? (
             <div className="w-3.5 h-3.5 border border-gray-300 border-t-violet-500 rounded-full animate-spin" />
@@ -73,7 +73,7 @@ export default function AdPopup({
               }
               onClose();
             }}
-            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+            className="w-full px-4 py-2 text-left text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

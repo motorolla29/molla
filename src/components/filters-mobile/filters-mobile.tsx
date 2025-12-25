@@ -277,7 +277,7 @@ export default function FiltersMobile({
         <div className="p-4 border-t border-violet-400/50 bg-white">
           <button
             onClick={handleApply}
-            className="w-full py-2 bg-violet-400 text-white rounded-full hover:bg-violet-500"
+            className="w-full py-2 text-white rounded-full bg-violet-500 hover:bg-violet-600 active:bg-violet-700"
           >
             Применить
           </button>

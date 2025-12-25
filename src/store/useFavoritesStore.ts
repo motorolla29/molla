@@ -232,12 +232,13 @@ export const useFavoritesStore = create<FavoritesState>()(
     }),
     {
       name: 'favorites-storage',
-      // Сохраняем только ID избранных объявлений для надежности
+      // Сохраняем только локальные данные
       partialize: (state) => ({
+        favorites: state.favorites,
         favoriteIds: Array.from(state.favoriteIds), // Set не сериализуется, конвертируем в массив
       }),
-      // При восстановлении конвертируем массив обратно в Set и загружаем актуальные данные
-      onRehydrateStorage: () => (state, error) => {
+      // При восстановлении конвертируем массив обратно в Set
+      onRehydrateStorage: () => (state) => {
         if (state && Array.isArray(state.favoriteIds)) {
           // Фильтруем только строковые значения для безопасности типов
           state.favoriteIds = new Set(
@@ -247,15 +248,9 @@ export const useFavoritesStore = create<FavoritesState>()(
           );
         }
 
-        // Очищаем локальные favorites при восстановлении (они загрузятся из API)
+        // Помечаем, что persist-гидрация завершена
         if (state) {
-          state.favorites = [];
           state.hasHydrated = true;
-
-          // Загружаем актуальные данные из API после восстановления
-          if (!error) {
-            state.loadFavorites();
-          }
         }
       },
     }

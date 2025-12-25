@@ -89,7 +89,7 @@ export default function AdsList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 pb-8 ${openPopup ? 'pointer-events-none' : ''}`}>
       {ads.map((ad) => (
         <AdCard
           key={ad.id}
