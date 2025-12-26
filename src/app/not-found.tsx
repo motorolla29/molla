@@ -11,16 +11,14 @@ export default function NotFound() {
       <HeaderMobile />
       <div className="h-screen flex flex-col items-center justify-center text-neutral-600">
         <img
-          className="w-20 xl:w-32 mb-2 "
+          className="w-20 sm:w-24 mb-2 "
           src="https://ik.imagekit.io/motorolla29/molla/icons/oshibka_404.svg"
           alt="404"
         />
-        <h1 className="text-sm sm:text-sm font-semibold mb-5">
-          Тут ничего нет.
-        </h1>
+        <h1 className="text-sm sm:text-base mb-5">Тут ничего нет.</h1>
         <Link
           href="/"
-          className="text-sm sm:text-sm text-white bg-violet-400 px-5 py-2 rounded-xl hover:bg-violet-500 active:bg-violet-600"
+          className="text-xs sm:text-sm text-white bg-violet-400 px-5 py-2 rounded-xl hover:bg-violet-500 active:bg-violet-600"
         >
           На главную
         </Link>
