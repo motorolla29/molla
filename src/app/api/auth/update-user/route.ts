@@ -87,10 +87,9 @@ export async function PATCH(request: NextRequest) {
 
     // Специальная логика для изменения email
     if (email !== undefined) {
-      if (
-        typeof email !== 'string' ||
-        !email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
-      ) {
+      // Улучшенная валидация email с поддержкой международных доменов
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (typeof email !== 'string' || !emailRegex.test(email)) {
         return NextResponse.json(
           { error: 'Некорректный email адрес' },
           { status: 400 }

@@ -95,19 +95,6 @@ export function EditProfileModal({
     }
   }, [resendTimer]);
 
-  // Закрытие по клику вне модального окна
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClose]);
-
   const loadCities = async () => {
     try {
       const citiesData = await loadCitiesData();
@@ -115,36 +102,6 @@ export function EditProfileModal({
     } catch (error) {
       console.error('Error loading cities:', error);
     }
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    // Если пользователь начинает с +7, игнорируем это и ждем ввода номера
-    if (value.startsWith('+7') && value.length <= 2) {
-      return '';
-    }
-
-    // Если пользователь ввел +7 и еще символы, берем только цифры после +7
-    let cleaned = '';
-    if (value.startsWith('+7')) {
-      cleaned = value.slice(2).replace(/\D/g, '');
-    } else {
-      cleaned = value.replace(/\D/g, '');
-    }
-
-    // Форматируем номер
-    if (cleaned.length === 0) return '';
-    if (cleaned.length <= 3) return `+7 (${cleaned}`;
-    if (cleaned.length <= 6)
-      return `+7 (${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
-    if (cleaned.length <= 8)
-      return `+7 (${cleaned.slice(0, 3)}) ${cleaned.slice(
-        3,
-        6
-      )}-${cleaned.slice(6)}`;
-    return `+7 (${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
-      6,
-      8
-    )}-${cleaned.slice(8, 10)}`;
   };
 
   const filteredCities = cities
@@ -157,7 +114,6 @@ export function EditProfileModal({
     .slice(0, 10);
 
   const handleSendEmailCode = async () => {
-
     if (!formData.email.trim()) {
       setError('Введите email');
       return;
@@ -227,7 +183,9 @@ export function EditProfileModal({
 
     // Если email изменился, проверяем формат и код подтверждения
     if (formData.email !== user.email) {
-      if (!formData.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+      // Улучшенная валидация email с поддержкой международных доменов
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
         setError('Введите корректный email адрес');
         return;
       }
@@ -285,18 +243,47 @@ export function EditProfileModal({
 
   if (!isOpen) return null;
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (hasChanges && !isSaving && !isSendingCode) {
+        handleSave();
+      }
+    }
+  };
+
+  const handleVerificationCodeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (hasChanges && !isSaving && !isSendingCode) {
+        handleSave();
+      }
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
         className="bg-white rounded-2xl max-w-2xl w-full max-h-[calc(100vh-6rem)] overflow-y-auto shadow-2xl"
+        onKeyDown={handleKeyDown}
       >
         <div className="p-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-6">
             Редактировать профиль
           </h3>
 
-          <div className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (hasChanges && !isSaving && !isSendingCode) {
+                handleSave();
+              }
+            }}
+            className="space-y-6"
+          >
             {/* Имя */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -308,6 +295,7 @@ export function EditProfileModal({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
+                onKeyDown={handleKeyDown}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                 placeholder="Введите имя"
               />
@@ -328,6 +316,7 @@ export function EditProfileModal({
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                   placeholder="Начните вводить название города"
                 />
@@ -390,6 +379,7 @@ export function EditProfileModal({
                       phone: formattedLocal ? `+7 ${formattedLocal}` : '',
                     }));
                   }}
+                  onKeyDown={handleKeyDown}
                   className="w-full border-none outline-none focus:ring-0 placeholder:text-gray-400"
                   placeholder="(XXX) XXX-XX-XX"
                 />
@@ -409,7 +399,7 @@ export function EditProfileModal({
               {emailStep === 'input' ? (
                 <div className="space-y-2">
                   <input
-                    type="email"
+                    type="text"
                     value={formData.email}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -417,6 +407,7 @@ export function EditProfileModal({
                         email: e.target.value,
                       }))
                     }
+                    onKeyDown={handleKeyDown}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     placeholder="example@email.com"
                   />
@@ -446,6 +437,7 @@ export function EditProfileModal({
                         e.target.value.replace(/[^\d]/g, '').slice(0, 6)
                       )
                     }
+                    onKeyDown={handleVerificationCodeKeyDown}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-center text-lg font-mono"
                     placeholder="000000"
                     maxLength={6}
@@ -472,24 +464,24 @@ export function EditProfileModal({
             </div>
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
-          </div>
 
-          <div className="flex space-x-3 mt-8">
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              disabled={isSaving}
-            >
-              Отмена
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!hasChanges || isSaving}
-              className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
-            </button>
-          </div>
+            <div className="flex space-x-3 mt-8">
+              <button
+                onClick={onClose}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                disabled={isSaving}
+              >
+                Отмена
+              </button>
+              <button
+                type="submit"
+                disabled={!hasChanges || isSaving}
+                className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

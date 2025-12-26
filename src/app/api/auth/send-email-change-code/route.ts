@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
 
     const { newEmail } = await request.json();
 
-    if (!newEmail || !newEmail.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+    // Улучшенная валидация email с поддержкой международных доменов
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!newEmail || !emailRegex.test(newEmail)) {
       return NextResponse.json(
         { error: 'Некорректный email адрес' },
         { status: 400 }
