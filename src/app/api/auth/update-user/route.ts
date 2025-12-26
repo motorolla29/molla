@@ -5,26 +5,28 @@ import { registrationCache } from '@/lib/redis';
 
 export async function PATCH(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Получаем токен из cookies
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
     const decoded = verifyToken(token);
 
-    if (!decoded) {
+    if (!decoded || typeof decoded !== 'object' || !('userId' in decoded)) {
       return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
     }
+
+    const userId = Number((decoded as any).userId);
 
     const { name, phone, city, email, verificationCode } = await request.json();
 
     // Получаем текущего пользователя
     const currentUser = await prisma.seller.findUnique({
-      where: { id: Number(decoded.userId) },
+      where: { id: userId },
     });
 
     if (!currentUser) {
@@ -100,7 +102,7 @@ export async function PATCH(request: NextRequest) {
         where: { email },
       });
 
-      if (existingUser && existingUser.id !== decoded.userId) {
+      if (existingUser && existingUser.id !== userId) {
         return NextResponse.json(
           { error: 'Этот email уже используется другим пользователем' },
           { status: 400 }
@@ -111,7 +113,7 @@ export async function PATCH(request: NextRequest) {
       if (email === currentUser.email) {
         // Обновляем остальные данные без email
         const updatedUser = await prisma.seller.update({
-          where: { id: Number(decoded.userId) },
+          where: { id: userId },
           data: {
             ...(name !== undefined && { name: name.trim() }),
             ...(phone !== undefined && {
@@ -184,7 +186,7 @@ export async function PATCH(request: NextRequest) {
 
       // Всё ок - обновляем email и другие данные
       const updatedUser = await prisma.seller.update({
-        where: { id: Number(decoded.userId) },
+        where: { id: userId },
         data: {
           email: email,
           ...(name !== undefined && { name: name.trim() }),
@@ -215,7 +217,7 @@ export async function PATCH(request: NextRequest) {
 
     // Обычное обновление данных без изменения email
     const updatedUser = await prisma.seller.update({
-      where: { id: Number(decoded.userId) },
+      where: { id: userId },
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(phone !== undefined && {

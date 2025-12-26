@@ -52,7 +52,6 @@ export function EditProfileModal({
   const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const modalRef = useRef<HTMLDivElement>(null);
-  const { token } = useAuthStore();
 
   // Проверяем, есть ли изменения
   const hasChanges =
@@ -158,10 +157,6 @@ export function EditProfileModal({
     .slice(0, 10);
 
   const handleSendEmailCode = async () => {
-    if (!token) {
-      setError('Ошибка авторизации. Попробуйте войти в аккаунт заново.');
-      return;
-    }
 
     if (!formData.email.trim()) {
       setError('Введите email');
@@ -186,7 +181,6 @@ export function EditProfileModal({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ newEmail: formData.email.trim() }),
       });

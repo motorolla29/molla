@@ -6,20 +6,22 @@ import { registrationCache } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Получаем токен из cookies
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
     const decoded = verifyToken(token);
 
-    if (!decoded) {
+    if (!decoded || typeof decoded !== 'object' || !('userId' in decoded)) {
       return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
     }
+
+    const userId = Number((decoded as any).userId);
 
     const { newEmail } = await request.json();
 
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Получаем текущего пользователя
     const currentUser = await prisma.seller.findUnique({
-      where: { id: Number(decoded.userId) },
+      where: { id: userId },
     });
 
     if (!currentUser) {
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
       where: { email: newEmail },
     });
 
-    if (existingUser && existingUser.id !== decoded.userId) {
+    if (existingUser && existingUser.id !== userId) {
       return NextResponse.json(
         { error: 'Этот email уже используется другим пользователем' },
         { status: 400 }

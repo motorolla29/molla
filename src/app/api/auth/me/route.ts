@@ -4,23 +4,25 @@ import { verifyToken } from '@/lib/jwt';
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Получаем токен из cookies
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
     const decoded = verifyToken(token);
 
-    if (!decoded) {
+    if (!decoded || typeof decoded !== 'object' || !('userId' in decoded)) {
       return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
     }
 
+    const userId = Number((decoded as any).userId);
+
     const user = await prisma.seller.findUnique({
-      where: { id: Number(decoded.userId) },
+      where: { id: userId },
     });
 
     if (!user) {
