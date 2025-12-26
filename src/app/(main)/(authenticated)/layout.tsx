@@ -25,7 +25,16 @@ export default function AuthenticatedLayout({
     }
   }, [isAuthChecking, isLoggedIn, router]);
 
-  // Middleware уже проверил авторизацию на сервере, поэтому сразу показываем контент
-  // Клиентская проверка нужна только для перенаправления, если токен истек
+  if (isAuthChecking || !isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500 mx-auto mb-4"></div>
+          <p>Проверка авторизации...</p>
+        </div>
+      </div>
+    );
+  }
+
   return <>{children}</>;
 }

@@ -9,8 +9,9 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function AuthPage() {
   const router = useRouter();
-  const { isLoggedIn, login } = useAuthStore();
+  const { login } = useAuthStore();
   const { cityName } = useLocationStore();
+
   const [redirectTo, setRedirectTo] = useState('/');
 
   useEffect(() => {
