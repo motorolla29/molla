@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react';
 import { HeartIcon as SolidHeartIcon } from '@heroicons/react/24/solid';
 import { HeartIcon as OutlineHeartIcon } from '@heroicons/react/24/outline';
+import { Heart, HeartCrack } from 'lucide-react';
 import { AdBase } from '@/types/ad';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { useToast } from '@/components/toast/toast-context';
+import ToastExample from '../toast/toast-example';
 
 interface FavoriteButtonProps {
   ad: AdBase;
@@ -17,6 +20,8 @@ export default function FavoriteButton({
   solidIconClassName,
   outlineIconClassName,
 }: FavoriteButtonProps) {
+  const toast = useToast();
+
   // Используем селектор для конкретного объявления
   const isFavoriteFromStore = useFavoritesStore((state) =>
     state.favoriteIds.has(ad.id)
@@ -45,13 +50,20 @@ export default function FavoriteButton({
       try {
         if (newOptimisticState) {
           await addFavorite(ad);
+          toast.show('Добавлено в избранное', {
+            icon: <Heart className="w-5 h-5 text-pink-500" />,
+          });
         } else {
           await removeFavorite(ad.id);
+          toast.show('Удалено из избранного', {
+            icon: <HeartCrack className="w-5 h-5 text-slate-400" />,
+          });
         }
         // Если запрос успешен, оставляем оптимистичное состояние
       } catch (error) {
         // Если запрос провалился, сбрасываем оптимистичное состояние
         setOptimisticFavorite(null);
+        toast.error('Ошибка при работе с избранным');
         console.error('Ошибка при работе с избранным:', error);
       }
     },
