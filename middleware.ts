@@ -16,6 +16,44 @@ export function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   );
 
+  // Проверяем, если пользователь идет на страницу авторизации и уже авторизован
+  if (request.nextUrl.pathname === '/auth') {
+    const token = request.cookies.get('token')?.value;
+
+    if (token) {
+      try {
+        // Проверяем валидность токена
+        const payload = verifyToken(token);
+        if (payload) {
+          // Если токен валидный, перенаправляем на главную
+          return NextResponse.redirect(new URL('/', request.url));
+        } else {
+          // Если токен невалидный, удаляем его из cookies
+          const response = NextResponse.next();
+          response.cookies.set('token', '', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 0,
+            path: '/',
+          });
+          return response;
+        }
+      } catch (error) {
+        // Если ошибка при проверке токена, удаляем его из cookies
+        const response = NextResponse.next();
+        response.cookies.set('token', '', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 0,
+          path: '/',
+        });
+        return response;
+      }
+    }
+  }
+
   if (isProtectedRoute) {
     // Получаем токен из cookies
     const token = request.cookies.get('token')?.value;

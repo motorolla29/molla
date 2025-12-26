@@ -22,18 +22,6 @@ export default function AuthPage() {
     }
   }, []);
 
-  // Если пользователь уже авторизован и нет redirect параметра, перенаправляем на главную
-  useEffect(() => {
-    if (isLoggedIn) {
-      const searchParams = new URLSearchParams(window.location.search);
-      const hasRedirect = searchParams.has('redirect');
-
-      if (!hasRedirect) {
-        router.replace('/');
-      }
-    }
-  }, [isLoggedIn, router]);
-
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -220,10 +208,6 @@ export default function AuthPage() {
     setErrors({});
     setResendTimer(0);
   };
-
-  if (isLoggedIn) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
