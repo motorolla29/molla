@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from './src/lib/jwt';
 
+export const runtime = 'nodejs';
+
 export function middleware(request: NextRequest) {
   // Защищенные маршруты
   const protectedRoutes = [
@@ -40,43 +42,7 @@ export function middleware(request: NextRequest) {
         );
         return NextResponse.redirect(authUrl);
       }
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7242/ingest/b6bcc12e-b6f4-497b-834e-142385050765',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'middleware.ts:51',
-            message: 'Valid token, allowing access',
-            data: { route: request.nextUrl.pathname, userId: payload.userId },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'A',
-          }),
-        }
-      ).catch(() => {});
-      // #endregion
     } catch (error) {
-      // #region agent log
-      fetch(
-        'http://127.0.0.1:7242/ingest/b6bcc12e-b6f4-497b-834e-142385050765',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'middleware.ts:54',
-            message: 'Token verification error, redirecting to auth',
-            data: { route: request.nextUrl.pathname, error: String(error) },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'A',
-          }),
-        }
-      ).catch(() => {});
-      // #endregion
       // Если ошибка при проверке токена, перенаправляем на авторизацию
       const authUrl = new URL('/auth', request.url);
       authUrl.searchParams.set(
