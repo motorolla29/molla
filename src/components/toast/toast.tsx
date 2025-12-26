@@ -1,14 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  CheckCircle,
-  AlertCircle,
-  Info,
-  AlertTriangle,
-  Heart,
-  HeartCrack,
-} from 'lucide-react';
+import { CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 export interface ToastProps {
   id: string;
@@ -31,6 +24,10 @@ export default function Toast({
   const [isExiting, setIsExiting] = useState(false);
   const toastRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const onCloseRef = useRef(onClose);
+
+  // Обновляем ref при изменении onClose
+  onCloseRef.current = onClose;
 
   // Анимация появления
   useEffect(() => {
@@ -48,12 +45,12 @@ export default function Toast({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [duration]);
+  }, []); // Пустой массив зависимостей - запускается только при монтировании
 
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(() => {
-      onClose(id);
+      onCloseRef.current(id);
     }, 300); // Время анимации выхода
   };
 

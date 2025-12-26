@@ -74,21 +74,13 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
       });
 
       if (response.ok) {
-        // Показываем тост перед перезагрузкой
-        if (newStatus === 'archived') {
-          toast.show('Объявление перемещено в архив', {
-            type: 'info',
-          });
-        } else {
-          toast.show('Объявление опубликовано', {
-            type: 'success',
-          });
-        }
-
-        // Небольшая задержка для показа тоста перед перезагрузкой
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        // Перезагрузка с параметром для показа тоста
+        const url = new URL(window.location.href);
+        url.searchParams.set(
+          'toast',
+          newStatus === 'archived' ? 'archived' : 'published'
+        );
+        window.location.href = url.toString();
       } else {
         toast.show('Не удалось изменить статус объявления', {
           type: 'error',
@@ -124,13 +116,8 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
       });
 
       if (response.ok) {
-        toast.show('Объявление удалено', {
-          type: 'info',
-        });
-        // Задержка перед перенаправлением для показа тоста
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 500);
+        // Перенаправление с параметром для показа тоста на новой странице
+        window.location.href = '/?toast=ad-deleted';
       } else {
         toast.show('Не удалось удалить объявление', {
           type: 'error',

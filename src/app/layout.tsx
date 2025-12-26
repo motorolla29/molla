@@ -2,6 +2,7 @@ import LocationInitializer from '@/components/location-initializer/location-init
 import AuthInitializer from '@/components/auth-initializer/auth-initializer';
 import { ToastProvider } from '@/components/toast/toast-context';
 import ToastContainer from '@/components/toast/toast-container';
+import ToastHandler from '@/components/toast/toast-handler';
 import '@/styles/globals.css';
 import type { ReactNode } from 'react';
 
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ToastProvider>
           {children}
           <ToastContainer />
+          <ToastHandler />
         </ToastProvider>
       </body>
     </html>
