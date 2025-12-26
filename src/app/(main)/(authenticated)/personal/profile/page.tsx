@@ -23,7 +23,9 @@ export default function Profile() {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      router.replace('/');
+      const url = new URL('/', window.location.origin);
+      url.searchParams.set('toast', 'logout');
+      router.replace(url.toString());
       // Небольшая задержка перед очисткой состояния, чтобы router успел выполнить перенаправление
       setTimeout(() => {
         logout();

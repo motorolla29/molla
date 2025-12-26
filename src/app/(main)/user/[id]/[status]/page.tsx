@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import UserProfileSidebar from './components/user-profile-sidebar';
 import UserProfileSkeleton from './components/user-profile-skeleton';
 import UserAdsContent from './components/user-ads-content';
@@ -42,8 +41,6 @@ export default function UserProfilePage() {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        console.log('Client: Fetching user profile for ID:', userId);
-
         // Загружаем профиль пользователя и счетчики объявлений параллельно
         const [userResponse, activeResponse, archivedResponse] =
           await Promise.all([
@@ -54,12 +51,10 @@ export default function UserProfilePage() {
 
         if (!userResponse.ok) {
           const errorData = await userResponse.json();
-          console.log('Client: Error response:', errorData);
           throw new Error(errorData.error || 'Пользователь не найден');
         }
 
         const userData = await userResponse.json();
-        console.log('Client: User data received:', userData);
 
         // Получаем количество объявлений из пагинации
         const activeData = activeResponse.ok
@@ -75,7 +70,6 @@ export default function UserProfilePage() {
           archived: archivedData.pagination?.total || 0,
         });
       } catch (err: any) {
-        console.log('Client: Error occurred:', err);
         setError(err.message || 'Не удалось загрузить профиль пользователя');
       } finally {
         setIsLoading(false);

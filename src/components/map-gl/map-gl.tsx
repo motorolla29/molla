@@ -98,7 +98,6 @@ export default function MapGl({
   const loadMarkersForViewport = useCallback(
     async (bounds: any) => {
       if (!bounds) {
-        console.log('❌ No bounds provided for viewport loading');
         return;
       }
 
@@ -268,7 +267,6 @@ export default function MapGl({
 
         // Если это первый bounds change и мы еще не загружали маркеры, делаем это
         if (!initialLoadDone && markers.length === 0) {
-          console.log('🗺️ Initial load via bounds change');
           loadMarkersForViewport(newBounds);
           setInitialLoadDone(true);
         } else {

@@ -46,6 +46,16 @@ export default function ToastHandler() {
             type: 'success',
           });
           break;
+        case 'login':
+          showRef.current('Вы успешно вошли в аккаунт', {
+            type: 'success',
+          });
+          break;
+        case 'logout':
+          showRef.current('Вы вышли из аккаунта', {
+            type: 'info',
+          });
+          break;
         default:
           break;
       }

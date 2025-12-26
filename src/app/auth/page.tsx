@@ -21,7 +21,6 @@ export default function AuthPage() {
       setRedirectTo(decodeURIComponent(redirect));
     }
   }, []);
-  const initialize = useAuthStore((state) => state.initialize);
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -33,12 +32,6 @@ export default function AuthPage() {
   const [showCodeStep, setShowCodeStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.replace(redirectTo);
-    }
-  }, [isLoggedIn, router, redirectTo]);
 
   // Таймер для повторной отправки кода
   useEffect(() => {
@@ -97,7 +90,9 @@ export default function AuthPage() {
         }
 
         login(data.user, data.token);
-        router.replace(redirectTo);
+        const url = new URL(redirectTo, window.location.origin);
+        url.searchParams.set('toast', 'login');
+        router.replace(url.toString());
       } catch (error) {
         setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
       } finally {
@@ -165,7 +160,9 @@ export default function AuthPage() {
       }
 
       login(data.user, data.token);
-      router.replace(redirectTo);
+      const url = new URL(redirectTo, window.location.origin);
+      url.searchParams.set('toast', 'login');
+      router.replace(url.toString());
     } catch (error) {
       setErrors({ code: 'Ошибка сети. Попробуйте позже.' });
     } finally {
@@ -232,7 +229,7 @@ export default function AuthPage() {
           {/* Пустой элемент для центрирования логотипа */}
         </div>
       </header>
-      <main className="flex-grow flex items-center justify-center bg-gray-50">
+      <main className="grow flex items-center justify-center bg-gray-50">
         <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-xl mx-8">
           {/* вход-регистрация переключатель */}
           <div className="flex justify-center text-sm sm:text-base mb-6">

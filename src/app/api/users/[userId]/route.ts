@@ -8,13 +8,10 @@ export async function GET(
 ) {
   try {
     const { userId } = await params;
-    console.log('API: Fetching user with ID:', userId);
 
     const userIdNum = parseInt(userId);
-    console.log('API: Parsed userIdNum:', userIdNum);
 
     if (isNaN(userIdNum)) {
-      console.log('API: Invalid userId format');
       return NextResponse.json(
         { error: 'Неверный ID пользователя' },
         { status: 400 }
@@ -22,7 +19,6 @@ export async function GET(
     }
 
     // Получаем информацию о пользователе
-    console.log('API: Querying database for user:', userIdNum);
     const user = await prisma.seller.findUnique({
       where: { id: userIdNum },
       select: {
@@ -44,13 +40,7 @@ export async function GET(
       },
     });
 
-    console.log(
-      'API: Database query result:',
-      user ? 'User found' : 'User not found'
-    );
-
     if (!user) {
-      console.log('API: User not found, returning 404');
       return NextResponse.json(
         { error: 'Пользователь не найден' },
         { status: 404 }

@@ -301,12 +301,6 @@ export default function AdLocationSelector({
   // Загрузка подсказок адресов для выбранного города
   const loadAddressSuggestions = async (query: string) => {
     if (!query.trim() || !cityName) {
-      console.log(
-        '❌ Skipping suggestions - query:',
-        query,
-        'cityName:',
-        cityName
-      );
       return;
     }
 
