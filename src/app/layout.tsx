@@ -5,6 +5,7 @@ import ToastContainer from '@/components/toast/toast-container';
 import ToastHandler from '@/components/toast/toast-handler';
 import '@/styles/globals.css';
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -15,7 +16,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ToastProvider>
           {children}
           <ToastContainer />
-          <ToastHandler />
+          <Suspense fallback={null}>
+            <ToastHandler />
+          </Suspense>
         </ToastProvider>
       </body>
     </html>

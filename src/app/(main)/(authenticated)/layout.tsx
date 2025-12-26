@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { ReactNode, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function AuthenticatedLayout({

@@ -90,7 +90,10 @@ export default function CitySelectorModal({
     .filter((city) => {
       if (!searchTerm.trim()) {
         // Показываем крупные города (население > 500к) или столицы
-        return city.population > 500000 || city.isCapital === true;
+        return (
+          (city.population && city.population > 500000) ||
+          city.isCapital === true
+        );
       }
       const cityName = city.namecase?.nominative || city.name || '';
       return cityName.toLowerCase().includes(searchTerm.toLowerCase());

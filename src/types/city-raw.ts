@@ -10,5 +10,7 @@ export interface CityRaw {
     lat?: number;
     lon?: number;
   };
+  population?: number;
+  isCapital?: boolean;
   // другие поля опущены
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, AdStatus } from '@prisma/client';
 import { verifyToken } from '@/lib/jwt';
 
 const prisma = new PrismaClient();
@@ -29,11 +29,11 @@ export async function GET(request: NextRequest) {
         : status
         ? {
             sellerId: sellerId,
-            status: status as 'active' | 'archived',
+            status: status as AdStatus,
           }
         : {
             sellerId: sellerId,
-            status: 'active', // по умолчанию только активные
+            status: AdStatus.active, // по умолчанию только активные
           };
 
     const ads = await prisma.ad.findMany({
@@ -92,7 +92,11 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { adId, status } = body;
 
-    if (!adId || !status || !['active', 'archived'].includes(status)) {
+    if (
+      !adId ||
+      !status ||
+      ![AdStatus.active, AdStatus.archived].includes(status as AdStatus)
+    ) {
       return NextResponse.json(
         {
           error:
@@ -119,11 +123,11 @@ export async function PATCH(request: NextRequest) {
 
     // Подготавливаем данные для обновления
     const updateData: any = {
-      status: status as 'active' | 'archived',
+      status: status as AdStatus,
     };
 
     // Если объявление публикуется заново (из archived в active), обновляем дату размещения
-    if (ad.status === 'archived' && status === 'active') {
+    if (ad.status === AdStatus.archived && status === AdStatus.active) {
       updateData.datePosted = new Date();
     }
 

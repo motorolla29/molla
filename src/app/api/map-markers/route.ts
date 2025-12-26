@@ -114,18 +114,20 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Преобразуем в формат маркеров
-    const markers: MapMarker[] = ads.map((ad) => ({
-      id: ad.id,
-      location: {
-        lat: ad.lat,
-        lng: ad.lng,
-      },
-      title: ad.title,
-      category: ad.category.toLowerCase(),
-      price: ad.price ? Number(ad.price) : undefined,
-      photos: ad.photos,
-    }));
+    // Фильтруем объявления с null координатами и преобразуем в формат маркеров
+    const markers: MapMarker[] = ads
+      .filter((ad) => ad.lat !== null && ad.lng !== null)
+      .map((ad) => ({
+        id: ad.id,
+        location: {
+          lat: ad.lat!,
+          lng: ad.lng!,
+        },
+        title: ad.title,
+        category: ad.category.toLowerCase(),
+        price: ad.price ? Number(ad.price) : undefined,
+        photos: ad.photos,
+      }));
 
     return NextResponse.json(markers);
   } catch (error) {

@@ -44,7 +44,7 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
 
   // Состояние карты
   const mapState = {
-    center: [ad.location.lat, ad.location.lng],
+    center: [ad.location.lat || 55.75, ad.location.lng || 37.57],
     zoom: 16,
   };
 

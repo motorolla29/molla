@@ -16,25 +16,28 @@ export interface Seller {
 }
 
 export interface Location {
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
 }
 
 export interface AdBase {
   id: string;
   category: CategoryKey;
   title: string;
-  description: string;
+  description: string | null;
   city: string; // человекочитаемое название, например "Санкт-Петербург"
   cityLabel: string; // метка для URL, например "saint_petersburg"
-  address: string;
-  location: Location;
+  address: string | null;
+  location: {
+    lat: number | null;
+    lng: number | null;
+  };
   price?: number;
   currency?: Currency;
   datePosted: string; // ISO-строка, например "2025-05-28T11:00:00Z"
   photos: string[]; // массив URL или имён файлов
   seller: Seller;
-  details: string;
+  details: string | null;
   status?: 'active' | 'archived';
   showPhone?: boolean;
   showEmail?: boolean;

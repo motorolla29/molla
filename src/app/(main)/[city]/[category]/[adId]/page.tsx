@@ -111,8 +111,10 @@ export default async function AdPage({ params }: Props) {
   const withDistance = sameCategoryRaw.map((item) => ({
     item,
     dist:
-      (item.lat - ad.location.lat) * (item.lat - ad.location.lat) +
-      (item.lng - ad.location.lng) * (item.lng - ad.location.lng),
+      item.lat && item.lng && ad.location.lat && ad.location.lng
+        ? (item.lat - ad.location.lat) * (item.lat - ad.location.lat) +
+          (item.lng - ad.location.lng) * (item.lng - ad.location.lng)
+        : Infinity, // Если координаты отсутствуют, ставим бесконечное расстояние
   }));
 
   withDistance.sort((a, b) => a.dist - b.dist);

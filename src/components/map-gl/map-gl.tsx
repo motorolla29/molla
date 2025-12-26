@@ -52,7 +52,9 @@ export default function MapGl({
     if (storeLat && storeLon) return [storeLat, storeLon];
     if (ads.length > 0) {
       const first = ads[0].location;
-      return [first.lat, first.lng];
+      if (first.lat && first.lng) {
+        return [first.lat, first.lng];
+      }
     }
     return DEFAULT_CENTER;
   }, [ads, storeLat, storeLon]);
@@ -76,14 +78,19 @@ export default function MapGl({
   // Если переданы статические ads, используем их, иначе загружаем динамически
   const displayMarkers = useMemo(() => {
     if (ads.length > 0) {
-      return ads.map((ad) => ({
-        id: ad.id,
-        location: ad.location,
-        title: ad.title,
-        category: ad.category.toLowerCase(),
-        price: ad.price,
-        photos: ad.photos,
-      }));
+      return ads
+        .filter((ad) => ad.location.lat !== null && ad.location.lng !== null)
+        .map((ad) => ({
+          id: ad.id,
+          location: {
+            lat: ad.location.lat!,
+            lng: ad.location.lng!,
+          },
+          title: ad.title,
+          category: ad.category.toLowerCase(),
+          price: ad.price,
+          photos: ad.photos,
+        }));
     }
     return markers;
   }, [ads, markers]);

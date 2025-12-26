@@ -1,4 +1,6 @@
-export const categoryOptions = [
+import { CategoryKey } from '@/types/ad';
+
+export const categoryOptions: { key: CategoryKey; label: string }[] = [
   { key: 'goods', label: 'Товары' },
   { key: 'services', label: 'Услуги' },
   { key: 'realestate', label: 'Недвижимость' },
