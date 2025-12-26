@@ -209,7 +209,9 @@ export default function AuthPage() {
     setResendTimer(0);
   };
 
-  if (isLoggedIn) return null;
+  if (isLoggedIn) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

@@ -17,15 +17,8 @@ export function middleware(request: NextRequest) {
   if (isProtectedRoute) {
     // Получаем токен из cookies
     const token = request.cookies.get('token')?.value;
-    console.log(
-      'Middleware: checking route',
-      request.nextUrl.pathname,
-      'has token:',
-      !!token
-    );
 
     if (!token) {
-      console.log('Middleware: no token, redirecting to auth');
       // Если токена нет, перенаправляем на авторизацию с сохранением URL
       const authUrl = new URL('/auth', request.url);
       authUrl.searchParams.set(
@@ -39,7 +32,6 @@ export function middleware(request: NextRequest) {
       // Проверяем валидность токена
       const payload = verifyToken(token);
       if (!payload) {
-        console.log('Middleware: invalid token, redirecting to auth');
         // Если токен невалидный, перенаправляем на авторизацию
         const authUrl = new URL('/auth', request.url);
         authUrl.searchParams.set(
@@ -48,9 +40,43 @@ export function middleware(request: NextRequest) {
         );
         return NextResponse.redirect(authUrl);
       }
-      console.log('Middleware: valid token, allowing access');
+      // #region agent log
+      fetch(
+        'http://127.0.0.1:7242/ingest/b6bcc12e-b6f4-497b-834e-142385050765',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'middleware.ts:51',
+            message: 'Valid token, allowing access',
+            data: { route: request.nextUrl.pathname, userId: payload.userId },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'A',
+          }),
+        }
+      ).catch(() => {});
+      // #endregion
     } catch (error) {
-      console.log('Middleware: token error, redirecting to auth');
+      // #region agent log
+      fetch(
+        'http://127.0.0.1:7242/ingest/b6bcc12e-b6f4-497b-834e-142385050765',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'middleware.ts:54',
+            message: 'Token verification error, redirecting to auth',
+            data: { route: request.nextUrl.pathname, error: String(error) },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'A',
+          }),
+        }
+      ).catch(() => {});
+      // #endregion
       // Если ошибка при проверке токена, перенаправляем на авторизацию
       const authUrl = new URL('/auth', request.url);
       authUrl.searchParams.set(
