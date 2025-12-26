@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useLocationStore } from '@/store/useLocationStore';
+import { useToast } from '@/components/toast/toast-context';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-modal';
@@ -11,7 +11,7 @@ import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-m
 export default function Profile() {
   const router = useRouter();
   const { user, logout, updateUser } = useAuthStore();
-  const { cityName } = useLocationStore();
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   // Состояние для модального окна редактирования профиля
@@ -46,14 +46,14 @@ export default function Profile() {
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg"
           />
         ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg">
             {user.name.charAt(0).toUpperCase()}
           </div>
         )}
         <div className="ml-4 sm:ml-6 flex-1">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-700 mb-1 line-clamp-2 break-words">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-700 mb-1 line-clamp-2 wrap-break-word">
                 {user.name}
               </h2>
               <p className="text-gray-600 text-xs sm:text-sm mb-2">
@@ -118,7 +118,7 @@ export default function Profile() {
           </h3>
           <div className="space-y-4 sm:space-y-6">
             <div className="flex items-start space-x-3 sm:space-x-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-violet-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-violet-100 rounded-xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600"
                   fill="none"
@@ -154,7 +154,7 @@ export default function Profile() {
             </div>
 
             <div className="flex items-start space-x-3 sm:space-x-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
                   fill="none"
@@ -180,7 +180,7 @@ export default function Profile() {
             </div>
 
             <div className="flex items-start space-x-3 sm:space-x-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-5 h-5 sm:w-6 sm:h-6 text-green-600"
                   fill="none"
@@ -239,7 +239,12 @@ export default function Profile() {
         user={user}
         // В модалку передаём город из профиля; стора локации не используем
         cityName={user.city}
-        onSave={(updates) => updateUser(updates)}
+        onSave={async (updates) => {
+          await updateUser(updates);
+          toast.show('Профиль обновлен!', {
+            type: 'success',
+          });
+        }}
       />
     </div>
   );

@@ -19,6 +19,7 @@ import MapModal from '@/components/map-modal/map-modal';
 import FavoriteButton from '@/components/favorite-button/favorite-button';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { useToast } from '@/components/toast/toast-context';
 import SellerContacts from './components/seller-contacts';
 
 interface AdClientProps {
@@ -30,11 +31,11 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
   const photos = ad.photos.length > 0 ? ad.photos : ['default.jpg'];
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const isArchived = ad.status === 'archived';
+  const toast = useToast();
 
   // Проверка авторизации и владения объявлением
   const { user, isLoggedIn } = useAuthStore();
   const isOwner = isLoggedIn && user?.id && parseInt(user.id) === ad.seller.id;
-  const { removeFavorite } = useFavoritesStore();
 
   // Состояния для операций с объявлением
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -73,12 +74,31 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
       });
 
       if (response.ok) {
-        // Перезагрузка страницы для обновления данных
-        window.location.reload();
+        // Показываем тост перед перезагрузкой
+        if (newStatus === 'archived') {
+          toast.show('Объявление перемещено в архив', {
+            type: 'info',
+          });
+        } else {
+          toast.show('Объявление опубликовано', {
+            type: 'success',
+          });
+        }
+
+        // Небольшая задержка для показа тоста перед перезагрузкой
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } else {
+        toast.show('Не удалось изменить статус объявления', {
+          type: 'error',
+        });
         console.error('Failed to update ad status');
       }
     } catch (error) {
+      toast.show('Произошла ошибка при изменении статуса', {
+        type: 'error',
+      });
       console.error('Error updating ad status:', error);
     } finally {
       setIsUpdatingStatus(false);
@@ -104,12 +124,23 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
       });
 
       if (response.ok) {
-        // Перенаправление на главную страницу
-        window.location.href = '/';
+        toast.show('Объявление удалено', {
+          type: 'info',
+        });
+        // Задержка перед перенаправлением для показа тоста
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       } else {
+        toast.show('Не удалось удалить объявление', {
+          type: 'error',
+        });
         console.error('Failed to delete ad');
       }
     } catch (error) {
+      toast.show('Произошла ошибка при удалении объявления', {
+        type: 'error',
+      });
       console.error('Error deleting ad:', error);
     } finally {
       setIsUpdatingStatus(false);
@@ -190,7 +221,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           <div className="flex-1 space-y-6 lg:max-w-2xl">
             <div className="flex items-start justify-between gap-4 mb-4">
               <h1
-                className={`text-2xl sm:text-3xl font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden break-words ${
+                className={`text-2xl sm:text-3xl font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden wrap-break-word ${
                   isArchived && !isOwner
                     ? 'text-neutral-500'
                     : 'text-neutral-700'
@@ -253,7 +284,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
             </div>
 
             {ad.description && ad.description.trim() && (
-              <p className="text-sm sm:text-base mb-4 break-words">
+              <p className="text-sm sm:text-base mb-4 wrap-break-word">
                 {ad.description}
               </p>
             )}
@@ -263,7 +294,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 <h2 className="text-base sm:text-lg font-semibold mb-2">
                   Детали
                 </h2>
-                <p className="text-sm sm:text-base whitespace-pre-line break-words">
+                <p className="text-sm sm:text-base whitespace-pre-line wrap-break-word">
                   {ad.details}
                 </p>
               </div>
@@ -301,7 +332,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 <div className="flex-1 min-w-0">
                   <Link
                     href={`/user/${ad.seller.id}/active`}
-                    className="text-sm sm:text-base font-semibold break-words line-clamp-2 hover:opacity-90 transition-colors"
+                    className="text-sm sm:text-base font-semibold wrap-break-word line-clamp-2 hover:opacity-90 transition-colors"
                   >
                     {ad.seller.name}
                   </Link>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useToast } from '@/components/toast/toast-context';
 import { CategoryKey, Currency } from '@/types/ad';
 import AdPhotoUploader from '@/components/ad-photo-uploader/ad-photo-uploader';
 import AdLocationSelector, {
@@ -19,6 +20,7 @@ export default function AdEditPage() {
   const params = useParams();
   const pathname = usePathname();
   const { user, isAuthChecking } = useAuthStore();
+  const toast = useToast();
 
   // params может быть асинхронным в Next.js 13+
   const adId = (params as any)?.adId as string;
@@ -221,6 +223,10 @@ export default function AdEditPage() {
       if (!res.ok) {
         throw new Error(data.error || 'Не удалось обновить объявление');
       }
+
+      toast.show('Объявление обновлено!', {
+        type: 'success',
+      });
 
       // Редирект на обновленное объявление
       if (location?.cityLabel) {

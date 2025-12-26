@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useToast } from '@/components/toast/toast-context';
 import { CategoryKey, Currency } from '@/types/ad';
-import { categoryOptions } from '@/const';
-import { getCurrencySymbol } from '@/utils';
 import AdPhotoUploader from '@/components/ad-photo-uploader/ad-photo-uploader';
 import AdLocationSelector, {
   AdLocationValue,
@@ -17,6 +16,7 @@ import AdCurrencySelector from '@/components/ad-currency-selector/ad-currency-se
 export default function AddCreatePage() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const toast = useToast();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -138,7 +138,10 @@ export default function AddCreatePage() {
         throw new Error(data.error || 'Не удалось создать объявление');
       }
 
-      const adId = data.id as string;
+      toast.show('Объявление опубликовано!', {
+        type: 'success',
+      });
+
       // Редирект на страницу активных объявлений пользователя
       router.push('/personal/my-adds/active');
       // Прокрутка страницы вверх

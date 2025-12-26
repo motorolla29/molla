@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useToast } from '@/components/toast/toast-context';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import LoadingSkeleton from './components/loading-skeleton';
@@ -26,6 +27,7 @@ export default function MyAddsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuthStore();
+  const toast = useToast();
   const [allAds, setAllAds] = useState<Ad[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
@@ -84,10 +86,16 @@ export default function MyAddsPage() {
       if (data.success) {
         setAllAds(data.ads);
       } else {
+        toast.show('Не удалось загрузить объявления', {
+          type: 'error',
+        });
         console.error('Failed to load ads:', data.error);
         setAllAds([]);
       }
     } catch (error) {
+      toast.show('Ошибка при загрузке объявлений', {
+        type: 'error',
+      });
       console.error('Error loading ads:', error);
       setAllAds([]);
     } finally {
@@ -131,10 +139,19 @@ export default function MyAddsPage() {
       if (response.ok) {
         // Перезагружаем все объявления
         await loadAllAds();
+        toast.show('Объявление удалено', {
+          type: 'info',
+        });
       } else {
+        toast.show('Не удалось удалить объявление', {
+          type: 'error',
+        });
         console.error('Failed to delete ad');
       }
     } catch (error) {
+      toast.show('Ошибка при удалении объявления', {
+        type: 'error',
+      });
       console.error('Error deleting ad:', error);
     }
   };
@@ -167,10 +184,27 @@ export default function MyAddsPage() {
             ad.id === adId ? { ...ad, status: newStatus } : ad
           )
         );
+
+        // Показываем тост в зависимости от действия
+        if (newStatus === 'archived') {
+          toast.show('Объявление перемещено в архив', {
+            type: 'info',
+          });
+        } else {
+          toast.show('Объявление опубликовано', {
+            type: 'success',
+          });
+        }
       } else {
+        toast.show('Не удалось изменить статус объявления', {
+          type: 'error',
+        });
         console.error('Failed to update ad status:', data.error);
       }
     } catch (error) {
+      toast.show('Ошибка при изменении статуса', {
+        type: 'error',
+      });
       console.error('Error updating ad status:', error);
     } finally {
       setIsUpdating(null);

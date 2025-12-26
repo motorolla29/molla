@@ -58,7 +58,7 @@ export default async function AdPage({ params }: Props) {
       lat: adFromDb.lat,
       lng: adFromDb.lng,
     },
-    price: adFromDb.price || undefined,
+    price: adFromDb.price ? Number(adFromDb.price) : undefined, // Конвертируем BigInt в число
     currency: (adFromDb.currency as Currency) || undefined,
     datePosted: adFromDb.datePosted.toISOString(),
     photos: adFromDb.photos,
@@ -133,7 +133,7 @@ export default async function AdPage({ params }: Props) {
       lat: item.lat,
       lng: item.lng,
     },
-    price: item.price || undefined,
+    price: item.price ? Number(item.price) : undefined, // Конвертируем BigInt в число
     currency: (item.currency as Currency) || undefined,
     datePosted: item.datePosted.toISOString(),
     photos: item.photos,
