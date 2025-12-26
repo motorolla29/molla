@@ -31,7 +31,10 @@ export default function Toast({
 
   // Анимация появления
   useEffect(() => {
-    setIsVisible(true);
+    // Небольшая задержка для гарантии отображения начального состояния
+    const animationTimer = setTimeout(() => {
+      setIsVisible(true);
+    }, 10);
 
     // Автоматическое закрытие
     if (duration > 0) {
@@ -41,6 +44,7 @@ export default function Toast({
     }
 
     return () => {
+      clearTimeout(animationTimer);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -108,11 +112,12 @@ export default function Toast({
         transform transition-all duration-500 ease-out
         ${styles.bg}
         ${
-          isVisible
+          isVisible && !isExiting
             ? 'translate-y-0 opacity-100'
+            : isExiting
+            ? 'translate-y-full opacity-0'
             : '-translate-y-full opacity-0'
         }
-        ${isExiting ? 'translate-y-full opacity-0' : ''}
       `}
     >
       <div className="flex items-center gap-2 sm:gap-3">

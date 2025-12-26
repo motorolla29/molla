@@ -16,9 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ToastProvider>
           {children}
           <ToastContainer />
-          <Suspense fallback={null}>
-            <ToastHandler />
-          </Suspense>
+          <ToastHandler />
         </ToastProvider>
       </body>
     </html>
