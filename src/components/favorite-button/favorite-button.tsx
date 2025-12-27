@@ -49,15 +49,15 @@ export default function FavoriteButton({
 
       try {
         if (newOptimisticState) {
-          await addFavorite(ad);
           toast.show('Добавлено в избранное', {
             icon: <Heart className="w-5 h-5 text-pink-500" />,
           });
+          await addFavorite(ad);
         } else {
-          await removeFavorite(ad.id);
           toast.show('Удалено из избранного', {
             icon: <HeartCrack className="w-5 h-5 text-slate-400" />,
           });
+          await removeFavorite(ad.id);
         }
         // Если запрос успешен, оставляем оптимистичное состояние
       } catch (error) {
