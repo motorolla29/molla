@@ -23,16 +23,14 @@ export default function Profile() {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
+      // Сначала вызываем logout для очистки состояния и cookies
+      await logout();
+      // Затем используем полную перезагрузку страницы для гарантии в production build
       const url = new URL('/', window.location.origin);
       url.searchParams.set('toast', 'logout');
-      router.replace(url.toString());
-      // Небольшая задержка перед очисткой состояния, чтобы router успел выполнить перенаправление
-      setTimeout(() => {
-        logout();
-      }, 100);
+      window.location.href = url.toString();
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
       setIsLoading(false);
     }
   };
