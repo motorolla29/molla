@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from './src/lib/jwt';
 
+export const runtime = 'nodejs';
+
 export function middleware(request: NextRequest) {
   // Защищенные маршруты
   const protectedRoutes = [
