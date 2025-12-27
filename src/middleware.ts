@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from './src/lib/jwt';
+import { verifyToken } from '@/lib/jwt';
 
-export const runtime = 'nodejs';
+// Функция для определения нужно ли использовать secure cookies
+const shouldUseSecureCookies = (request: NextRequest) => {
+  // Использовать secure cookies только для HTTPS соединений
+  return request.nextUrl.protocol === 'https:';
+};
+
+// Функция для определения sameSite политики
+const getSameSitePolicy = (request: NextRequest) => {
+  return shouldUseSecureCookies(request) ? 'none' : 'lax';
+};
 
 export function middleware(request: NextRequest) {
   // Защищенные маршруты
@@ -32,20 +41,21 @@ export function middleware(request: NextRequest) {
           const response = NextResponse.next();
           response.cookies.set('token', '', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: shouldUseSecureCookies(request),
+            sameSite: getSameSitePolicy(request),
             maxAge: 0,
             path: '/',
           });
           return response;
         }
       } catch (error) {
+        console.error('[MIDDLEWARE] Error verifying token:', error);
         // Если ошибка при проверке токена, удаляем его из cookies
         const response = NextResponse.next();
         response.cookies.set('token', '', {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
+          secure: shouldUseSecureCookies(request),
+          sameSite: getSameSitePolicy(request),
           maxAge: 0,
           path: '/',
         });
@@ -72,22 +82,42 @@ export function middleware(request: NextRequest) {
       // Проверяем валидность токена
       const payload = verifyToken(token);
       if (!payload) {
-        // Если токен невалидный, перенаправляем на авторизацию
+        // Если токен невалидный, удаляем его из cookies и перенаправляем на авторизацию
         const authUrl = new URL('/auth', request.url);
         authUrl.searchParams.set(
           'redirect',
           request.nextUrl.pathname + request.nextUrl.search
         );
-        return NextResponse.redirect(authUrl);
+        const response = NextResponse.redirect(authUrl);
+        response.cookies.set('token', '', {
+          httpOnly: true,
+          secure: shouldUseSecureCookies(request),
+          sameSite: getSameSitePolicy(request),
+          maxAge: 0,
+          path: '/',
+        });
+        return response;
       }
     } catch (error) {
-      // Если ошибка при проверке токена, перенаправляем на авторизацию
+      console.error(
+        '[MIDDLEWARE] Error checking token on protected route:',
+        error
+      );
+      // Если ошибка при проверке токена, удаляем его из cookies и перенаправляем на авторизацию
       const authUrl = new URL('/auth', request.url);
       authUrl.searchParams.set(
         'redirect',
         request.nextUrl.pathname + request.nextUrl.search
       );
-      return NextResponse.redirect(authUrl);
+      const response = NextResponse.redirect(authUrl);
+      response.cookies.set('token', '', {
+        httpOnly: true,
+        secure: shouldUseSecureCookies(request),
+        sameSite: getSameSitePolicy(request),
+        maxAge: 0,
+        path: '/',
+      });
+      return response;
     }
   }
 
@@ -95,6 +125,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
+  runtime: 'nodejs', // Required for jsonwebtoken library
   matcher: [
     /*
      * Match all request paths except for the ones starting with:

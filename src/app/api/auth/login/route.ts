@@ -57,10 +57,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Устанавливаем токен в httpOnly cookie для middleware (клиент не может читать для безопасности)
+    const isSecure = request.nextUrl.protocol === 'https:';
     response.cookies.set('token', token, {
       httpOnly: true, // Защищает от XSS атак
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 86400, // 24 часа
       path: '/',
     });

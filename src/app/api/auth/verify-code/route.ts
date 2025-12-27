@@ -143,10 +143,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Устанавливаем токен в httpOnly cookie для безопасности
+    const isSecure = request.nextUrl.protocol === 'https:';
     response.cookies.set('token', token, {
       httpOnly: true, // Защищает от XSS атак
-      secure: process.env.NODE_ENV === 'production', // Только HTTPS в продакшене
-      sameSite: 'lax', // Защита от CSRF
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax', // Защита от CSRF
       maxAge: 60 * 60 * 24 * 7, // 7 дней
       path: '/', // Доступен для всего сайта
     });

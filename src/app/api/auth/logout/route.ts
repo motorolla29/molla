@@ -1,15 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     // Создаем response с очисткой cookies
     const response = NextResponse.json({ success: true });
 
+    // Определяем настройки cookies на основе протокола
+    const isSecure = request.nextUrl.protocol === 'https:';
+
     // Удаляем токен из cookies
     response.cookies.set('token', '', {
       httpOnly: true, // Должен соответствовать настройкам при установке
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 0, // Устанавливаем maxAge в 0 для удаления
       path: '/',
     });
