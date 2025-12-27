@@ -117,16 +117,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
       }),
-      onRehydrateStorage: () => (state) => {
-        // После восстановления из localStorage, если есть user, устанавливаем isLoggedIn = true
-        // и оставляем isAuthChecking = true для дополнительной проверки токена
-        if (state) {
-          if (state.user) {
-            state.isLoggedIn = true;
-          }
-          state.isAuthChecking = true;
-        }
-      },
     }
   )
 );

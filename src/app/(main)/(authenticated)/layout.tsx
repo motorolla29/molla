@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function AuthenticatedLayout({
@@ -9,22 +8,9 @@ export default function AuthenticatedLayout({
 }: {
   children: ReactNode;
 }) {
-  const router = useRouter();
-  const { isLoggedIn, isAuthChecking, checkAuth } = useAuthStore();
+  const { isLoggedIn, isAuthChecking } = useAuthStore();
 
-  // При монтировании проверяем авторизацию
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  // Перенаправляем неавторизованного пользователя на auth только после проверки
-  useEffect(() => {
-    if (!isAuthChecking && !isLoggedIn) {
-      const currentPath = window.location.pathname + window.location.search;
-      router.replace(`/auth?redirect=${encodeURIComponent(currentPath)}`);
-    }
-  }, [isAuthChecking, isLoggedIn, router]);
-
+  // Показываем loading пока проверяется авторизация
   if (isAuthChecking || !isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center">
