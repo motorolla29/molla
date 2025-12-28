@@ -176,9 +176,13 @@ export default function InfiniteScrollAds({
       {hasMore && (
         <div
           ref={observerRef}
-          className="flex justify-center items-center py-8"
+          className={`flex justify-center items-center transition-opacity duration-200 ${
+            loadingMore
+              ? 'py-8 opacity-100'
+              : 'h-0 opacity-0 pointer-events-none'
+          }`}
         >
-          {loadingMore ? (
+          <div className="transition-opacity duration-200 opacity-100">
             <FidgetSpinner
               ariaLabel="fidget-spinner-loading"
               width={'100%'}
@@ -187,15 +191,13 @@ export default function InfiniteScrollAds({
               backgroundColor="#A684FF"
               ballColors={['#D5FF4D', '#FE9A00', '#737373']}
             />
-          ) : (
-            <div className="h-4" />
-          )}
+          </div>
         </div>
       )}
 
       {/* Сообщение о конце списка */}
       {showEndMessage && !hasMore && ads.length > 0 && (
-        <div className="text-center py-8 text-neutral-500">
+        <div className="text-center py-4 text-neutral-500">
           <p className="text-sm">Это все объявления</p>
         </div>
       )}

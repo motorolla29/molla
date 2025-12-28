@@ -113,8 +113,8 @@ export default function CategoryClient({
               viewType={viewType}
               className={
                 viewType === 'gallery'
-                  ? 'grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4'
-                  : ''
+                  ? 'grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 pb-6'
+                  : 'pb-3'
               }
             />
           </main>

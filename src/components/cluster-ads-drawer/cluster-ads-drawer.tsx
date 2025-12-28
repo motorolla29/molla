@@ -126,60 +126,67 @@ export default function ClusterAdsDrawer({
       </div>
 
       <div className="p-4">
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <FidgetSpinner
-              ariaLabel="fidget-spinner-loading"
-              width="100%"
-              height="100%"
-              wrapperClass="w-14 sm:w-16"
-              backgroundColor="#A684FF"
-              ballColors={['#D5FF4D', '#FE9A00', '#737373']}
-            />
-          </div>
-        ) : ads.length > 0 ? (
-          <>
-            <div className="grid grid-cols-2 gap-4 min-[450px]:grid-cols-3 min-[768px]:grid-cols-4 min-[1024px]:grid-cols-1 min-[1400px]:grid-cols-2 overflow-auto">
-              {ads.map((ad) => (
-                <GalleryAdCard key={ad.id} ad={ad} />
-              ))}
+        <div
+          className={`flex justify-center items-center transition-opacity duration-200 ${
+            loading ? 'opacity-100 py-12' : 'h-0 opacity-0 pointer-events-none'
+          }`}
+        >
+          <FidgetSpinner
+            ariaLabel="fidget-spinner-loading"
+            width="100%"
+            height="100%"
+            wrapperClass="w-14 sm:w-16"
+            backgroundColor="#A684FF"
+            ballColors={['#D5FF4D', '#FE9A00', '#737373']}
+          />
+        </div>
+
+        {!loading &&
+          (ads.length > 0 ? (
+            <>
+              <div className="pb-4 grid grid-cols-2 gap-4 min-[450px]:grid-cols-3 min-[768px]:grid-cols-4 min-[1024px]:grid-cols-1 min-[1250px]:grid-cols-2 overflow-auto">
+                {ads.map((ad) => (
+                  <GalleryAdCard key={ad.id} ad={ad} />
+                ))}
+              </div>
+
+              {/* Элемент для Intersection Observer - под всем блоком карточек */}
+              {hasMore && !isSingleAd && (
+                <div
+                  ref={observerRef}
+                  className={`flex justify-center items-center transition-opacity duration-200 ${
+                    loadingMore
+                      ? 'py-2 sm:py-4 px-2 sm:px-4 opacity-100'
+                      : 'h-0 opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <div className="transition-opacity duration-200 opacity-100">
+                    <FidgetSpinner
+                      ariaLabel="fidget-spinner-loading"
+                      width="100%"
+                      height="100%"
+                      wrapperClass="w-14 sm:w-16"
+                      backgroundColor="#A684FF"
+                      ballColors={['#D5FF4D', '#FE9A00', '#737373']}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Сообщение о конце списка - под всем блоком карточек */}
+              {!hasMore && ads.length > 0 && !isSingleAd && (
+                <div className="text-center py-4 lg:py-8 px-2 sm:px-4 text-neutral-500">
+                  <p className="text-xs sm:text-sm">
+                    Это все объявления в кластере
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-8 sm:py-12 text-neutral-500">
+              <p className="text-sm sm:text-base">Объявления не найдены</p>
             </div>
-
-            {/* Элемент для Intersection Observer - под всем блоком карточек */}
-            {hasMore && !isSingleAd && (
-              <div
-                ref={observerRef}
-                className="flex justify-center items-center py-2 sm:py-4 px-2 sm:px-4"
-              >
-                {loadingMore || 1 ? (
-                  <FidgetSpinner
-                    ariaLabel="fidget-spinner-loading"
-                    width="100%"
-                    height="100%"
-                    wrapperClass="w-14 sm:w-16"
-                    backgroundColor="#A684FF"
-                    ballColors={['#D5FF4D', '#FE9A00', '#737373']}
-                  />
-                ) : (
-                  <div className="h-4" />
-                )}
-              </div>
-            )}
-
-            {/* Сообщение о конце списка - под всем блоком карточек */}
-            {!hasMore && ads.length > 0 && !isSingleAd && (
-              <div className="text-center py-2 sm:py-4 px-2 sm:px-4 text-neutral-500">
-                <p className="text-xs sm:text-sm">
-                  Это все объявления в кластере
-                </p>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-8 sm:py-12 text-neutral-500">
-            <p className="text-sm sm:text-base">Объявления не найдены</p>
-          </div>
-        )}
+          ))}
       </div>
     </div>
   );
