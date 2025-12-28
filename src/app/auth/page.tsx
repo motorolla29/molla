@@ -93,9 +93,7 @@ export default function AuthPage() {
         login(data.user, data.token);
         const url = new URL(redirectTo, window.location.origin);
         url.searchParams.set('toast', 'login');
-        // Используем window.location.href для полной перезагрузки страницы в production build
-        // Это гарантирует, что cookie установится перед следующим запросом
-        window.location.href = url.toString();
+        router.push(url.toString());
       } catch (error) {
         setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
       } finally {
