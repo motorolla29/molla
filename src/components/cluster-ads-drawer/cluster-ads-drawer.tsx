@@ -5,6 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { AdBase } from '@/types/ad';
 import Link from 'next/link';
 import { FidgetSpinner } from 'react-loader-spinner';
+import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 
 interface ClusterAdsDrawerProps {
   adIds: string[];
@@ -111,8 +112,8 @@ export default function ClusterAdsDrawer({
 
   return (
     <div className="absolute bg-white shadow-lg overflow-auto z-10 bottom-12 left-0 w-full h-2/5 lg:top-0 lg:bottom-0 lg:left-0 lg:w-1/4 lg:h-full custom-scrollbar">
-      <div className="flex justify-between items-center p-4 shadow-md sticky top-0 bg-violet-100 z-10">
-        <h2 className="text-lg font-medium">
+      <div className="flex justify-between items-center px-4 py-2 sm:p-4 shadow-md sticky top-0 bg-violet-100 z-10">
+        <h2 className="text-base sm:text-lg font-medium">
           {isSingleAd ? 'Объявление' : `Объявления (${adIds.length})`}
         </h2>
         <button
@@ -131,41 +132,16 @@ export default function ClusterAdsDrawer({
               ariaLabel="fidget-spinner-loading"
               width="100%"
               height="100%"
-              wrapperClass="w-16"
+              wrapperClass="w-14 sm:w-16"
               backgroundColor="#A684FF"
               ballColors={['#D5FF4D', '#FE9A00', '#737373']}
             />
           </div>
         ) : ads.length > 0 ? (
           <>
-            <div className="p-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-1 xl:grid-cols-2 overflow-auto">
+            <div className="grid grid-cols-2 gap-4 min-[450px]:grid-cols-3 min-[768px]:grid-cols-4 min-[1024px]:grid-cols-1 min-[1400px]:grid-cols-2 overflow-auto">
               {ads.map((ad) => (
-                <Link
-                  href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-                  target="_blank"
-                  key={ad.id}
-                  className="bg-gray-50 rounded-lg overflow-hidden shadow-sm hover:opacity-85"
-                >
-                  <div className="h-32 overflow-hidden">
-                    <img
-                      src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
-                        ad.photos.length ? ad.photos[0] : 'default.jpg'
-                      }`}
-                      alt={ad.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-semibold truncate">
-                      {ad.title}
-                    </h3>
-                    {ad.price != null && (
-                      <p className="mt-1 text-sm text-green-600">
-                        {ad.price.toLocaleString('ru-RU')} ₽
-                      </p>
-                    )}
-                  </div>
-                </Link>
+                <GalleryAdCard key={ad.id} ad={ad} />
               ))}
             </div>
 
@@ -173,14 +149,14 @@ export default function ClusterAdsDrawer({
             {hasMore && !isSingleAd && (
               <div
                 ref={observerRef}
-                className="flex justify-center items-center py-4 px-4"
+                className="flex justify-center items-center py-2 sm:py-4 px-2 sm:px-4"
               >
-                {loadingMore ? (
+                {loadingMore || 1 ? (
                   <FidgetSpinner
                     ariaLabel="fidget-spinner-loading"
                     width="100%"
                     height="100%"
-                    wrapperClass="w-16"
+                    wrapperClass="w-14 sm:w-16"
                     backgroundColor="#A684FF"
                     ballColors={['#D5FF4D', '#FE9A00', '#737373']}
                   />
@@ -192,14 +168,16 @@ export default function ClusterAdsDrawer({
 
             {/* Сообщение о конце списка - под всем блоком карточек */}
             {!hasMore && ads.length > 0 && !isSingleAd && (
-              <div className="text-center py-4 px-4 text-neutral-500">
-                <p className="text-sm">Это все объявления в кластере</p>
+              <div className="text-center py-2 sm:py-4 px-2 sm:px-4 text-neutral-500">
+                <p className="text-xs sm:text-sm">
+                  Это все объявления в кластере
+                </p>
               </div>
             )}
           </>
         ) : (
-          <div className="text-center py-12 text-neutral-500">
-            <p>Объявления не найдены</p>
+          <div className="text-center py-8 sm:py-12 text-neutral-500">
+            <p className="text-sm sm:text-base">Объявления не найдены</p>
           </div>
         )}
       </div>
