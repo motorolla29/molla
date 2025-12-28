@@ -90,10 +90,10 @@ export default function AuthPage() {
           return;
         }
 
-        login(data.user, data.token);
+        await login(data.user, data.token);
         const url = new URL(redirectTo, window.location.origin);
         url.searchParams.set('toast', 'login');
-        router.push(url.toString());
+        window.location.href = url.toString();
       } catch (error) {
         setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
       } finally {
@@ -160,7 +160,7 @@ export default function AuthPage() {
         return;
       }
 
-      login(data.user, data.token);
+      await login(data.user, data.token);
       const url = new URL(redirectTo, window.location.origin);
       url.searchParams.set('toast', 'login');
       // Используем window.location.href для полной перезагрузки страницы в production build

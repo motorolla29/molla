@@ -15,7 +15,7 @@ interface AuthState {
   isLoggedIn: boolean;
   user: User | null;
   isAuthChecking: boolean; // Новое состояние для отслеживания проверки авторизации
-  login: (user: User, token: string) => void;
+  login: (user: User, token: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
   updateUser: (
@@ -31,14 +31,13 @@ export const useAuthStore = create<AuthState>()(
       isLoggedIn: false,
       user: null,
       isAuthChecking: true, // Начинаем с true, чтобы показать loading
-      login: (user) => {
+      login: async (user) => {
         set({ isLoggedIn: true, user });
 
         // Токен уже установлен в cookies сервером через API
         // Переносим локальные избранные в базу данных и загружаем актуальные данные
-        import('./useFavoritesStore').then(async ({ useFavoritesStore }) => {
-          await useFavoritesStore.getState().migrateFromLocalStorage();
-        });
+        const { useFavoritesStore } = await import('./useFavoritesStore');
+        await useFavoritesStore.getState().migrateFromLocalStorage();
       },
 
       checkAuth: async () => {
