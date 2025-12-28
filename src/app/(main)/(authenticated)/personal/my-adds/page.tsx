@@ -1,5 +1,15 @@
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import LoadingSkeleton from './[status]/components/loading-skeleton';
 
 export default function MyAddsPage() {
-  redirect('/personal/my-adds/active');
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/personal/my-adds/active');
+  }, [router]);
+
+  return <LoadingSkeleton />;
 }
