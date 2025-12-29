@@ -1,46 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { AdBase, CategoryKey, Currency } from '@/types/ad';
+import { CategoryKey } from '@/types/ad';
 import { verifyToken } from '@/lib/jwt';
-
-// Конвертация Prisma модели в AdBase тип
-function convertToAdBase(ad: any): AdBase {
-  try {
-    const result = {
-      id: ad.id,
-      category: ad.category.toLowerCase() as CategoryKey,
-      title: ad.title,
-      description: ad.description,
-      city: ad.city,
-      cityLabel: ad.cityLabel,
-      address: ad.address,
-      location: {
-        lat: ad.lat,
-        lng: ad.lng,
-      },
-      price: ad.price ? Number(ad.price) : undefined,
-      currency: (ad.currency as Currency) || undefined,
-      datePosted: ad.datePosted.toISOString(),
-      photos: ad.photos,
-      seller: {
-        id: ad.seller.id,
-        avatar: ad.seller.avatar,
-        name: ad.seller.name,
-        rating: ad.seller.rating,
-        contact: {
-          phone: ad.showPhone ? ad.seller.phone || undefined : undefined,
-          email: ad.showEmail ? ad.seller.email || undefined : undefined,
-        },
-      },
-      details: ad.details,
-    };
-
-    return result;
-  } catch (error) {
-    console.error(`❌ Error converting ad ${ad.id}:`, error);
-    throw error;
-  }
-}
+import { convertToAdBase } from '@/utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -130,6 +92,19 @@ export async function GET(request: NextRequest) {
             rating: true,
             phone: true,
             email: true,
+          },
+        },
+        _count: {
+          select: {
+            favorites: true,
+            userViews: true,
+          },
+        },
+        todayViews: {
+          where: {
+            viewedAt: {
+              gte: new Date(new Date().setHours(0, 0, 0, 0)), // просмотры с начала сегодняшнего дня
+            },
           },
         },
       },

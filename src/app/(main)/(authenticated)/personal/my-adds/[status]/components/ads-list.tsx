@@ -1,22 +1,10 @@
 import CardSkeleton from './card-skeleton';
 import AdCard from './ad-card';
-
-interface Ad {
-  id: string;
-  title: string;
-  city: string;
-  cityLabel: string;
-  category: string;
-  price: number | null;
-  currency: string | null;
-  datePosted: string;
-  photos: string[];
-  status: 'active' | 'archived';
-}
+import { MyAdsListItem } from '@/types/ad';
 
 interface AdsListProps {
   isSwitching: boolean;
-  ads: Ad[];
+  ads: MyAdsListItem[];
   activeTab: 'active' | 'archived';
   totalAdsCount: number;
   isUpdating: string | null;

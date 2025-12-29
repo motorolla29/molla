@@ -1,22 +1,10 @@
 import Link from 'next/link';
-import { MapPin, Calendar, MoreVertical } from 'lucide-react';
+import { MapPin, Calendar, MoreVertical, Eye, Heart } from 'lucide-react';
 import AdPopup from './ad-popup';
-
-interface Ad {
-  id: string;
-  title: string;
-  city: string;
-  cityLabel: string;
-  category: string;
-  price: number | null;
-  currency: string | null;
-  datePosted: string;
-  photos: string[];
-  status: 'active' | 'archived';
-}
+import { MyAdsListItem } from '@/types/ad';
 
 interface AdCardProps {
-  ad: Ad;
+  ad: MyAdsListItem;
   activeTab: 'active' | 'archived';
   isUpdating: string | null;
   openPopup: string | null;
@@ -97,6 +85,19 @@ export default function AdCard({
                     <span className="truncate">
                       {formatDate(ad.datePosted)}
                     </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Eye size={12} className="mr-1 shrink-0" />
+                    <span>{ad.viewCount || 0}</span>
+                    {ad.viewsToday && ad.viewsToday > 0 ? (
+                      <span className="text-green-600 font-medium ml-1">
+                        (+{ad.viewsToday})
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center">
+                    <Heart size={12} className="mr-1 shrink-0" />
+                    <span>{ad.favoritesCount || 0}</span>
                   </div>
                 </div>
               </div>

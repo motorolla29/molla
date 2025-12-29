@@ -1,4 +1,4 @@
-import { Currency } from './types/ad';
+import { Currency, AdBase } from './types/ad';
 import { CityRaw } from './types/city-raw';
 
 export function getCurrencySymbol(currencyCode: Currency) {
@@ -180,4 +180,48 @@ export function formatAdDateGallery(dateString: string): string {
     // Больше 7 дней - ничего не показываем
     return '';
   }
+}
+
+/**
+ * Конвертирует Prisma Ad объект в AdBase формат для API
+ * @param ad - объект объявления из Prisma
+ * @param viewCount - количество просмотров (опционально, если не получается из ad._count)
+ * @returns объект в формате AdBase
+ */
+export function convertToAdBase(ad: any, viewCount?: number): AdBase {
+  const result: AdBase = {
+    id: ad.id,
+    category: ad.category.toLowerCase() as any,
+    title: ad.title,
+    description: ad.description,
+    city: ad.city,
+    cityLabel: ad.cityLabel,
+    address: ad.address,
+    location: {
+      lat: ad.lat,
+      lng: ad.lng,
+    },
+    price: ad.price ? Number(ad.price) : undefined,
+    currency: (ad.currency as Currency) || undefined,
+    datePosted: ad.datePosted.toISOString(),
+    photos: ad.photos,
+    seller: {
+      id: ad.sellerId,
+      avatar: ad.seller.avatar,
+      name: ad.seller.name,
+      rating: ad.seller.rating,
+      contact: {
+        phone: ad.seller.phone || undefined,
+        email: ad.seller.email || undefined,
+      },
+    },
+    details: ad.details,
+    showPhone: ad.showPhone,
+    showEmail: ad.showEmail,
+    viewCount: ad._count?.userViews || 0,
+    viewsToday: ad.todayViews?.length || 0,
+    favoritesCount: ad._count?.favorites || 0,
+  };
+
+  return result;
 }

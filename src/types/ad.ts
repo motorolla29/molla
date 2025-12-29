@@ -41,4 +41,26 @@ export interface AdBase {
   status?: 'active' | 'archived';
   showPhone?: boolean;
   showEmail?: boolean;
+  // Просмотры и избранное
+  viewCount?: number; // общее количество просмотров (вычисляется из userViews.length)
+  viewsToday?: number; // просмотры сегодня (вычисляется из userViews с фильтром по дате)
+  favoritesCount?: number; // количество добавлений в избранное (вычисляется из favorites.length)
+  isFavorite?: boolean; // добавлено ли текущим пользователем в избранное
+}
+
+// Интерфейс для отображения объявлений в списке "Мои объявления"
+export interface MyAdsListItem {
+  id: string;
+  title: string;
+  city: string;
+  cityLabel: string;
+  category: CategoryKey;
+  price: number | null;
+  currency: string | null;
+  datePosted: string;
+  photos: string[];
+  status: 'active' | 'archived';
+  viewCount?: number; // вычисляется из userViews.length
+  viewsToday?: number; // вычисляется из userViews с фильтром по дате
+  favoritesCount?: number; // вычисляется из favorites.length
 }

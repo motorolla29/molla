@@ -47,7 +47,11 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
                   return (
                     <Link
                       key={href}
-                      href={href}
+                      href={
+                        href === '/personal/my-adds'
+                          ? '/personal/my-adds/active'
+                          : href
+                      }
                       className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-violet-50 text-violet-700'

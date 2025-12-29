@@ -18,14 +18,14 @@ enum AdStatus {
 
 // Модель продавца
 model Seller {
-  id         Int      @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   name       String
   avatar     String?
-  rating     Float    @default(0) // 0-5
+  rating     Float       @default(0) // 0–5
   phone      String?
-  email      String?  @unique
-  password   String?  // Хэшированный пароль
-  city       String?  // Город пользователя
+  email      String?     @unique
+  password   String?     // Хэшированный пароль
+  city       String?     // Город пользователя
 
   // Связь с объявлениями
   ads        Ad[]
@@ -33,42 +33,49 @@ model Seller {
   // Связь с избранным
   favorites  Favorite[]
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  // Связь с просмотрами
+  views      UserView[]
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   @@map("sellers")
 }
 
 // Модель объявления
 model Ad {
-  id          String    @id @default(cuid())
-  category    Category
-  title       String
-  description String?
-  city        String    // человекочитаемое название
-  cityLabel   String    // метка для URL
-  address     String?
-  lat         Float?
-  lng         Float?
-  price       BigInt?
-  currency    Currency?
-  status      AdStatus  @default(active) // статус объявления
-  datePosted  DateTime  @default(now())
-  photos      String[]  // массив URL или имен файлов
-  details     String?
-  isVip       Boolean   @default(false)
-  showPhone   Boolean   @default(true)  // показывать ли телефон в объявлении
-  showEmail   Boolean   @default(true)  // показывать ли email в объявлении
+  id            String      @id @default(cuid())
+  category      Category
+  title         String
+  description   String?
+  city          String      // человекочитаемое название
+  cityLabel     String      // метка для URL
+  address       String?
+  lat           Float?
+  lng           Float?
+  price         BigInt?
+  currency      Currency?
+  status        AdStatus    @default(active) // статус объявления
+  datePosted    DateTime    @default(now())
+  photos        String[]    // массив URL или имен файлов
+  details       String?
+  isVip         Boolean     @default(false)
+  showPhone     Boolean     @default(true)  // показывать ли телефон в объявлении
+  showEmail     Boolean     @default(true)  // показывать ли email в объявлении
+
 
   // Связь с продавцом
-  sellerId    Int
-  seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId      Int
+  seller        Seller      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 
   // Связь с избранным
-  favorites   Favorite[]
+  favorites     Favorite[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  // Связь с просмотрами пользователей
+  userViews     UserView[]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@map("ads")
 }
@@ -101,4 +108,19 @@ model Favorite {
 
   @@unique([sellerId, adId]) // Один пользователь может добавить объявление в избранное только один раз
   @@map("favorites")
+}
+
+// Модель просмотров пользователей
+model UserView {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  adId      String
+  viewedAt  DateTime @default(now())
+
+  // Связи
+  user      Seller   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, adId]) // Один пользователь может просмотреть объявление только один раз
+  @@map("user_views")
 }
