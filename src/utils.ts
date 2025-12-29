@@ -100,3 +100,84 @@ export async function findNearestCity(
   }
   return best;
 }
+
+/**
+ * Форматирует дату объявления для отображения (default карточки)
+ * @param dateString - ISO строка даты
+ * @returns отформатированная строка даты
+ */
+export function formatAdDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const adDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  // Названия месяцев на русском
+  const months = [
+    'января',
+    'февраля',
+    'марта',
+    'апреля',
+    'мая',
+    'июня',
+    'июля',
+    'августа',
+    'сентября',
+    'октября',
+    'ноября',
+    'декабря',
+  ];
+
+  if (adDate.getTime() === today.getTime()) {
+    return 'Опубликовано сегодня';
+  } else if (adDate.getTime() === yesterday.getTime()) {
+    return 'Опубликовано вчера';
+  } else {
+    // Форматируем как "Опубликовано 23 января" или "Опубликовано 23 января 2024"
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    const currentYear = now.getFullYear();
+
+    if (year === currentYear) {
+      return `Опубликовано ${day} ${month}`;
+    } else {
+      return `Опубликовано ${day} ${month} ${year}`;
+    }
+  }
+}
+
+/**
+ * Форматирует дату объявления для gallery карточек (без "Опубликовано", с днями назад)
+ * @param dateString - ISO строка даты
+ * @returns отформатированная строка даты или пустая строка
+ */
+export function formatAdDateGallery(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const adDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  // Вычисляем разницу в днях
+  const diffTime = today.getTime() - adDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return 'Сегодня';
+  } else if (diffDays === 1) {
+    return 'Вчера';
+  } else if (diffDays >= 2 && diffDays <= 7) {
+    if (diffDays === 2 || diffDays === 3 || diffDays === 4) {
+      return `${diffDays} дня назад`;
+    } else {
+      return `${diffDays} дней назад`;
+    }
+  } else {
+    // Больше 7 дней - ничего не показываем
+    return '';
+  }
+}

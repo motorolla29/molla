@@ -22,7 +22,8 @@ export async function PATCH(request: NextRequest) {
 
     const userId = Number((decoded as any).userId);
 
-    const { name, phone, city, email, verificationCode } = await request.json();
+    const { name, phone, city, email, avatar, verificationCode } =
+      await request.json();
 
     // Получаем текущего пользователя
     const currentUser = await prisma.seller.findUnique({
@@ -85,6 +86,17 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    if (
+      avatar !== undefined &&
+      avatar !== null &&
+      (typeof avatar !== 'string' || avatar.trim() === '')
+    ) {
+      return NextResponse.json(
+        { error: 'Аватар должен быть непустой строкой или null' },
+        { status: 400 }
+      );
+    }
+
     // Специальная логика для изменения email
     if (email !== undefined) {
       // Улучшенная валидация email с поддержкой международных доменов
@@ -120,6 +132,9 @@ export async function PATCH(request: NextRequest) {
             }),
             ...(city !== undefined && {
               city: city === null ? null : city.trim(),
+            }),
+            ...(avatar !== undefined && {
+              avatar: avatar === null ? null : avatar.trim(),
             }),
           },
         });
@@ -195,6 +210,9 @@ export async function PATCH(request: NextRequest) {
           ...(city !== undefined && {
             city: city === null ? null : city.trim(),
           }),
+          ...(avatar !== undefined && {
+            avatar: avatar === null ? null : avatar.trim(),
+          }),
         },
       });
 
@@ -223,6 +241,9 @@ export async function PATCH(request: NextRequest) {
           phone: phone === null ? null : phone.trim(),
         }),
         ...(city !== undefined && { city: city === null ? null : city.trim() }),
+        ...(avatar !== undefined && {
+          avatar: avatar === null ? null : avatar.trim(),
+        }),
       },
     });
 

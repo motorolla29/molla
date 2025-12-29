@@ -7,15 +7,20 @@ import { useToast } from '@/components/toast/toast-context';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-modal';
+import AvatarModal from '@/components/avatar-modal/avatar-modal';
 
 export default function Profile() {
   const router = useRouter();
   const { user, logout, updateUser } = useAuthStore();
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
 
   // Состояние для модального окна редактирования профиля
   const [showEditProfile, setShowEditProfile] = useState(false);
+
+  // Состояние для модального окна просмотра аватара
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   // Layout уже проверил авторизацию
   if (!user) return null;
@@ -35,21 +40,122 @@ export default function Profile() {
     }
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    setIsAvatarUploading(true);
+    try {
+      // Загружаем файл на ImageKit
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', file.name);
+      formData.append('folder', '/molla/user-avatars');
+
+      const uploadRes = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json();
+        throw new Error(errorData.error || 'Не удалось загрузить изображение');
+      }
+
+      const uploadData = await uploadRes.json();
+
+      // Обновляем пользователя с новым аватаром
+      await updateUser({ avatar: uploadData.name });
+
+      toast.show('Аватар успешно обновлен!', {
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      toast.show(
+        error instanceof Error ? error.message : 'Ошибка при загрузке аватара',
+        {
+          type: 'error',
+        }
+      );
+    } finally {
+      setIsAvatarUploading(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        handleAvatarUpload(file);
+      }
+    };
+    input.click();
+  };
+
   return (
     <div className="p-2 lg:px-6">
       {/* Аватар и имя */}
       <div className="flex items-center mb-8 sm:mb-12">
-        {user.avatar ? (
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg"
-          />
-        ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg">
-            {user.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <div className="relative">
+          {user.avatar ? (
+            <img
+              src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
+                user.avatar || '765-default-avatar.png'
+              }`}
+              alt={user.name}
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg cursor-pointer"
+              onClick={() => setShowAvatarModal(true)}
+            />
+          ) : (
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg cursor-pointer">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          {/* Кнопка установки аватара */}
+          <button
+            onClick={handleAvatarClick}
+            disabled={isAvatarUploading}
+            className="absolute -bottom-1 -right-1 bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 disabled:cursor-not-allowed border-2 border-white"
+            aria-label="Установить аватар"
+          >
+            {isAvatarUploading ? (
+              <svg
+                className="animate-spin h-4 w-4 sm:h-5 sm:w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="h-4 w-4 sm:h-5 sm:w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
         <div className="ml-4 sm:ml-6 flex-1">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -213,7 +319,7 @@ export default function Profile() {
         <button
           onClick={handleLogout}
           disabled={isLoading}
-          className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
             className="w-5 h-5 mr-3"
@@ -231,6 +337,14 @@ export default function Profile() {
           {isLoading ? 'Выход...' : 'Выйти из профиля'}
         </button>
       </div>
+
+      {/* Модальное окно просмотра аватара */}
+      <AvatarModal
+        isOpen={showAvatarModal}
+        onClose={() => setShowAvatarModal(false)}
+        avatar={user.avatar || '765-default-avatar.png'}
+        name={user.name}
+      />
 
       {/* Модальное окно редактирования профиля */}
       <EditProfileModal

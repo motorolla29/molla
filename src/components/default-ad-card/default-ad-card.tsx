@@ -1,4 +1,4 @@
-import { getCurrencySymbol } from '@/utils';
+import { getCurrencySymbol, formatAdDate } from '@/utils';
 import Link from 'next/link';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
@@ -64,6 +64,9 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
               />
             </svg>
             {ad.city}
+          </p>
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+            {formatAdDate(ad.datePosted)}
           </p>
         </div>
       </Link>

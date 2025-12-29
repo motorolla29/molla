@@ -1,4 +1,4 @@
-import { getCurrencySymbol } from '@/utils';
+import { getCurrencySymbol, formatAdDateGallery } from '@/utils';
 import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import FavoriteButton from '../favorite-button/favorite-button';
@@ -38,12 +38,12 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
         >
           {ad.price?.toLocaleString('ru-RU')} {getCurrencySymbol(ad.currency)}
         </p>
-        <p className="text-xs flex items-center text-neutral-400 pt-1">
+        <p className="text-[10px] sm:text-xs flex items-center text-neutral-400 pt-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="size-3.5 mr-1 shrink-0"
+            className="size-3 sm:size-3.5 mr-1 shrink-0"
           >
             <path
               fillRule="evenodd"
@@ -53,6 +53,11 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
           </svg>
           <span className="truncate">{ad.city}</span>
         </p>
+        {formatAdDateGallery(ad.datePosted) && (
+          <p className="text-[10px] sm:text-xs text-neutral-400 mt-1">
+            {formatAdDateGallery(ad.datePosted)}
+          </p>
+        )}
       </div>
     </Link>
   );
