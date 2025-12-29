@@ -87,6 +87,7 @@ export default function AuthPage() {
 
         if (!response.ok) {
           setErrors({ general: data.error });
+          setIsLoading(false);
           return;
         }
 
@@ -96,7 +97,6 @@ export default function AuthPage() {
         window.location.href = url.toString();
       } catch (error) {
         setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
-      } finally {
         setIsLoading(false);
       }
     } else {
@@ -125,6 +125,7 @@ export default function AuthPage() {
 
         if (!response.ok) {
           setErrors({ general: data.error });
+          setIsLoading(false);
           return;
         }
 
@@ -157,6 +158,7 @@ export default function AuthPage() {
 
       if (!response.ok) {
         setErrors({ code: data.error });
+        setIsLoading(false);
         return;
       }
 
@@ -168,7 +170,6 @@ export default function AuthPage() {
       window.location.href = url.toString();
     } catch (error) {
       setErrors({ code: 'Ошибка сети. Попробуйте позже.' });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -193,6 +194,7 @@ export default function AuthPage() {
 
       if (!response.ok) {
         setErrors({ general: data.error });
+        setIsLoading(false);
         return;
       }
 
@@ -200,7 +202,6 @@ export default function AuthPage() {
       setErrors({});
     } catch (error) {
       setErrors({ general: 'Ошибка сети. Попробуйте позже.' });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -216,17 +217,19 @@ export default function AuthPage() {
     <div className="min-h-screen flex flex-col">
       <header className="bg-neutral-100 z-10 shadow-md">
         <div className="h-15 flex items-center justify-between px-4">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center ml-1 sm:ml-8 p-1 xs:p-2 text-gray-600 hover:text-gray-900 transition-colors"
-            aria-label="Вернуться назад"
-          >
-            <ArrowLeft className="h-8 w-8" />
-          </button>
-          <Link className="flex h-[60%]" href="/">
+          <div className="w-12 flex items-center justify-start">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              aria-label="Вернуться назад"
+            >
+              <ArrowLeft className="h-6 w-6 max-sm:h-5 max-sm:w-5" />
+            </button>
+          </div>
+          <Link className="flex h-[60%] max-sm:h-[50%]" href="/">
             <img src="/logo/molla-logo.svg" alt="logo" />
           </Link>
-          <div className="w-6 xs:w-10 sm:w-16"></div>{' '}
+          <div className="w-12"></div>
           {/* Пустой элемент для центрирования логотипа */}
         </div>
       </header>
@@ -276,7 +279,9 @@ export default function AuthPage() {
                     className="w-full text-xs sm:text-sm mt-1 p-2 border border-neutral-400 rounded focus:outline-none focus:ring-2 focus:ring-violet-300"
                   />
                   {errors.name && (
-                    <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                    <p className="text-red-500 text-[10px] sm:text-xs mt-1">
+                      {errors.name}
+                    </p>
                   )}
                 </div>
               )}
@@ -289,7 +294,9 @@ export default function AuthPage() {
                   type="email"
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                  <p className="text-red-500 text-[10px] sm:text-xs mt-1">
+                    {errors.email}
+                  </p>
                 )}
               </div>
               <div>
@@ -301,7 +308,9 @@ export default function AuthPage() {
                   type="password"
                 />
                 {errors.password && (
-                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                  <p className="text-red-500 text-[10px] sm:text-xs mt-1">
+                    {errors.password}
+                  </p>
                 )}
               </div>
               {mode === 'register' && (
@@ -316,21 +325,21 @@ export default function AuthPage() {
                     type="password"
                   />
                   {errors.confirm && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="text-red-500 text-[10px] sm:text-xs mt-1">
                       {errors.confirm}
                     </p>
                   )}
                 </div>
               )}
               {errors.general && (
-                <p className="text-red-500 text-xs text-center">
+                <p className="text-red-500 text-[10px] sm:text-xs text-center">
                   {errors.general}
                 </p>
               )}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
+                className="w-full py-2 bg-violet-500 text-sm sm:text-base text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
               >
                 {isLoading
                   ? 'Загрузка...'
@@ -343,10 +352,10 @@ export default function AuthPage() {
             /* Шаг подтверждения кода */
             <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold text-center mb-2">
+                <h2 className="text-base sm:text-lg font-semibold text-center mb-2">
                   Подтверждение email
                 </h2>
-                <p className="text-sm text-gray-600 text-center">
+                <p className="text-xs sm:text-sm text-gray-600 text-center">
                   Мы отправили 6-значный код на <strong>{email}</strong>
                 </p>
               </div>
@@ -367,14 +376,14 @@ export default function AuthPage() {
                       handleVerifyCode();
                     }
                   }}
-                  className="w-full sm:text-sm mt-1 p-2 border border-neutral-400 rounded focus:outline-none focus:ring-2 focus:ring-violet-300 text-center text-lg font-mono"
+                  className="w-full text-base sm:text-lg mt-1 p-2 border border-neutral-400 rounded focus:outline-none focus:ring-2 focus:ring-violet-300 text-center font-mono"
                   placeholder="000000"
                   maxLength={6}
                 />
               </div>
 
               {errors.code && (
-                <p className="text-red-500 text-xs text-center">
+                <p className="text-red-500 text-[10px] sm:text-xs text-center">
                   {errors.code}
                 </p>
               )}
@@ -382,7 +391,7 @@ export default function AuthPage() {
               <button
                 onClick={handleVerifyCode}
                 disabled={isLoading || verificationCode.length !== 6}
-                className="w-full py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
+                className="w-full py-2 bg-violet-500 text-sm sm:text-base text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition"
               >
                 {isLoading ? 'Проверка...' : 'Подтвердить'}
               </button>
@@ -391,7 +400,7 @@ export default function AuthPage() {
                 <button
                   onClick={handleResendCode}
                   disabled={resendTimer > 0 || isLoading}
-                  className="text-sm text-violet-500 hover:text-violet-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  className="text-xs sm:text-sm text-violet-500 hover:text-violet-600 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   {resendTimer > 0
                     ? `Отправить код повторно через ${resendTimer} сек`
@@ -401,7 +410,7 @@ export default function AuthPage() {
 
               <button
                 onClick={resetToForm}
-                className="w-full py-2 text-sm text-gray-500 hover:text-gray-700"
+                className="w-full py-2 text-xs sm:text-sm text-gray-500 hover:text-gray-700"
               >
                 Изменить данные
               </button>

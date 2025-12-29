@@ -267,11 +267,11 @@ export function EditProfileModal({
     <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[calc(100vh-6rem)] overflow-y-auto shadow-2xl"
+        className="bg-white rounded-2xl max-w-2xl w-full max-h-[calc(100vh-3rem)] overflow-y-auto shadow-2xl -translate-y-[1.5rem]"
         onKeyDown={handleKeyDown}
       >
         <div className="p-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6">
+          <h3 className="text-xl max-sm:text-lg font-semibold text-gray-900 mb-6">
             Редактировать профиль
           </h3>
 
@@ -286,7 +286,7 @@ export function EditProfileModal({
           >
             {/* Имя */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
                 Имя *
               </label>
               <input
@@ -296,14 +296,14 @@ export function EditProfileModal({
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
                 onKeyDown={handleKeyDown}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm max-sm:text-xs"
                 placeholder="Введите имя"
               />
             </div>
 
             {/* Город */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
                 Город
               </label>
               <div className="relative">
@@ -317,7 +317,7 @@ export function EditProfileModal({
                   }}
                   onFocus={() => setShowSuggestions(true)}
                   onKeyDown={handleKeyDown}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm max-sm:text-xs"
                   placeholder="Начните вводить название города"
                 />
 
@@ -339,18 +339,20 @@ export function EditProfileModal({
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs max-sm:text-[10px] text-gray-500 mt-1">
                 Оставьте пустым, чтобы не указывать город
               </p>
             </div>
 
             {/* Телефон */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
                 Телефон
               </label>
               <div className="flex items-center px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-transparent">
-                <span className="mr-1 select-none">+7</span>
+                <span className="mr-1 select-none text-sm max-sm:text-xs">
+                  +7
+                </span>
                 <input
                   type="tel"
                   value={
@@ -380,11 +382,11 @@ export function EditProfileModal({
                     }));
                   }}
                   onKeyDown={handleKeyDown}
-                  className="w-full border-none outline-none focus:ring-0 placeholder:text-gray-400"
+                  className="w-full border-none outline-none focus:ring-0 placeholder:text-gray-400 text-sm max-sm:text-xs"
                   placeholder="(XXX) XXX-XX-XX"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs max-sm:text-[10px] text-gray-500 mt-1">
                 Введите номер в формате (XXX) XXX-XX-XX. Оставьте пустым, чтобы
                 не указывать телефон
               </p>
@@ -392,7 +394,7 @@ export function EditProfileModal({
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
                 Email
               </label>
 
@@ -408,14 +410,14 @@ export function EditProfileModal({
                       }))
                     }
                     onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm max-sm:text-xs"
                     placeholder="example@email.com"
                   />
                   {formData.email !== user.email && formData.email && (
                     <button
                       onClick={handleSendEmailCode}
                       disabled={isSendingCode}
-                      className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                      className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm max-sm:text-xs"
                     >
                       {isSendingCode
                         ? 'Отправка...'
@@ -425,7 +427,7 @@ export function EditProfileModal({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm max-sm:text-xs text-gray-600">
                     Код подтверждения отправлен на{' '}
                     <strong>{formData.email}</strong>
                   </p>
@@ -438,21 +440,21 @@ export function EditProfileModal({
                       )
                     }
                     onKeyDown={handleVerificationCodeKeyDown}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-center text-lg font-mono"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-center text-lg max-sm:text-base font-mono"
                     placeholder="000000"
                     maxLength={6}
                   />
                   <div className="flex justify-between items-center">
                     <button
                       onClick={() => setEmailStep('input')}
-                      className="text-sm text-gray-600 hover:text-gray-700"
+                      className="text-sm max-sm:text-xs text-gray-600 hover:text-gray-700"
                     >
                       Изменить email
                     </button>
                     <button
                       onClick={handleSendEmailCode}
                       disabled={resendTimer > 0 || isSendingCode}
-                      className="text-sm text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      className="text-sm max-sm:text-xs text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
                       {resendTimer > 0
                         ? `Отправить повторно (${resendTimer}с)`
@@ -463,12 +465,14 @@ export function EditProfileModal({
               )}
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm max-sm:text-xs">{error}</p>
+            )}
 
             <div className="flex space-x-3 mt-8">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-sm max-sm:text-xs"
                 disabled={isSaving}
               >
                 Отмена
@@ -476,7 +480,7 @@ export function EditProfileModal({
               <button
                 type="submit"
                 disabled={!hasChanges || isSaving}
-                className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors text-sm max-sm:text-xs"
               >
                 {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
               </button>

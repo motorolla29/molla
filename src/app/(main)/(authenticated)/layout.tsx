@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function AuthenticatedLayout({

@@ -51,7 +51,7 @@ export default function Profile() {
           </div>
         )}
         <div className="ml-4 sm:ml-6 flex-1">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-700 mb-1 line-clamp-2 wrap-break-word">
                 {user.name}

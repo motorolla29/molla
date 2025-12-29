@@ -2,26 +2,61 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Home, Heart, List, MessageCircle, User } from 'lucide-react';
 
 const navItems = [
-  { href: '/', Icon: Home, label: 'Главная' },
-  { href: '/favorites', Icon: Heart, label: 'Избранное' },
-  { href: '/personal/my-adds', Icon: List, label: 'Объявления' },
-  { href: '/chats', Icon: MessageCircle, label: 'Сообщения' },
-  { href: '/personal/profile', Icon: User, label: 'Профиль' },
+  { href: '/', Icon: Home, label: 'Главная', id: 'home' },
+  { href: '/favorites', Icon: Heart, label: 'Избранное', id: 'favorites' },
+  { href: '/personal/my-adds', Icon: List, label: 'Объявления', id: 'ads' },
+  { href: '/chats', Icon: MessageCircle, label: 'Сообщения', id: 'chats' },
+  { href: '/personal/profile', Icon: User, label: 'Профиль', id: 'profile' },
 ];
+
+const NAV_CONTEXT_KEY = 'mobile-nav-context';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const [navContext, setNavContext] = useState<string | null>(null);
 
-  const nonHomePaths = [
+  // Загружаем сохраненный контекст при монтировании
+  useEffect(() => {
+    const saved = sessionStorage.getItem(NAV_CONTEXT_KEY);
+    if (saved) {
+      setNavContext(saved);
+    }
+  }, []);
+
+  // Сохраняем контекст при переходе на специальные страницы
+  useEffect(() => {
+    if (pathname === '/') {
+      setNavContext('home');
+      sessionStorage.setItem(NAV_CONTEXT_KEY, 'home');
+    } else if (pathname.startsWith('/favorites')) {
+      setNavContext('favorites');
+      sessionStorage.setItem(NAV_CONTEXT_KEY, 'favorites');
+    } else if (pathname.startsWith('/personal/my-adds')) {
+      setNavContext('ads');
+      sessionStorage.setItem(NAV_CONTEXT_KEY, 'ads');
+    } else if (pathname.startsWith('/chats')) {
+      setNavContext('chats');
+      sessionStorage.setItem(NAV_CONTEXT_KEY, 'chats');
+    } else if (pathname.startsWith('/personal/profile')) {
+      setNavContext('profile');
+      sessionStorage.setItem(NAV_CONTEXT_KEY, 'profile');
+    }
+  }, [pathname]);
+
+  const specialPaths = [
     '/favorites',
     '/personal/my-adds',
     '/chats',
     '/personal/profile',
   ];
-  const isHomeActive = pathname === '/' || !nonHomePaths.includes(pathname);
+  const isHomeActive =
+    pathname === '/' ||
+    (!specialPaths.some((p) => pathname.startsWith(p)) &&
+      navContext === 'home');
 
   return (
     <nav
@@ -29,8 +64,22 @@ export default function MobileBottomNav() {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex h-full">
-        {navItems.map(({ href, Icon, label }) => {
-          const isActive = href === '/' ? isHomeActive : pathname === href;
+        {navItems.map(({ href, Icon, label, id }) => {
+          let isActive = false;
+
+          if (href === '/' && isHomeActive) {
+            isActive = true;
+          } else if (specialPaths.includes(href) && pathname.startsWith(href)) {
+            isActive = true;
+          } else if (pathname === href) {
+            isActive = true;
+          } else if (
+            !specialPaths.some((p) => pathname.startsWith(p)) &&
+            navContext === id
+          ) {
+            // Для страниц товаров показываем активной иконку в зависимости от контекста
+            isActive = true;
+          }
           const colorClass = isActive ? 'text-violet-500' : 'text-neutral-400';
           return (
             <Link

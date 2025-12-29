@@ -11,13 +11,15 @@ interface DefaultAdCardProps {
 
 export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
   return (
-    <Link
-      href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
+    <div
       key={ad.id}
       className="flex w-full overflow-hidden h-full p-0 sm:p-4 my-3 sm:my-0 rounded-xl sm:hover:bg-neutral-100"
     >
       {/* Фото */}
-      <div className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 overflow-hidden">
+      <Link
+        className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 overflow-hidden"
+        href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
+      >
         <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'
@@ -25,10 +27,13 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
           alt={ad.title}
           className="w-full h-full object-cover"
         />
-      </div>
+      </Link>
 
       {/* Основная информация */}
-      <div className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative min-w-0">
+      <Link
+        className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative min-w-0"
+        href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
+      >
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-0 right-0" />
         <div className="overflow-hidden">
@@ -61,17 +66,12 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             {ad.city}
           </p>
         </div>
-      </div>
+      </Link>
 
       {/* Информация о продавце */}
-      <div
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          // Используем window.location для гарантированной навигации
-          window.location.href = `/user/${ad.seller.id}/active`;
-        }}
-        className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
+      <Link
+        href={`/user/${ad.seller.id}/active`}
+        className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
       >
         <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
           <img
@@ -110,7 +110,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             {ad.seller.rating.toFixed(1)}
           </span>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

@@ -7,7 +7,7 @@ import { User, List, ArrowLeft } from 'lucide-react';
 
 const navItems = [
   { href: '/personal/profile', Icon: User, label: 'Профиль' },
-  { href: '/personal/my-adds/active', Icon: List, label: 'Мои объявления' },
+  { href: '/personal/my-adds', Icon: List, label: 'Мои объявления' },
 ];
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
