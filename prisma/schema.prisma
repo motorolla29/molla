@@ -112,15 +112,18 @@ model Favorite {
 
 // Модель просмотров пользователей
 model UserView {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  adId      String
-  viewedAt  DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  userId         Int?
+  localUserToken String?
+  adId           String
+  viewedAt       DateTime @default(now())
 
   // Связи
-  user      Seller   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  user           Seller?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ad             Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, adId]) // Один пользователь может просмотреть объявление только один раз
+  @@unique([userId, adId]) // Один авторизованный пользователь может просмотреть объявление только один раз
+  @@unique([localUserToken, adId]) // Один неавторизованный пользователь (по токену) может просмотреть объявление только один раз
+  @@unique([userId, localUserToken, adId]) // Предотвращает дубликаты при наличии обоих идентификаторов
   @@map("user_views")
 }

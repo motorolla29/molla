@@ -20,6 +20,7 @@ import FavoriteButton from '@/components/favorite-button/favorite-button';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { useToast } from '@/components/toast/toast-context';
+import { getOrCreateUserToken } from '@/utils';
 import SellerContacts from './components/seller-contacts';
 
 interface AdClientProps {
@@ -44,8 +45,16 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
   useEffect(() => {
     const recordView = async () => {
       try {
+        const localUserToken = getOrCreateUserToken();
+
         const response = await fetch(`/api/ads/${ad.id}/views`, {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            localUserToken,
+          }),
         });
 
         if (!response.ok) {

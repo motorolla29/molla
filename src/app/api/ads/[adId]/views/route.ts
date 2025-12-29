@@ -8,19 +8,28 @@ export async function POST(
 ) {
   try {
     const { adId } = await params;
+    const body = await request.json();
+    const { localUserToken } = body;
 
-    // Получаем токен пользователя (обязательно для просмотров)
+    // Получаем данные для идентификации пользователя
+    let userId: number | null = null;
+
+    // Проверяем авторизацию
     const token = request.cookies.get('token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload && typeof payload === 'object' && 'userId' in payload) {
+        userId = payload.userId as number;
+      }
     }
 
-    const payload = verifyToken(token);
-    if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
-      return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
+    // Если не авторизован, проверяем localUserToken
+    if (!userId && !localUserToken) {
+      return NextResponse.json(
+        { error: 'Требуется авторизация или localUserToken' },
+        { status: 401 }
+      );
     }
-
-    const userId = payload.userId as number;
 
     // Проверяем существование объявления
     const ad = await prisma.ad.findUnique({
@@ -35,20 +44,38 @@ export async function POST(
       );
     }
 
-    // Создаем запись просмотра, если её ещё нет (игнорируем дубликаты)
-    try {
-      await prisma.userView.create({
-        data: {
-          userId: userId,
-          adId: adId,
-        },
-      });
-    } catch (error: any) {
-      // Игнорируем ошибку дубликата (P2002), но логируем другие ошибки
-      if (error.code !== 'P2002') {
-        throw error;
-      }
+    // Проверяем, был ли уже просмотр от этого пользователя (по userId или localUserToken)
+    const existingView = await prisma.userView.findFirst({
+      where: {
+        adId: adId,
+        OR: [
+          userId ? { userId: userId } : {},
+          localUserToken ? { localUserToken: localUserToken } : {},
+        ].filter((condition) => Object.keys(condition).length > 0),
+      },
+    });
+
+    // Если просмотр уже был, не создаем новый
+    if (existingView) {
+      return NextResponse.json({ success: true });
     }
+
+    // Создаем новую запись просмотра
+    const viewData: any = {
+      adId: adId,
+    };
+
+    // Добавляем оба поля, если они присутствуют
+    if (userId) {
+      viewData.userId = userId;
+    }
+    if (localUserToken) {
+      viewData.localUserToken = localUserToken;
+    }
+
+    await prisma.userView.create({
+      data: viewData,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

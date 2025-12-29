@@ -1,6 +1,32 @@
 import { Currency, AdBase } from './types/ad';
 import { CityRaw } from './types/city-raw';
 
+/**
+ * Получить или создать userToken для неавторизованного пользователя
+ * Сохраняет токен в localStorage под ключом 'localUserToken'
+ * @returns string - userToken
+ */
+export function getOrCreateUserToken(): string {
+  // Проверяем, есть ли уже токен в localStorage
+  const existingToken = localStorage.getItem('localUserToken');
+
+  if (existingToken) {
+    return existingToken;
+  }
+
+  // Генерируем новый токен (32 байта = 64 символа в hex)
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  const newToken = Array.from(array, (byte) =>
+    byte.toString(16).padStart(2, '0')
+  ).join('');
+
+  // Сохраняем в localStorage
+  localStorage.setItem('localUserToken', newToken);
+
+  return newToken;
+}
+
 export function getCurrencySymbol(currencyCode: Currency) {
   switch (currencyCode) {
     case 'RUB':
