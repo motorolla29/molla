@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import { categoryOptions } from '@/const';
@@ -39,6 +39,26 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
 
   // Состояния для операций с объявлением
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Запись просмотра при загрузке страницы
+  useEffect(() => {
+    const recordView = async () => {
+      try {
+        const response = await fetch(`/api/ads/${ad.id}/views`, {
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          // Не показываем ошибку пользователю, так как это не критично
+          console.warn('Failed to record view:', response.status);
+        }
+      } catch (error) {
+        console.warn('Error recording view:', error);
+      }
+    };
+
+    recordView();
+  }, [ad.id]);
 
   // Форматирование даты размещения
   const formatDate = (dateString: string) => {

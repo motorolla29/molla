@@ -9,26 +9,14 @@ import { Plus } from 'lucide-react';
 import LoadingSkeleton from './components/loading-skeleton';
 import Tabs from './components/tabs';
 import AdsList from './components/ads-list';
-
-interface Ad {
-  id: string;
-  title: string;
-  price: number | null;
-  currency: string | null;
-  datePosted: string;
-  city: string;
-  cityLabel: string;
-  category: string;
-  photos: string[];
-  status: 'active' | 'archived';
-}
+import { MyAdsListItem } from '@/types/ad';
 
 export default function MyAddsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuthStore();
   const toast = useToast();
-  const [allAds, setAllAds] = useState<Ad[]>([]);
+  const [allAds, setAllAds] = useState<MyAdsListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');

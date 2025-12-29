@@ -94,19 +94,6 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
-        _count: {
-          select: {
-            favorites: true,
-            userViews: true,
-          },
-        },
-        todayViews: {
-          where: {
-            viewedAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)), // просмотры с начала сегодняшнего дня
-            },
-          },
-        },
       },
       orderBy,
       skip,

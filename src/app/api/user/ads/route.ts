@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient, AdStatus } from '@prisma/client';
 import { verifyToken } from '@/lib/jwt';
+import { CategoryKey } from '@/types/ad';
 
 const prisma = new PrismaClient();
 
@@ -22,22 +23,33 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // если не указан, будет null
 
-    // Получаем объявления пользователя
-    const whereCondition =
-      status === 'all'
-        ? { sellerId: sellerId }
-        : status
-        ? {
-            sellerId: sellerId,
-            status: status as AdStatus,
-          }
-        : {
-            sellerId: sellerId,
-            status: AdStatus.active, // по умолчанию только активные
-          };
-
     const ads = await prisma.ad.findMany({
-      where: whereCondition,
+      where: {
+        sellerId,
+        ...(status === 'all'
+          ? {}
+          : status
+          ? { status: status as AdStatus }
+          : { status: AdStatus.active }),
+      },
+      include: {
+        _count: {
+          select: {
+            favorites: true,
+            userViews: true,
+          },
+        },
+        userViews: {
+          where: {
+            viewedAt: {
+              gte: new Date(new Date().setHours(0, 0, 0, 0)), // просмотры с начала сегодняшнего дня
+            },
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
       orderBy: {
         datePosted: 'desc',
       },
@@ -47,18 +59,17 @@ export async function GET(request: NextRequest) {
     const formattedAds = ads.map((ad) => ({
       id: ad.id,
       title: ad.title,
-      description: ad.description,
-      category: ad.category,
       city: ad.city,
       cityLabel: ad.cityLabel,
-      address: ad.address,
-      lat: ad.lat,
-      lng: ad.lng,
+      category: ad.category.toLowerCase() as CategoryKey,
       price: ad.price ? Number(ad.price) : null,
       currency: ad.currency,
-      status: ad.status,
       datePosted: ad.datePosted.toISOString(),
       photos: ad.photos,
+      status: ad.status,
+      viewCount: ad._count?.userViews || 0,
+      viewsToday: ad.userViews?.length || 0,
+      favoritesCount: ad._count?.favorites || 0,
     }));
 
     return NextResponse.json({

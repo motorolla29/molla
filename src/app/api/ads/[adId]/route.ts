@@ -29,11 +29,14 @@ export async function GET(
             userViews: true,
           },
         },
-        todayViews: {
+        userViews: {
           where: {
             viewedAt: {
               gte: new Date(new Date().setHours(0, 0, 0, 0)), // просмотры с начала сегодняшнего дня
             },
+          },
+          select: {
+            id: true,
           },
         },
       },

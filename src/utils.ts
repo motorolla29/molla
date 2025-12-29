@@ -188,8 +188,8 @@ export function formatAdDateGallery(dateString: string): string {
  * @param viewCount - количество просмотров (опционально, если не получается из ad._count)
  * @returns объект в формате AdBase
  */
-export function convertToAdBase(ad: any, viewCount?: number): AdBase {
-  const result: AdBase = {
+export function convertToAdBase(ad: any): AdBase {
+  return {
     id: ad.id,
     category: ad.category.toLowerCase() as any,
     title: ad.title,
@@ -216,12 +216,11 @@ export function convertToAdBase(ad: any, viewCount?: number): AdBase {
       },
     },
     details: ad.details,
+    status: ad.status,
     showPhone: ad.showPhone,
     showEmail: ad.showEmail,
     viewCount: ad._count?.userViews || 0,
-    viewsToday: ad.todayViews?.length || 0,
+    viewsToday: ad.userViews?.length || 0,
     favoritesCount: ad._count?.favorites || 0,
   };
-
-  return result;
 }

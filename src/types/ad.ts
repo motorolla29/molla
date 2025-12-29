@@ -45,7 +45,6 @@ export interface AdBase {
   viewCount?: number; // общее количество просмотров (вычисляется из userViews.length)
   viewsToday?: number; // просмотры сегодня (вычисляется из userViews с фильтром по дате)
   favoritesCount?: number; // количество добавлений в избранное (вычисляется из favorites.length)
-  isFavorite?: boolean; // добавлено ли текущим пользователем в избранное
 }
 
 // Интерфейс для отображения объявлений в списке "Мои объявления"
