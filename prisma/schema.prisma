@@ -96,17 +96,21 @@ enum Currency {
 
 // Модель избранного
 model Favorite {
-  id        Int      @id @default(autoincrement())
-  sellerId  Int
-  adId      String
+  id             Int      @id @default(autoincrement())
+  sellerId       Int?     // Может быть null для неавторизованных пользователей
+  localUserToken String?  // Токен для неавторизованных пользователей
+  adId           String
+  isActive       Boolean  @default(true) // Флаг активности лайка
 
   // Связи
-  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  seller         Seller?  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  ad             Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  createdAt      DateTime @default(now())
 
-  @@unique([sellerId, adId]) // Один пользователь может добавить объявление в избранное только один раз
+  @@unique([sellerId, adId]) // Один авторизованный пользователь может добавить объявление в избранное только один раз
+  @@unique([localUserToken, adId]) // Один неавторизованный пользователь (по токену) может добавить объявление в избранное только один раз
+  @@unique([sellerId, localUserToken, adId]) // Предотвращает дубликаты при наличии обоих идентификаторов
   @@map("favorites")
 }
 

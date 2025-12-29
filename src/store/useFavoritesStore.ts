@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AdBase } from '@/types/ad';
 import { useAuthStore } from './useAuthStore';
+import { getOrCreateUserToken } from '@/utils';
 
 interface FavoritesState {
   favorites: AdBase[];
@@ -62,56 +63,58 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       addFavorite: async (ad: AdBase) => {
-        const { isLoggedIn } = useAuthStore.getState();
         const { favoriteIds, favorites } = get();
 
-        // Для авторизованных пользователей - синхронизация с API
-        if (isLoggedIn) {
-          set({ isLoading: true, error: null });
+        set({ isLoading: true, error: null });
 
-          try {
-            const response = await fetch('/api/favorites', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ adId: ad.id }),
-            });
+        try {
+          const localUserToken = getOrCreateUserToken();
 
-            if (!response.ok) {
+          const response = await fetch('/api/favorites', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              adId: ad.id,
+              localUserToken,
+            }),
+          });
+
+          if (!response.ok) {
+            let errorMessage = 'Не удалось добавить в избранное';
+            try {
               const errorData = await response.json();
-              throw new Error(
-                errorData.error || 'Не удалось добавить в избранное'
-              );
+              errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+              // Если не удалось прочитать JSON, используем статус код
+              errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
             }
+            throw new Error(errorMessage);
+          }
 
+          // Проверяем, не был ли уже добавлен в избранное
+          const isAlreadyFavorite = favoriteIds.has(ad.id);
+
+          if (!isAlreadyFavorite) {
             const newFavoriteIds = new Set(favoriteIds);
             newFavoriteIds.add(ad.id);
 
             set({
-              // Для авторизованных также добавляем новое избранное в НАЧАЛО списка,
-              // чтобы порядок на клиенте совпадал с orderBy createdAt DESC на сервере.
               favorites: [ad, ...favorites],
               favoriteIds: newFavoriteIds,
               isLoading: false,
             });
-          } catch (error) {
-            set({
-              error:
-                error instanceof Error ? error.message : 'Ошибка добавления',
-              isLoading: false,
-            });
-            throw error;
+          } else {
+            // Уже в избранном, просто снимаем loading
+            set({ isLoading: false });
           }
-        } else {
-          // Для неавторизованных пользователей - только localStorage
-          const newFavoriteIds = new Set(favoriteIds);
-          newFavoriteIds.add(ad.id);
-
+        } catch (error) {
           set({
-            favorites: [ad, ...favorites],
-            favoriteIds: newFavoriteIds,
+            error: error instanceof Error ? error.message : 'Ошибка добавления',
+            isLoading: false,
           });
+          throw error;
         }
       },
 
@@ -124,10 +127,16 @@ export const useFavoritesStore = create<FavoritesState>()(
           set({ isLoading: true, error: null });
 
           try {
-            const response = await fetch(`/api/favorites?adId=${adId}`, {
-              method: 'DELETE',
-              headers: {},
-            });
+            const localUserToken = getOrCreateUserToken();
+
+            const response = await fetch(
+              `/api/favorites?adId=${adId}&localUserToken=${encodeURIComponent(
+                localUserToken
+              )}`,
+              {
+                method: 'DELETE',
+              }
+            );
 
             if (!response.ok) {
               const errorData = await response.json();
@@ -138,14 +147,22 @@ export const useFavoritesStore = create<FavoritesState>()(
 
             // Обновляем состояние только если не пропущено
             if (!skipStateUpdate) {
-              const newFavoriteIds = new Set(favoriteIds);
-              newFavoriteIds.delete(adId);
+              // Проверяем, был ли уже удален из избранного
+              const isCurrentlyFavorite = favoriteIds.has(adId);
 
-              set({
-                favorites: favorites.filter((ad) => ad.id !== adId),
-                favoriteIds: newFavoriteIds,
-                isLoading: false,
-              });
+              if (isCurrentlyFavorite) {
+                const newFavoriteIds = new Set(favoriteIds);
+                newFavoriteIds.delete(adId);
+
+                set({
+                  favorites: favorites.filter((ad) => ad.id !== adId),
+                  favoriteIds: newFavoriteIds,
+                  isLoading: false,
+                });
+              } else {
+                // Уже удален, просто снимаем loading
+                set({ isLoading: false });
+              }
             } else {
               set({ isLoading: false });
             }

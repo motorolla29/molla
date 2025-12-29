@@ -21,9 +21,12 @@ export async function GET(request: NextRequest) {
 
     const userId = payload.userId as number;
 
-    // Получаем избранные объявления с полной информацией
+    // Получаем избранные объявления с полной информацией (только активные)
     const favorites = await prisma.favorite.findMany({
-      where: { sellerId: userId },
+      where: {
+        sellerId: userId,
+        isActive: true,
+      },
       include: {
         ad: {
           include: {
@@ -77,22 +80,28 @@ export async function GET(request: NextRequest) {
 // POST /api/favorites - добавить объявление в избранное
 export async function POST(request: NextRequest) {
   try {
-    // Получаем токен из httpOnly cookies
-    const token = request.cookies.get('token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-
-    if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
-      return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
-    }
-
-    const userId = payload.userId as number;
-
     const body = await request.json();
-    const { adId } = body;
+    const { adId, localUserToken } = body;
+
+    // Получаем данные для идентификации пользователя
+    let userId: number | null = null;
+
+    // Проверяем авторизацию
+    const token = request.cookies.get('token')?.value;
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload && typeof payload === 'object' && 'userId' in payload) {
+        userId = payload.userId as number;
+      }
+    }
+
+    // Если не авторизован, проверяем localUserToken
+    if (!userId && !localUserToken) {
+      return NextResponse.json(
+        { error: 'Требуется авторизация или localUserToken' },
+        { status: 401 }
+      );
+    }
 
     if (!adId || typeof adId !== 'string') {
       return NextResponse.json(
@@ -113,30 +122,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Проверяем, не добавлено ли уже в избранное
-    const existingFavorite = await prisma.favorite.findUnique({
+    // Проверяем, есть ли уже запись с такими идентификаторами
+    const existingFavorite = await prisma.favorite.findFirst({
       where: {
-        sellerId_adId: {
-          sellerId: userId,
-          adId: adId,
-        },
+        adId: adId,
+        OR: [
+          userId ? { sellerId: userId } : {},
+          localUserToken ? { localUserToken: localUserToken } : {},
+        ].filter((condition) => Object.keys(condition).length > 0),
       },
     });
+
+    let favorite;
 
     if (existingFavorite) {
-      return NextResponse.json(
-        { error: 'Объявление уже в избранном' },
-        { status: 409 }
-      );
-    }
-
-    // Добавляем в избранное
-    const favorite = await prisma.favorite.create({
-      data: {
-        sellerId: userId,
+      // Если запись существует, активируем её (восстанавливаем лайк)
+      favorite = await prisma.favorite.update({
+        where: { id: existingFavorite.id },
+        data: {
+          isActive: true,
+        },
+      });
+    } else {
+      // Создаем новую запись
+      const favoriteData: any = {
         adId: adId,
-      },
-    });
+        isActive: true,
+      };
+
+      // Добавляем оба поля, если они присутствуют
+      if (userId) {
+        favoriteData.sellerId = userId;
+      }
+      if (localUserToken) {
+        favoriteData.localUserToken = localUserToken;
+      }
+
+      favorite = await prisma.favorite.create({
+        data: favoriteData,
+      });
+    }
 
     return NextResponse.json({ favorite }, { status: 201 });
   } catch (error) {
@@ -167,6 +192,7 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const adId = searchParams.get('adId');
+    const localUserToken = searchParams.get('localUserToken');
 
     if (!adId) {
       return NextResponse.json(
@@ -175,11 +201,18 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Удаляем из избранного
-    const result = await prisma.favorite.deleteMany({
+    // Деактивируем лайк (устанавливаем isActive = false)
+    // Ищем по userId ИЛИ localUserToken (на случай если запись была создана до авторизации)
+    const result = await prisma.favorite.updateMany({
       where: {
-        sellerId: userId,
         adId: adId,
+        isActive: true, // Только активные лайки
+        OR: [{ sellerId: userId }, { localUserToken: localUserToken }].filter(
+          (condition) => Object.keys(condition).length > 0
+        ),
+      },
+      data: {
+        isActive: false,
       },
     });
 
