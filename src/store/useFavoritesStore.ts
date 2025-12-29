@@ -212,6 +212,9 @@ export const useFavoritesStore = create<FavoritesState>()(
         }
 
         try {
+          // Получаем localUserToken для миграции существующих записей
+          const localUserToken = getOrCreateUserToken();
+
           // Отправляем все локальные избранные в базу данных
           // ВАЖНО: отправляем в ОБРАТНОМ порядке, чтобы при сортировке по createdAt DESC
           // порядок на сервере совпал с текущим порядком favorites на клиенте.
@@ -221,7 +224,10 @@ export const useFavoritesStore = create<FavoritesState>()(
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ adId: ad.id }),
+              body: JSON.stringify({
+                adId: ad.id,
+                localUserToken, // Передаем localUserToken для корректной миграции
+              }),
             });
 
             if (!response.ok) {

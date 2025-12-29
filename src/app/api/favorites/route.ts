@@ -137,11 +137,18 @@ export async function POST(request: NextRequest) {
 
     if (existingFavorite) {
       // Если запись существует, активируем её (восстанавливаем лайк)
+      const updateData: any = {
+        isActive: true,
+      };
+
+      // Если пользователь авторизован и у записи нет sellerId, присваиваем его
+      if (userId && !existingFavorite.sellerId) {
+        updateData.sellerId = userId;
+      }
+
       favorite = await prisma.favorite.update({
         where: { id: existingFavorite.id },
-        data: {
-          isActive: true,
-        },
+        data: updateData,
       });
     } else {
       // Создаем новую запись

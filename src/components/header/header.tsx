@@ -58,7 +58,7 @@ export default function Header() {
             >
               {user.avatar ? (
                 <img
-                  src={user.avatar}
+                  src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${user.avatar}?tr=w-80`}
                   alt={user.name}
                   className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
                 />

@@ -97,7 +97,26 @@ export default function TopSearchPanel({
         </div>
 
         {/* Поисковая строка */}
-        <div className="flex-1 relative min-w-72">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const trimmed = searchTerm.trim();
+            const params = new URLSearchParams(searchParams.toString());
+
+            if (trimmed) {
+              params.set('search', trimmed); // заменит или добавит параметр search
+            } else {
+              params.delete('search'); // если строка пуста — удаляем параметр
+            }
+
+            const basePath = categoryKey
+              ? `/${cityLabel}/${categoryKey}`
+              : `/${cityLabel}`;
+
+            router.push(`${basePath}?${params.toString()}`);
+          }}
+          className="flex-1 relative min-w-72"
+        >
           <input
             type="text"
             value={searchTerm}
@@ -108,27 +127,12 @@ export default function TopSearchPanel({
             className="w-full pl-4 pr-24 py-2 border outline-none border-gray-300 rounded-full focus:border-violet-300"
           />
           <button
-            onClick={() => {
-              const trimmed = searchTerm.trim();
-              const params = new URLSearchParams(searchParams.toString());
-
-              if (trimmed) {
-                params.set('search', trimmed); // заменит или добавит параметр search
-              } else {
-                params.delete('search'); // если строка пуста — удаляем параметр
-              }
-
-              const basePath = categoryKey
-                ? `/${cityLabel}/${categoryKey}`
-                : `/${cityLabel}`;
-
-              router.push(`${basePath}?${params.toString()}`);
-            }}
+            type="submit"
             className="absolute outline-none right-0 top-0 h-full px-4 cursor-pointer bg-violet-400 text-white rounded-full hover:bg-violet-500"
           >
             Найти
           </button>
-        </div>
+        </form>
         <button
           onClick={() => setShowLocationModal(true)}
           className="ml-2 text-md flex items-center font-semibold text-neutral-500 hover:opacity-80 cursor-pointer"
