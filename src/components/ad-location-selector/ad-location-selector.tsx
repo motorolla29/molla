@@ -2,9 +2,29 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { YMaps, Map } from '@pbe/react-yandex-maps';
+import { motion, AnimatePresence } from 'framer-motion';
 import { loadCitiesData, findNearestCity } from '@/utils';
 import { useLocationStore } from '@/store/useLocationStore';
 import CitySelectorModal from '@/components/city-selector-modal/city-selector-modal';
+
+// Варианты анимации для попапа подтверждения адреса
+const addressConfirmVariants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+    y: 10,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.9,
+    y: 5,
+  },
+};
 
 export interface AdLocationValue {
   cityLabel: string | null;
@@ -649,60 +669,75 @@ export default function AdLocationSelector({
       </div>
 
       {/* Попап подтверждения адреса над картой */}
-      {showAddressConfirmPopup && pendingAddressData && (
-        <div className="absolute bottom-34 left-1/2 -translate-x-1/2 -translate-y-full z-50 pointer-events-none">
-          <div className="bg-white rounded-lg p-4 shadow-xl border border-gray-200 min-w-80 max-w-80 relative pointer-events-auto">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-              {pendingAddressData.address === 'Адрес не найден'
-                ? 'Сохранить место?'
-                : 'Выбрать этот адрес?'}
-            </h3>
-            <div className="text-xs sm:text-sm text-gray-600 mb-3">
-              <strong>Адрес:</strong>{' '}
-              {pendingAddressData.address === 'Адрес не найден'
-                ? 'Без адреса'
-                : pendingAddressData.address}
-            </div>
-            {pendingAddressData.cityName &&
-              pendingAddressData.cityName !== cityName && (
-                <div className="text-xs sm:text-sm text-amber-600 mb-3">
-                  <strong>Город изменится на:</strong>{' '}
-                  {pendingAddressData.cityName}
-                </div>
-              )}
-            <div className="flex space-x-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddressConfirmPopup(false);
-                  setPendingAddressData(null);
-                  setIsConfirmingAddress(false);
-                }}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm"
-              >
-                Отмена
-              </button>
-              <button
-                type="button"
-                onClick={confirmAddressSelection}
-                className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-xs sm:text-sm"
-              >
-                Подтвердить
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showAddressConfirmPopup && pendingAddressData && (
+          <motion.div
+            className="absolute bottom-68 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div
+              className="bg-white rounded-lg p-4 shadow-xl border border-gray-200 sm:min-w-80 sm:max-w-80 relative pointer-events-auto"
+              variants={addressConfirmVariants}
+              transition={{
+                duration: 0.25,
+                ease: 'easeOut',
+                type: 'spring',
+                //damping: 20,
+                //stiffness: 300,
+              }}
+            >
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                {pendingAddressData.address === 'Адрес не найден'
+                  ? 'Сохранить место?'
+                  : 'Выбрать этот адрес?'}
+              </h3>
+              <div className="text-xs sm:text-sm text-gray-600 mb-3">
+                <strong>Адрес:</strong>{' '}
+                {pendingAddressData.address === 'Адрес не найден'
+                  ? 'Без адреса'
+                  : pendingAddressData.address}
+              </div>
+              {pendingAddressData.cityName &&
+                pendingAddressData.cityName !== cityName && (
+                  <div className="text-xs sm:text-sm text-amber-600 mb-3">
+                    <strong>Город изменится на:</strong>{' '}
+                    {pendingAddressData.cityName}
+                  </div>
+                )}
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddressConfirmPopup(false);
+                    setPendingAddressData(null);
+                    setIsConfirmingAddress(false);
+                  }}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-xs sm:text-sm"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmAddressSelection}
+                  className="flex-1 px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors text-xs sm:text-sm"
+                >
+                  Подтвердить
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Модальное окно выбора города */}
-      {showLocationModal && (
-        <CitySelectorModal
-          isOpen={showLocationModal}
-          onClose={() => setShowLocationModal(false)}
-          onSelect={handleCitySelect}
-          currentCity={cityName}
-        />
-      )}
+      <CitySelectorModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onSelect={handleCitySelect}
+        currentCity={cityName}
+      />
     </section>
   );
 }

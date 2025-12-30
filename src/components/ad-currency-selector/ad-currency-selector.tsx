@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Currency } from '@/types/ad';
 
 interface AdCurrencySelectorProps {
@@ -43,6 +44,25 @@ export default function AdCurrencySelector({
 
   const selectedCurrency = currencyOptions.find((opt) => opt.key === value);
 
+  // Варианты анимации для выпадающего списка
+  const dropdownVariants = {
+    hidden: {
+      opacity: 0,
+      y: -10,
+      scale: 0.95,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+    },
+    exit: {
+      opacity: 0,
+      y: -5,
+      scale: 0.98,
+    },
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <label className="block text-xs sm:text-sm font-medium mb-1">
@@ -77,25 +97,47 @@ export default function AdCurrencySelector({
         </svg>
       </button>
 
-      {isDropdownOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {currencyOptions.map((opt) => (
-            <button
-              key={opt.key}
-              type="button"
-              onClick={() => {
-                onChange(opt.key);
-                setIsDropdownOpen(false);
-              }}
-              className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none flex items-center border-b border-gray-100 last:border-b-0"
-            >
-              <span className="text-sm sm:text-base text-gray-900">
-                {opt.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {isDropdownOpen && (
+          <motion.div
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+            variants={dropdownVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{
+              duration: 0.2,
+              ease: 'easeOut',
+              type: 'spring',
+              damping: 25,
+              stiffness: 300,
+            }}
+          >
+            {currencyOptions.map((opt, index) => (
+              <motion.button
+                key={opt.key}
+                type="button"
+                onClick={() => {
+                  onChange(opt.key);
+                  setIsDropdownOpen(false);
+                }}
+                className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none flex items-center border-b border-gray-100 last:border-b-0"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  delay: index * 0.05, // Небольшая задержка для каждого элемента
+                  duration: 0.15,
+                  ease: 'easeOut',
+                }}
+              >
+                <span className="text-sm sm:text-base text-gray-900">
+                  {opt.label}
+                </span>
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -292,7 +292,7 @@ export default function LocationModal({
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -302,7 +302,7 @@ export default function LocationModal({
         >
           <motion.div
             ref={modalRef}
-            className="bg-white rounded-xl w-full max-w-md mx-4 p-4 shadow-2xl overflow-hidden"
+            className="bg-white rounded-xl w-full max-w-sm sm:max-w-md mx-3 sm:mx-4 p-3 sm:p-4 shadow-2xl overflow-hidden"
             variants={modalVariants}
             initial="hidden"
             animate="visible"
@@ -316,8 +316,10 @@ export default function LocationModal({
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium">Выберите город</h2>
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-lg font-medium">
+                Выберите город
+              </h2>
               <button
                 onClick={() => {
                   setPreviewLabel('russia');
@@ -329,21 +331,23 @@ export default function LocationModal({
                   setSuggestions([]);
                   setError(null);
                 }}
-                className="text-md underline text-violet-400 font-medium hover:text-violet-500"
+                className="text-sm sm:text-base underline text-violet-400 font-medium hover:text-violet-500"
               >
                 Все города
               </button>
             </div>
             {/* Текущий город */}
-            <div className="mb-4">
-              <span className="text-sm text-neutral-600">Текущий город:</span>
-              <div className="mt-1 px-3 py-2 bg-gray-100 rounded-md text-neutral-800">
+            <div className="mb-3 sm:mb-4">
+              <span className="text-xs sm:text-sm text-neutral-600">
+                Текущий город:
+              </span>
+              <div className="mt-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 rounded-md text-sm sm:text-base text-neutral-800">
                 {previewNameNom || 'Не задан'}
               </div>
             </div>
 
             {/* Поле ввода */}
-            <div className="relative mb-2">
+            <div className="relative mb-1.5 sm:mb-2">
               <input
                 type="text"
                 value={input}
@@ -352,21 +356,21 @@ export default function LocationModal({
                   setError(null);
                 }}
                 placeholder="Начните вводить город"
-                className="w-full border border-gray-300 rounded-md pl-3 pr-10 py-2 outline-none"
+                className="w-full border border-gray-300 rounded-md pl-2 sm:pl-3 pr-8 sm:pr-10 py-1.5 sm:py-2 outline-none text-sm sm:text-base"
               />
               {loading && (
-                <div className="absolute right-4.5 top-4.5 -translate-y-1/2 text-sm text-gray-500">
+                <div className="absolute right-3 sm:right-4.5 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-500">
                   ...
                 </div>
               )}
               {/* Подсказки */}
               {suggestions.length > 0 && (
-                <ul className="absolute w-full top-full max-h-48 overflow-auto border border-gray-200 rounded-md bg-white z-50">
+                <ul className="absolute w-full top-full max-h-40 sm:max-h-48 overflow-auto border border-gray-200 rounded-md bg-white z-50">
                   {suggestions.map((item, idx) => (
                     <li
                       key={`${item.label}-${idx}`}
                       onClick={() => handleSelectSuggestion(item)}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      className="p-1.5 sm:p-2 hover:bg-gray-100 cursor-pointer text-sm sm:text-base"
                     >
                       {item.nameNominative}
                     </li>
@@ -376,26 +380,32 @@ export default function LocationModal({
             </div>
 
             {/* Ошибка */}
-            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-xs sm:text-sm mb-1.5 sm:mb-2">
+                {error}
+              </p>
+            )}
 
             {/* Если ничего не найдено */}
             {!loading &&
               input.trim().length >= 2 &&
               suggestions.length === 0 && (
-                <p className="text-sm text-gray-500 mb-4">Ничего не найдено</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+                  Ничего не найдено
+                </p>
               )}
 
             {/* Кнопки */}
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-3 sm:mt-4 flex justify-end gap-1.5 sm:gap-2">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-200 rounded-md hover:bg-gray-300 text-sm sm:text-base"
               >
                 Отмена
               </button>
               <button
                 onClick={handleApply}
-                className="px-4 py-2 bg-violet-400 text-white rounded-md hover:bg-violet-500"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-violet-400 text-white rounded-md hover:bg-violet-500 text-sm sm:text-base"
               >
                 Применить
               </button>

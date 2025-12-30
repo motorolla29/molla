@@ -43,7 +43,7 @@ export default function AvatarModal({
           onClick={onClose}
         >
           <motion.div
-            className="relative max-w-md rounded-xl shadow-2xl"
+            className="relative max-w-md rounded-xl shadow-2xl select-none"
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}

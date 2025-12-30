@@ -123,17 +123,16 @@ export default function AdCard({
                   <MoreVertical size={16} />
                 </button>
 
-                {openPopup === ad.id && (
-                  <AdPopup
-                    ad={ad}
-                    activeTab={activeTab}
-                    isUpdating={isUpdating}
-                    onEdit={onEdit}
-                    onToggleStatus={onToggleStatus}
-                    onDelete={onDelete}
-                    onClose={() => onOpenPopup(null)}
-                  />
-                )}
+                <AdPopup
+                  isOpen={openPopup === ad.id}
+                  ad={ad}
+                  activeTab={activeTab}
+                  isUpdating={isUpdating}
+                  onEdit={onEdit}
+                  onToggleStatus={onToggleStatus}
+                  onDelete={onDelete}
+                  onClose={() => onOpenPopup(null)}
+                />
               </div>
             </div>
           </div>
