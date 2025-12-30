@@ -34,7 +34,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
   const toast = useToast();
 
   // Проверка авторизации и владения объявлением
-  const { user, isLoggedIn } = useAuthStore();
+  const { user, isLoggedIn, isAuthChecking } = useAuthStore();
   const isOwner = isLoggedIn && user?.id && parseInt(user.id) === ad.seller.id;
 
   // Состояния для операций с объявлением
@@ -166,7 +166,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
     <Suspense>
       <div className="container mx-auto px-4 py-6">
         {/* Блок уведомления для архивных объявлений владельца */}
-        {isOwner && isArchived && (
+        {!isAuthChecking && isOwner && isArchived && (
           <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 sm:p-4 mb-4 max-w-full lg:max-w-[960px] xl:max-w-[1080px] 2xl:max-w-[1166px]">
             <div className="flex flex-col gap-3">
               <p className="text-neutral-700 text-sm sm:text-base">
@@ -237,14 +237,14 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
             <div className="flex items-start justify-between gap-4 mb-4">
               <h1
                 className={`text-2xl sm:text-3xl font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden wrap-break-word ${
-                  isArchived && !isOwner
+                  !isAuthChecking && isArchived && !isOwner
                     ? 'text-neutral-500'
                     : 'text-neutral-700'
                 }`}
               >
                 {ad.title}
               </h1>
-              {!isOwner && (
+              {!isAuthChecking && !isOwner && (
                 <FavoriteButton
                   ad={ad}
                   solidIconClassName="w-8 h-8 sm:w-10 sm:h-10 text-violet-400"
@@ -254,7 +254,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
             </div>
 
             {/* Блок управления для владельца активного объявления */}
-            {isOwner && !isArchived && (
+            {!isAuthChecking && isOwner && !isArchived && (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 p-3 bg-gray-50 rounded-lg">
                 <div className="flex flex-col gap-1 text-xs sm:text-sm text-gray-600 w-fit">
                   <span>Опубликовано {formatDate(ad.datePosted)}</span>
@@ -289,7 +289,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </div>
             )}
 
-            {isArchived && !isOwner && (
+            {!isAuthChecking && isArchived && !isOwner && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
                 <p className="text-amber-800 font-medium text-center">
                   Объявление снято с публикации
@@ -297,7 +297,11 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </div>
             )}
 
-            <div className={isArchived && !isOwner ? 'opacity-50' : ''}>
+            <div
+              className={
+                !isAuthChecking && isArchived && !isOwner ? 'opacity-50' : ''
+              }
+            >
               <PhotoSlider
                 images={photos.map(
                   (src) =>
@@ -408,24 +412,11 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 Посмотреть на карте
               </button>
             </div>
-
-            {/* <div className="p-4 border border-amber-300 rounded-md">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Дата размещения
-              </h3>
-              <p className="text-sm sm:text-base">
-                {new Date(ad.datePosted).toLocaleDateString('ru-RU', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </p>
-            </div> */}
           </aside>
         </div>
 
         {/* Информация о дате и просмотрах для всех пользователей */}
-        {!isOwner && !isArchived && (
+        {!isAuthChecking && !isOwner && !isArchived && (
           <div className="pt-8 pb-2">
             <div className="flex flex-wrap sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
               <span>Опубликовано {formatDate(ad.datePosted)}</span>

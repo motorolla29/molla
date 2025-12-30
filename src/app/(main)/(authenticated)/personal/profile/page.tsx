@@ -108,7 +108,7 @@ export default function Profile() {
               onClick={() => setShowAvatarModal(true)}
             />
           ) : (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg cursor-pointer">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg cursor-pointer select-none">
               {user.name.charAt(0).toUpperCase()}
             </div>
           )}

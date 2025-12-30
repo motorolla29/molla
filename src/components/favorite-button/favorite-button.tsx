@@ -4,6 +4,7 @@ import { HeartIcon as OutlineHeartIcon } from '@heroicons/react/24/outline';
 import { Heart, HeartCrack } from 'lucide-react';
 import { AdBase } from '@/types/ad';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
 import ToastExample from '../toast/toast-example';
 
@@ -21,6 +22,7 @@ export default function FavoriteButton({
   outlineIconClassName,
 }: FavoriteButtonProps) {
   const toast = useToast();
+  const { isAuthChecking } = useAuthStore();
 
   // Используем селектор для конкретного объявления
   const isFavoriteFromStore = useFavoritesStore((state) =>
@@ -73,7 +75,8 @@ export default function FavoriteButton({
   return (
     <button
       onClick={handleClick}
-      className={`p-1 sm:hover:bg-black/8 rounded-md transition-colors ${
+      disabled={isAuthChecking}
+      className={`p-1 sm:hover:bg-black/8 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
         className || ''
       }`}
       aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
