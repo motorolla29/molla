@@ -31,10 +31,10 @@ export async function POST(
       );
     }
 
-    // Проверяем существование объявления
+    // Проверяем существование объявления и получаем sellerId
     const ad = await prisma.ad.findUnique({
       where: { id: adId },
-      select: { id: true },
+      select: { id: true, sellerId: true },
     });
 
     if (!ad) {
@@ -42,6 +42,11 @@ export async function POST(
         { error: 'Объявление не найдено' },
         { status: 404 }
       );
+    }
+
+    // Если пользователь авторизован и является владельцем объявления, не увеличиваем счетчик просмотров
+    if (userId && ad.sellerId && userId === ad.sellerId) {
+      return NextResponse.json({ success: true });
     }
 
     // Проверяем, был ли уже просмотр от этого пользователя (по userId или localUserToken)
