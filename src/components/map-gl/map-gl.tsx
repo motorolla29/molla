@@ -32,7 +32,7 @@ export default function MapGl({
   ads = [],
   onPinClick,
   onClusterClick,
-  minZoom = 3,
+  minZoom = 4,
   maxZoom = 18,
   cityLabel,
   category,

@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     let favorite;
 
-    // ПРОСТАЯ ЛОГИКА: всегда работаем с sellerId для авторизованных пользователей
+    // всегда работаем с sellerId для авторизованных пользователей
     if (userId) {
       // Находим или создаем запись с sellerId
       favorite = await prisma.favorite.upsert({
@@ -145,17 +145,14 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Если есть localUserToken записи для того же adId, деактивируем их
+      // Если есть localUserToken записи для того же adId, удаляем их полностью
+      // чтобы избежать дубликатов в счетчике лайков
       if (localUserToken) {
-        await prisma.favorite.updateMany({
+        await prisma.favorite.deleteMany({
           where: {
             adId: adId,
             localUserToken: localUserToken,
             sellerId: null, // Только те, у которых нет sellerId
-            isActive: true,
-          },
-          data: {
-            isActive: false,
           },
         });
       }
