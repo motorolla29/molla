@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import { categoryOptions } from '@/const';
-import { getCurrencySymbol, getViewsWord } from '@/utils';
+import { getCurrencySymbol, getViewsWord, getFavoritesWord } from '@/utils';
 import { StarIcon as SolidStarIcon, PlayIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import {
@@ -255,15 +255,18 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
 
             {/* Блок управления для владельца активного объявления */}
             {isOwner && !isArchived && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
-                <div className="flex flex-wrap sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex flex-col gap-1 text-xs sm:text-sm text-gray-600 w-fit">
                   <span>Опубликовано {formatDate(ad.datePosted)}</span>
-                  <span className="hidden sm:inline">·</span>
+                  <span>
+                    {ad.favoritesCount || 0}{' '}
+                    {getFavoritesWord(ad.favoritesCount || 0)}
+                  </span>
                   <span>
                     {ad.viewCount || 0} {getViewsWord(ad.viewCount || 0)}
-                    {ad.viewsToday && ad.viewsToday > 0
-                      ? ` (+${ad.viewsToday} сегодня)`
-                      : ''}
+                    {ad.viewsToday &&
+                      ad.viewsToday > 0 &&
+                      ` (+${ad.viewsToday} сегодня)`}
                   </span>
                 </div>
                 <div className="flex max-[400px]:flex-col gap-2 w-full sm:w-auto sm:justify-end">

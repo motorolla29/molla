@@ -216,9 +216,14 @@ export const useFavoritesStore = create<FavoritesState>()(
           const localUserToken = getOrCreateUserToken();
 
           // Отправляем все локальные избранные в базу данных
-          // ВАЖНО: отправляем в ОБРАТНОМ порядке, чтобы при сортировке по createdAt DESC
-          // порядок на сервере совпал с текущим порядком favorites на клиенте.
-          const promises = [...favorites].reverse().map(async (ad) => {
+          // Сохраняем порядок добавления через createdAt timestamps
+          const baseTime = Date.now();
+          const promises = favorites.map(async (ad, index) => {
+            // Создаем timestamp: чем раньше добавлено объявление, тем раньше timestamp
+            // (favorites[0] - самое старое, favorites[last] - самое новое)
+            // Для сортировки DESC на сервере: favorites[last] должен иметь самый поздний timestamp
+            const createdAt = new Date(baseTime - index);
+
             const response = await fetch('/api/favorites', {
               method: 'POST',
               headers: {
@@ -227,6 +232,7 @@ export const useFavoritesStore = create<FavoritesState>()(
               body: JSON.stringify({
                 adId: ad.id,
                 localUserToken, // Передаем localUserToken для корректной миграции
+                createdAt: createdAt.toISOString(), // Передаем дату создания для сохранения порядка
               }),
             });
 

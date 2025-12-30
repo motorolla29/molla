@@ -269,3 +269,17 @@ export function getViewsWord(count: number): string {
   }
   return 'просмотров';
 }
+
+export function getFavoritesWord(count: number): string {
+  if (count % 10 === 1 && count % 100 !== 11) {
+    return 'человек добавил в избранное';
+  }
+  if (
+    count % 10 >= 2 &&
+    count % 10 <= 4 &&
+    (count % 100 < 10 || count % 100 >= 20)
+  ) {
+    return 'человека добавили в избранное';
+  }
+  return 'человек добавили в избранное';
+}

@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { adId, localUserToken } = body;
+    const { adId, localUserToken, createdAt } = body;
 
     // Получаем данные для идентификации пользователя
     let userId: number | null = null;
@@ -109,7 +109,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
     // Проверяем, существует ли объявление
     const ad = await prisma.ad.findUnique({
       where: { id: adId },
@@ -122,51 +121,70 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Проверяем, есть ли уже запись с такими идентификаторами
-    const existingFavorite = await prisma.favorite.findFirst({
-      where: {
-        adId: adId,
-        OR: [
-          userId ? { sellerId: userId } : {},
-          localUserToken ? { localUserToken: localUserToken } : {},
-        ].filter((condition) => Object.keys(condition).length > 0),
-      },
-    });
-
     let favorite;
 
-    if (existingFavorite) {
-      // Если запись существует, активируем её (восстанавливаем лайк)
-      const updateData: any = {
-        isActive: true,
-      };
-
-      // Если пользователь авторизован и у записи нет sellerId, присваиваем его
-      if (userId && !existingFavorite.sellerId) {
-        updateData.sellerId = userId;
-      }
-
-      favorite = await prisma.favorite.update({
-        where: { id: existingFavorite.id },
-        data: updateData,
+    // ПРОСТАЯ ЛОГИКА: всегда работаем с sellerId для авторизованных пользователей
+    if (userId) {
+      // Находим или создаем запись с sellerId
+      favorite = await prisma.favorite.upsert({
+        where: {
+          sellerId_adId: {
+            sellerId: userId,
+            adId: adId,
+          },
+        },
+        update: {
+          isActive: true,
+          ...(createdAt && { createdAt: new Date(createdAt) }),
+        },
+        create: {
+          sellerId: userId,
+          adId: adId,
+          isActive: true,
+          ...(createdAt && { createdAt: new Date(createdAt) }),
+        },
       });
-    } else {
-      // Создаем новую запись
-      const favoriteData: any = {
-        adId: adId,
-        isActive: true,
-      };
 
-      // Добавляем оба поля, если они присутствуют
-      if (userId) {
-        favoriteData.sellerId = userId;
-      }
+      // Если есть localUserToken записи для того же adId, деактивируем их
       if (localUserToken) {
-        favoriteData.localUserToken = localUserToken;
+        await prisma.favorite.updateMany({
+          where: {
+            adId: adId,
+            localUserToken: localUserToken,
+            sellerId: null, // Только те, у которых нет sellerId
+            isActive: true,
+          },
+          data: {
+            isActive: false,
+          },
+        });
+      }
+    } else {
+      // Для неавторизованных пользователей используем localUserToken
+      if (!localUserToken) {
+        return NextResponse.json(
+          { error: 'Не указан localUserToken' },
+          { status: 400 }
+        );
       }
 
-      favorite = await prisma.favorite.create({
-        data: favoriteData,
+      favorite = await prisma.favorite.upsert({
+        where: {
+          localUserToken_adId: {
+            localUserToken: localUserToken,
+            adId: adId,
+          },
+        },
+        update: {
+          isActive: true,
+          ...(createdAt && { createdAt: new Date(createdAt) }),
+        },
+        create: {
+          localUserToken: localUserToken,
+          adId: adId,
+          isActive: true,
+          ...(createdAt && { createdAt: new Date(createdAt) }),
+        },
       });
     }
 
@@ -209,19 +227,33 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Деактивируем лайк (устанавливаем isActive = false)
-    // Ищем по userId ИЛИ localUserToken (на случай если запись была создана до авторизации)
-    const result = await prisma.favorite.updateMany({
-      where: {
-        adId: adId,
-        isActive: true, // Только активные лайки
-        OR: [{ sellerId: userId }, { localUserToken: localUserToken }].filter(
-          (condition) => Object.keys(condition).length > 0
-        ),
-      },
-      data: {
-        isActive: false,
-      },
-    });
+    let result;
+
+    if (userId) {
+      // Для авторизованного пользователя - деактивируем запись с sellerId
+      result = await prisma.favorite.updateMany({
+        where: {
+          sellerId: userId,
+          adId: adId,
+          isActive: true,
+        },
+        data: {
+          isActive: false,
+        },
+      });
+    } else {
+      // Для неавторизованного пользователя - деактивируем запись с localUserToken
+      result = await prisma.favorite.updateMany({
+        where: {
+          localUserToken: localUserToken,
+          adId: adId,
+          isActive: true,
+        },
+        data: {
+          isActive: false,
+        },
+      });
+    }
 
     if (result.count === 0) {
       return NextResponse.json(
