@@ -6,15 +6,23 @@ import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-searc
 import HomePageFreshAndRecommendedAdsBlock from '@/components/home-page-fresh-and-recommended-ads-block/home-page-fresh-and-recommended-ads-block';
 import { useState, Suspense } from 'react';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
+import LocationModal from '@/components/location-modal/location-modal';
+import { useLocationStore } from '@/store/useLocationStore';
 
 export default function Home() {
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const setLocation = useLocationStore((s) => s.setLocation);
   return (
     <Suspense>
       <div className="min-h-screen">
         <div className="sticky top-12 lg:top-15 z-9 bg-white">
           <div className="mx-4">
-            <TopSearchPanel categoryKey={null} categoryName={null} />
+            <TopSearchPanel
+              categoryKey={null}
+              categoryName={null}
+              onLocationModalOpen={() => setShowLocationModal(true)}
+            />
             <TopSearchPanelMobile
               categoryKey={null}
               categoryName={null}
@@ -31,6 +39,17 @@ export default function Home() {
           <FiltersMobile
             category={null}
             setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+          />
+        )}
+
+        {/* Модальное окно выбора локации */}
+        {showLocationModal && (
+          <LocationModal
+            onClose={() => setShowLocationModal(false)}
+            onSelect={(label, nameNom, namePrep, lat, lon) => {
+              setLocation(label, nameNom, namePrep, lat, lon);
+              setShowLocationModal(false);
+            }}
           />
         )}
       </div>

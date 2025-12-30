@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import UserProfileSidebar from './components/user-profile-sidebar';
 import UserProfileSkeleton from './components/user-profile-skeleton';
 import UserAdsContent from './components/user-ads-content';
+import AvatarModal from '@/components/avatar-modal/avatar-modal';
 
 interface UserProfile {
   id: string;
@@ -29,6 +30,7 @@ export default function UserProfilePage() {
     active: number;
     archived: number;
   } | null>(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   // Проверяем валидность статуса
   useEffect(() => {
@@ -105,7 +107,10 @@ export default function UserProfilePage() {
           {/* Левый блок с информацией о пользователе */}
           <div className="w-full lg:w-80 lg:shrink-0">
             <div className="lg:sticky lg:top-23">
-              <UserProfileSidebar user={user} />
+              <UserProfileSidebar
+                user={user}
+                onAvatarClick={() => setShowAvatarModal(true)}
+              />
             </div>
           </div>
 
@@ -119,6 +124,14 @@ export default function UserProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Модальное окно просмотра аватара */}
+      <AvatarModal
+        isOpen={showAvatarModal}
+        onClose={() => setShowAvatarModal(false)}
+        avatar={user.avatar || '765-default-avatar.png'}
+        name={user.name}
+      />
     </div>
   );
 }

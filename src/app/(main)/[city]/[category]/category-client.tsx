@@ -10,9 +10,8 @@ import { useSearchParams } from 'next/navigation';
 import { useLocationStore } from '@/store/useLocationStore';
 import GalleryTopPanel from '@/components/gallery-top-panel/gallery-top-panel';
 import InfiniteScrollAds from '@/components/infinite-scroll-ads/infinite-scroll-ads';
-import AdCardsDefault from '@/components/ad-cards-default/ad-cards-default';
-import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapSlot from '@/components/map-slot/map-slot';
+import LocationModal from '@/components/location-modal/location-modal';
 
 interface CategoryClientProps {
   cityLabel: string;
@@ -39,6 +38,7 @@ export default function CategoryClient({
   };
   const searchParams = useSearchParams();
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const setLocation = useLocationStore((s) => s.setLocation);
 
   useEffect(() => {
@@ -51,6 +51,7 @@ export default function CategoryClient({
         <TopSearchPanel
           categoryName={categoryLabel}
           categoryKey={categoryKey}
+          onLocationModalOpen={() => setShowLocationModal(true)}
         />
         <TopSearchPanelMobile
           categoryName={categoryLabel}
@@ -124,6 +125,17 @@ export default function CategoryClient({
           <FiltersMobile
             category={categoryKey}
             setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+          />
+        )}
+
+        {/* Модальное окно выбора локации */}
+        {showLocationModal && (
+          <LocationModal
+            onClose={() => setShowLocationModal(false)}
+            onSelect={(label, nameNom, namePrep, lat, lon) => {
+              setLocation(label, nameNom, namePrep, lat, lon);
+              setShowLocationModal(false);
+            }}
           />
         )}
       </div>

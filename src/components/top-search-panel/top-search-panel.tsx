@@ -5,23 +5,23 @@ import { categoryOptions } from '@/const';
 import Link from 'next/link';
 import { useLocationStore } from '@/store/useLocationStore';
 import { useRouter, useSearchParams } from 'next/navigation';
-import LocationModal from '../location-modal/location-modal';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 
 interface TopSearchPanelProps {
   categoryName: string | null;
   categoryKey: string | null;
+  onLocationModalOpen: () => void;
 }
 
 export default function TopSearchPanel({
   categoryName,
   categoryKey,
+  onLocationModalOpen,
 }: TopSearchPanelProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [showLocationModal, setShowLocationModal] = useState(false);
   const { cityLabel, cityName, cityNamePreposition, setLocation } =
     useLocationStore();
   const dropdownRef = useRef<HTMLDivElement>(null); // <== ссылка на dropdown
@@ -134,7 +134,7 @@ export default function TopSearchPanel({
           </button>
         </form>
         <button
-          onClick={() => setShowLocationModal(true)}
+          onClick={() => onLocationModalOpen()}
           className="ml-2 text-md flex items-center font-semibold text-neutral-500 hover:opacity-80 cursor-pointer"
         >
           <MapPinIcon className="size-6" />
@@ -151,15 +151,6 @@ export default function TopSearchPanel({
           </Link>
         </div>
       </div>
-      {showLocationModal && (
-        <LocationModal
-          onClose={() => setShowLocationModal(false)}
-          onSelect={(label, nameNom, namePrep, lat, lon) => {
-            setLocation(label, nameNom, namePrep, lat, lon);
-            setShowLocationModal(false);
-          }}
-        />
-      )}
     </div>
   );
 }

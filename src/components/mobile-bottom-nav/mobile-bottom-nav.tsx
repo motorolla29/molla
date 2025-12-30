@@ -61,7 +61,10 @@ export default function MobileBottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden z-50 shadow-md h-12"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingRight: 'var(--scrollbar-compensation, 0px)',
+      }}
     >
       <div className="flex h-full">
         {navItems.map(({ href, Icon, label, id }) => {

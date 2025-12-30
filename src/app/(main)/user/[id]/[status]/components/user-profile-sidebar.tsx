@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import SellerContacts from '@/app/(main)/[city]/[category]/[adId]/components/seller-contacts';
-import AvatarModal from '@/components/avatar-modal/avatar-modal';
 
 interface UserProfile {
   id: string;
@@ -16,11 +14,13 @@ interface UserProfile {
 
 interface UserProfileSidebarProps {
   user: UserProfile;
+  onAvatarClick: () => void;
 }
 
-export default function UserProfileSidebar({ user }: UserProfileSidebarProps) {
-  const [showAvatarModal, setShowAvatarModal] = useState(false);
-
+export default function UserProfileSidebar({
+  user,
+  onAvatarClick,
+}: UserProfileSidebarProps) {
   const formatJoinDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ru-RU', {
@@ -36,7 +36,7 @@ export default function UserProfileSidebar({ user }: UserProfileSidebarProps) {
       <div className="flex flex-col items-center text-center mb-6">
         <div
           className="w-20 h-20 rounded-full overflow-hidden mb-4 cursor-pointer"
-          onClick={() => user.avatar && setShowAvatarModal(true)}
+          onClick={() => user.avatar && onAvatarClick()}
         >
           <img
             src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
@@ -95,14 +95,6 @@ export default function UserProfileSidebar({ user }: UserProfileSidebarProps) {
           <SellerContacts phone={user.phone} email={user.email} />
         </div>
       )}
-
-      {/* Модальное окно просмотра аватара */}
-      <AvatarModal
-        isOpen={showAvatarModal}
-        onClose={() => setShowAvatarModal(false)}
-        avatar={user.avatar || '765-default-avatar.png'}
-        name={user.name}
-      />
     </div>
   );
 }

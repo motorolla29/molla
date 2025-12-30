@@ -31,11 +31,11 @@ export default function AvatarModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-md bg-opacity-50 flex items-center justify-center z-50 p-6"
+      className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-6"
       onClick={onClose}
     >
       <div
-        className="relative max-w-md max-h-[90vh] bg-white rounded-xl shadow-2xl"
+        className="relative max-w-md bg-white rounded-xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Кнопка закрытия */}
@@ -63,7 +63,7 @@ export default function AvatarModal({
         <img
           src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${avatar}`}
           alt={name}
-          className="w-full h-auto max-w-xl mx-auto rounded-lg object-cover"
+          className="w-full h-auto max-w-xl max-h-[80vh] mx-auto rounded-lg object-cover"
         />
       </div>
     </div>

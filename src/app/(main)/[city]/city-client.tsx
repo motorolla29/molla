@@ -5,14 +5,13 @@ import Link from 'next/link';
 import AsideFilters from '@/components/aside-filters/aside-filters';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
+import LocationModal from '@/components/location-modal/location-modal';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 import { useSearchParams } from 'next/navigation';
 import { useLocationStore } from '@/store/useLocationStore';
 import GalleryTopPanel from '@/components/gallery-top-panel/gallery-top-panel';
 import MapSlot from '@/components/map-slot/map-slot';
 import InfiniteScrollAds from '@/components/infinite-scroll-ads/infinite-scroll-ads';
-import AdCardsDefault from '@/components/ad-cards-default/ad-cards-default';
-import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 
 interface CityClientProps {
   cityLabel: string;
@@ -30,6 +29,7 @@ export default function CityClient({
   lon = null,
 }: CityClientProps) {
   const [viewType, setViewType] = useState<'gallery' | 'default'>('default');
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const handleViewTypeChange = (type: 'gallery' | 'default') => {
     setViewType(type);
   };
@@ -44,7 +44,11 @@ export default function CityClient({
   return (
     <Suspense>
       <div className="container text-neutral-800 mx-auto px-4 pb-6">
-        <TopSearchPanel categoryKey={null} categoryName={null} />
+        <TopSearchPanel
+          categoryKey={null}
+          categoryName={null}
+          onLocationModalOpen={() => setShowLocationModal(true)}
+        />
         <TopSearchPanelMobile
           categoryKey={null}
           categoryName={null}
@@ -109,6 +113,17 @@ export default function CityClient({
           <FiltersMobile
             category={null}
             setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+          />
+        )}
+
+        {/* Модальное окно выбора локации */}
+        {showLocationModal && (
+          <LocationModal
+            onClose={() => setShowLocationModal(false)}
+            onSelect={(label, nameNom, namePrep, lat, lon) => {
+              setLocation(label, nameNom, namePrep, lat, lon);
+              setShowLocationModal(false);
+            }}
           />
         )}
       </div>

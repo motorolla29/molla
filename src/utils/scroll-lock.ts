@@ -40,6 +40,11 @@ export function lockScroll(): void {
   document.body.style.overflow = 'hidden';
   if (width > 0) {
     document.body.style.paddingRight = `${width}px`;
+    // Устанавливаем CSS переменную для компенсации в fixed элементах
+    document.documentElement.style.setProperty(
+      '--scrollbar-compensation',
+      `${width}px`
+    );
   }
 }
 
@@ -51,4 +56,6 @@ export function unlockScroll(): void {
 
   document.body.style.overflow = originalOverflow;
   document.body.style.paddingRight = originalPaddingRight;
+  // Сбрасываем CSS переменную
+  document.documentElement.style.setProperty('--scrollbar-compensation', '0px');
 }
