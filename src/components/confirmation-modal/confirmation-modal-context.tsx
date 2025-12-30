@@ -14,6 +14,10 @@ export interface ConfirmationModalData {
   message: string;
   confirmText?: string;
   cancelText?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  iconBgColor?: string;
+  iconColor?: string;
+  iconSize?: string;
   onConfirm: () => void;
   onCancel?: () => void;
 }
@@ -84,6 +88,10 @@ export function useConfirmationModal() {
         confirmText?: string;
         cancelText?: string;
         onCancel?: () => void;
+        icon?: React.ComponentType<{ className?: string }>;
+        iconBgColor?: string;
+        iconColor?: string;
+        iconSize?: string;
       }
     ) =>
       showConfirmation({

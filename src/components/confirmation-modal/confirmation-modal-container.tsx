@@ -15,6 +15,10 @@ export default function ConfirmationModalContainer() {
       message={modal.message}
       confirmText={modal.confirmText}
       cancelText={modal.cancelText}
+      icon={modal.icon}
+      iconBgColor={modal.iconBgColor}
+      iconColor={modal.iconColor}
+      iconSize={modal.iconSize}
       onConfirm={modal.onConfirm}
       onCancel={modal.onCancel}
       onClose={hideConfirmation}

@@ -56,6 +56,11 @@ export default function AdLocationSelector({
     useState<NodeJS.Timeout | null>(null);
   const isInitializedRef = useRef(false);
 
+  // Предварительная загрузка городов при монтировании компонента
+  useEffect(() => {
+    loadCitiesData().catch(console.warn);
+  }, []);
+
   // Инициализация из initialValue
   useEffect(() => {
     if (initialValue && !isInitializedRef.current) {

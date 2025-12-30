@@ -10,6 +10,10 @@ export interface ConfirmationModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  iconBgColor?: string;
+  iconColor?: string;
+  iconSize?: string;
   onConfirm: () => void;
   onCancel?: () => void;
   onClose: () => void;
@@ -20,6 +24,10 @@ export default function ConfirmationModal({
   message,
   confirmText = 'Подтвердить',
   cancelText = 'Отмена',
+  icon: Icon = AlertTriangle,
+  iconBgColor = 'bg-orange-100',
+  iconColor = 'text-orange-500',
+  iconSize = 'w-6 h-6 sm:w-8 sm:h-8',
   onConfirm,
   onCancel,
   onClose,
@@ -110,10 +118,12 @@ export default function ConfirmationModal({
         `}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Иконка предупреждения */}
+        {/* Иконка */}
         <div className="flex justify-center -mt-6 sm:-mt-8 mb-3 sm:mb-4">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-orange-500" />
+          <div
+            className={`w-12 h-12 sm:w-16 sm:h-16 ${iconBgColor} rounded-full flex items-center justify-center border-4 border-white shadow-lg`}
+          >
+            <Icon className={iconSize + ' ' + iconColor} />
           </div>
         </div>
 

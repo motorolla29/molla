@@ -20,6 +20,7 @@
     "@types/redis": "^4.0.10",
     "bcryptjs": "^3.0.3",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.26",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.522.0",
     "next": "^16.0.8",

@@ -1,4 +1,4 @@
-import { Edit, Archive } from 'lucide-react';
+import { Edit, Archive, Trash2, Rocket } from 'lucide-react';
 import { useConfirmationModal } from '@/components/confirmation-modal/confirmation-modal-context';
 
 interface Ad {
@@ -57,7 +57,14 @@ export default function AdPopup({
                 onToggleStatus(ad.id, ad.status);
                 onClose();
               },
-              { title: actionText }
+              {
+                title: actionText,
+                icon: ad.status === 'active' ? Archive : Rocket,
+                iconBgColor:
+                  ad.status === 'active' ? 'bg-gray-100' : 'bg-green-100',
+                iconColor:
+                  ad.status === 'active' ? 'text-gray-500' : 'text-green-500',
+              }
             );
           }}
           disabled={isUpdating === ad.id}
@@ -65,8 +72,10 @@ export default function AdPopup({
         >
           {isUpdating === ad.id ? (
             <div className="w-3.5 h-3.5 border border-gray-300 border-t-violet-500 rounded-full animate-spin" />
-          ) : (
+          ) : ad.status === 'active' ? (
             <Archive size={12} className="sm:w-[14px] sm:h-[14px]" />
+          ) : (
+            <Rocket size={12} className="sm:w-[14px] sm:h-[14px]" />
           )}
           {ad.status === 'active' ? 'Снять с продажи' : 'Опубликовать'}
         </button>
@@ -81,7 +90,12 @@ export default function AdPopup({
                   onDelete(ad.id);
                   onClose();
                 },
-                { title: 'Удалить объявление' }
+                {
+                  title: 'Удалить объявление',
+                  icon: Trash2,
+                  iconBgColor: 'bg-red-100',
+                  iconColor: 'text-red-500',
+                }
               );
             }}
             className="w-full px-4 py-2 text-left text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
