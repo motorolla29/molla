@@ -75,29 +75,36 @@ export default function AdCard({
                 </div>
 
                 {/* Мета-информация */}
-                <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600 gap-2 sm:gap-4">
-                  <div className="flex items-center">
-                    <MapPin size={12} className="mr-1 shrink-0" />
-                    <span className="truncate">{ad.city}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar size={12} className="mr-1 shrink-0" />
-                    <span className="truncate">
-                      {formatDate(ad.datePosted)}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Eye size={12} className="mr-1 shrink-0" />
-                    <span>{ad.viewCount || 0}</span>
-                    {ad.viewsToday && ad.viewsToday > 0 ? (
-                      <span className="text-green-600 font-medium ml-1">
-                        (+{ad.viewsToday})
+                <div className="text-xs sm:text-sm text-gray-600 space-y-2">
+                  {/* Город и дата в одной строке */}
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                    <div className="flex items-center">
+                      <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 shrink-0" />
+                      <span className="truncate">{ad.city}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 shrink-0" />
+                      <span className="truncate">
+                        {formatDate(ad.datePosted)}
                       </span>
-                    ) : null}
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Heart size={12} className="mr-1 shrink-0" />
-                    <span>{ad.favoritesCount || 0}</span>
+
+                  {/* Счетчики в одной строке */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center">
+                      <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 shrink-0" />
+                      <span>{ad.viewCount || 0}</span>
+                      {ad.viewsToday && ad.viewsToday > 0 ? (
+                        <span className="text-green-600 font-medium ml-1">
+                          (+{ad.viewsToday})
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center">
+                      <Heart className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 shrink-0" />
+                      <span>{ad.favoritesCount || 0}</span>
+                    </div>
                   </div>
                 </div>
               </div>
