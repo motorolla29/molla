@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 export interface ConfirmationModalProps {
   id: string;
@@ -33,12 +34,12 @@ export default function ConfirmationModal({
       setIsVisible(true);
     }, 10);
 
-    // Блокировка скролла
-    document.body.style.overflow = 'hidden';
+    // Блокировка скролла с компенсацией ширины полосы прокрутки
+    lockScroll();
 
     return () => {
       clearTimeout(animationTimer);
-      document.body.style.overflow = '';
+      unlockScroll();
     };
   }, []);
 
@@ -96,7 +97,7 @@ export default function ConfirmationModal({
       <div
         ref={modalRef}
         className={`
-          relative w-full max-w-md mx-auto
+          relative w-full max-w-md sm:max-w-md mx-auto
           bg-white rounded-2xl shadow-2xl
           transform transition-all duration-300 ease-out
           ${
@@ -110,29 +111,31 @@ export default function ConfirmationModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Иконка предупреждения */}
-        <div className="flex justify-center -mt-8 mb-4">
-          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-            <AlertTriangle className="w-8 h-8 text-orange-500" />
+        <div className="flex justify-center -mt-6 sm:-mt-8 mb-3 sm:mb-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-orange-500" />
           </div>
         </div>
 
         {/* Контент */}
-        <div className="px-6 pb-6">
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
               {title}
             </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
+            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+              {message}
+            </p>
           </div>
 
           {/* Кнопки */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
             <button
               onClick={handleCancel}
               className="
-                flex-1 px-4 py-3 text-sm font-medium text-gray-700
+                flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-700
                 bg-gray-100 hover:bg-gray-200
-                rounded-xl transition-colors duration-200
+                rounded-lg sm:rounded-xl transition-colors duration-200
                 focus:outline-none focus:ring-2 focus:ring-gray-300
               "
             >
@@ -141,9 +144,9 @@ export default function ConfirmationModal({
             <button
               onClick={handleConfirm}
               className="
-                flex-1 px-4 py-3 text-sm font-medium text-white
+                flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-white
                 bg-violet-500 hover:bg-violet-600
-                rounded-xl transition-colors duration-200
+                rounded-lg sm:rounded-xl transition-colors duration-200
                 focus:outline-none focus:ring-2 focus:ring-violet-300
               "
             >

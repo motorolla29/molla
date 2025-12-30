@@ -6,6 +6,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import MapGl from '../map-gl/map-gl';
 import { AdBase } from '@/types/ad';
 import ClusterAdsDrawer from '../cluster-ads-drawer/cluster-ads-drawer';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface MapSlotProps {
   ads: AdBase[];
@@ -23,13 +24,13 @@ export default function MapSlot({ ads, cityLabel, category }: MapSlotProps) {
   // Блокируем/разблокируем прокрутку страницы
   useEffect(() => {
     if (showFullMap) {
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     } else {
-      document.body.style.overflow = '';
+      unlockScroll();
     }
     // на демонтировании компонента тоже убираем
     return () => {
-      document.body.style.overflow = '';
+      unlockScroll();
     };
   }, [showFullMap]);
 

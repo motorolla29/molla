@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { loadCitiesData } from '@/utils';
 import { CityRaw } from '@/types/city-raw';
 import { useAuthStore } from '@/store/useAuthStore';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface User {
   id: string;
@@ -80,11 +81,10 @@ export function EditProfileModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      unlockScroll();
     };
   }, [isOpen]);
 

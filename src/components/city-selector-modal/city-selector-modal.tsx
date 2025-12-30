@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { loadCitiesData } from '@/utils';
 import { CityRaw } from '@/types/city-raw';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface CitySelectorModalProps {
   isOpen: boolean;
@@ -50,11 +51,10 @@ export default function CitySelectorModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      unlockScroll();
     };
   }, [isOpen]);
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface AvatarModalProps {
   isOpen: boolean;
@@ -19,11 +20,10 @@ export default function AvatarModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      unlockScroll();
     };
   }, [isOpen]);
 

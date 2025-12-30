@@ -6,6 +6,7 @@ import LocationModal from '../location-modal/location-modal';
 import { categoryOptions } from '@/const';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface FiltersMobileProps {
   setFiltersVisible: (bool: boolean) => void;
@@ -86,9 +87,9 @@ export default function FiltersMobile({
 
   // Блокировка скролла фона
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    lockScroll();
     return () => {
-      document.body.style.overflow = '';
+      unlockScroll();
     };
   }, []);
 

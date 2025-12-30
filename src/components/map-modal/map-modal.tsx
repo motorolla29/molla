@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { AdBase } from '@/types/ad';
 import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface MapModalProps {
   isOpen: boolean;
@@ -18,12 +19,10 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
   // Блокируем скролл страницы при открытом модальном окне
   useEffect(() => {
     if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      unlockScroll();
     };
   }, [isOpen]);
 
