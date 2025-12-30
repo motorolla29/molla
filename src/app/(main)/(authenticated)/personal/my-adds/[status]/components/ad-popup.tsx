@@ -1,4 +1,5 @@
 import { Edit, Archive } from 'lucide-react';
+import { useConfirmationModal } from '@/components/confirmation-modal/confirmation-modal-context';
 
 interface Ad {
   id: string;
@@ -24,6 +25,7 @@ export default function AdPopup({
   onDelete,
   onClose,
 }: AdPopupProps) {
+  const { confirm } = useConfirmationModal();
   return (
     <div className="absolute right-0 top-full mt-1 w-38 sm:w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 pointer-events-auto">
       <div className="py-1">
@@ -44,10 +46,19 @@ export default function AdPopup({
             e.stopPropagation();
             const action =
               ad.status === 'active' ? 'снять с публикации' : 'опубликовать';
-            if (confirm(`Вы уверены, что хотите ${action} это объявление?`)) {
-              onToggleStatus(ad.id, ad.status);
-              onClose();
-            }
+            const actionText =
+              ad.status === 'active'
+                ? 'Снять с публикации'
+                : 'Опубликовать объявление';
+
+            confirm(
+              `Вы уверены, что хотите ${action} это объявление?`,
+              () => {
+                onToggleStatus(ad.id, ad.status);
+                onClose();
+              },
+              { title: actionText }
+            );
           }}
           disabled={isUpdating === ad.id}
           className="w-full px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
@@ -64,14 +75,14 @@ export default function AdPopup({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (
-                confirm(
-                  'Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.'
-                )
-              ) {
-                onDelete(ad.id);
-              }
-              onClose();
+              confirm(
+                'Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.',
+                () => {
+                  onDelete(ad.id);
+                  onClose();
+                },
+                { title: 'Удалить объявление' }
+              );
             }}
             className="w-full px-4 py-2 text-left text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
           >

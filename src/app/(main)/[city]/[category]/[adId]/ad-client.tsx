@@ -18,6 +18,7 @@ import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapModal from '@/components/map-modal/map-modal';
 import FavoriteButton from '@/components/favorite-button/favorite-button';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useConfirmationModal } from '@/components/confirmation-modal/confirmation-modal-context';
 import { useToast } from '@/components/toast/toast-context';
 import { getOrCreateUserToken } from '@/utils';
 import SellerContacts from './components/seller-contacts';
@@ -32,6 +33,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const isArchived = ad.status === 'archived';
   const toast = useToast();
+  const { confirm } = useConfirmationModal();
 
   // Проверка авторизации и владения объявлением
   const { user, isLoggedIn, isAuthChecking } = useAuthStore();
@@ -82,84 +84,88 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
     if (!isOwner) return;
 
     const action = isArchived ? 'опубликовать' : 'снять с публикации';
-    if (!confirm(`Вы уверены, что хотите ${action} это объявление?`)) {
-      return;
-    }
+    const actionText = isArchived
+      ? 'Опубликовать объявление'
+      : 'Снять с публикации';
 
-    try {
-      setIsUpdatingStatus(true);
-      const newStatus = isArchived ? 'active' : 'archived';
+    confirm(
+      `Вы уверены, что хотите ${action} это объявление?`,
+      async () => {
+        try {
+          setIsUpdatingStatus(true);
+          const newStatus = isArchived ? 'active' : 'archived';
 
-      const response = await fetch('/api/user/ads', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          adId: ad.id,
-          status: newStatus,
-        }),
-      });
+          const response = await fetch('/api/user/ads', {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              adId: ad.id,
+              status: newStatus,
+            }),
+          });
 
-      if (response.ok) {
-        // Перезагрузка с параметром для показа тоста
-        const url = new URL(window.location.href);
-        url.searchParams.set(
-          'toast',
-          newStatus === 'archived' ? 'archived' : 'published'
-        );
-        window.location.href = url.toString();
-      } else {
-        toast.show('Не удалось изменить статус объявления', {
-          type: 'error',
-        });
-        console.error('Failed to update ad status');
-      }
-    } catch (error) {
-      toast.show('Произошла ошибка при изменении статуса', {
-        type: 'error',
-      });
-      console.error('Error updating ad status:', error);
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+          if (response.ok) {
+            // Перезагрузка с параметром для показа тоста
+            const url = new URL(window.location.href);
+            url.searchParams.set(
+              'toast',
+              newStatus === 'archived' ? 'archived' : 'published'
+            );
+            window.location.href = url.toString();
+          } else {
+            toast.show('Не удалось изменить статус объявления', {
+              type: 'error',
+            });
+            console.error('Failed to update ad status');
+          }
+        } catch (error) {
+          toast.show('Произошла ошибка при изменении статуса объявления', {
+            type: 'error',
+          });
+          console.error('Error updating ad status:', error);
+        } finally {
+          setIsUpdatingStatus(false);
+        }
+      },
+      { title: actionText }
+    );
   };
 
   // Функция удаления объявления
   const deleteAd = async () => {
     if (!isOwner || !isArchived) return;
 
-    if (
-      !confirm(
-        'Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.'
-      )
-    ) {
-      return;
-    }
+    confirm(
+      'Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.',
+      async () => {
+        try {
+          setIsUpdatingStatus(true);
+          const response = await fetch(`/api/user/ads/${ad.id}`, {
+            method: 'DELETE',
+          });
 
-    try {
-      setIsUpdatingStatus(true);
-      const response = await fetch(`/api/user/ads/${ad.id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        // Перенаправление с параметром для показа тоста на новой странице
-        window.location.href = '/?toast=ad-deleted';
-      } else {
-        toast.show('Не удалось удалить объявление', {
-          type: 'error',
-        });
-        console.error('Failed to delete ad');
-      }
-    } catch (error) {
-      toast.show('Произошла ошибка при удалении объявления', {
-        type: 'error',
-      });
-      console.error('Error deleting ad:', error);
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+          if (response.ok) {
+            // Перенаправление с параметром для показа тоста на новой странице
+            window.location.href = '/?toast=ad-deleted';
+          } else {
+            toast.show('Не удалось удалить объявление', {
+              type: 'error',
+            });
+            console.error('Failed to delete ad');
+          }
+        } catch (error) {
+          toast.show('Произошла ошибка при удалении объявления', {
+            type: 'error',
+          });
+          console.error('Error deleting ad:', error);
+        } finally {
+          setIsUpdatingStatus(false);
+        }
+      },
+      { title: 'Удалить объявление' }
+    );
   };
 
   return (
