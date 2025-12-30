@@ -141,16 +141,15 @@ export default function CategoryClient({
         )}
 
         {/* Модальное окно выбора локации */}
-        {showLocationModal && (
-          <LocationModal
-            onClose={() => setShowLocationModal(false)}
-            onSelect={(label, nameNom, namePrep, lat, lon) => {
-              setLocation(label, nameNom, namePrep, lat, lon);
-              setShowLocationModal(false);
-            }}
-            saveToStorage={true}
-          />
-        )}
+        <LocationModal
+          isOpen={showLocationModal}
+          onClose={() => setShowLocationModal(false)}
+          onSelect={(label, nameNom, namePrep, lat, lon) => {
+            setLocation(label, nameNom, namePrep, lat, lon);
+            setShowLocationModal(false);
+          }}
+          saveToStorage={true}
+        />
       </div>
     </Suspense>
   );

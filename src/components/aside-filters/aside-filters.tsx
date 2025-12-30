@@ -342,23 +342,22 @@ export default function AsideFilters({
         </button>
       </div>
       {/* Модал выбора города */}
-      {showLocationModal && (
-        <LocationModal
-          onClose={() => setShowLocationModal(false)}
-          onSelect={(label, nameNom, namePrep, selLat, selLon) => {
-            setCityLabel(label);
-            setCityName(nameNom);
-            setCityPrep(namePrep);
-            setLat(selLat);
-            setLon(selLon);
-            setLocation(label, nameNom, namePrep, selLat, selLon);
-            pushFilters({
-              cityLabel: label,
-            });
-            setShowLocationModal(false);
-          }}
-        />
-      )}
+      <LocationModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onSelect={(label, nameNom, namePrep, selLat, selLon) => {
+          setCityLabel(label);
+          setCityName(nameNom);
+          setCityPrep(namePrep);
+          setLat(selLat);
+          setLon(selLon);
+          setLocation(label, nameNom, namePrep, selLat, selLon);
+          pushFilters({
+            cityLabel: label,
+          });
+          setShowLocationModal(false);
+        }}
+      />
     </aside>
   );
 }

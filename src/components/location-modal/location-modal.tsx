@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocationStore } from '@/store/useLocationStore';
 import { CityRaw } from '@/types/city-raw';
 
@@ -13,6 +14,7 @@ interface Suggestion {
 }
 
 interface LocationModalProps {
+  isOpen: boolean;
   onClose: () => void;
   onSelect: (
     cityLabel: string,
@@ -23,6 +25,31 @@ interface LocationModalProps {
   ) => void;
   saveToStorage?: boolean;
 }
+
+// Анимации для модального окна
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const modalVariants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.9,
+    y: 10,
+  },
+};
 
 let citiesData: CityRaw[] | null = null;
 async function loadCitiesData(): Promise<CityRaw[]> {
@@ -75,6 +102,7 @@ async function fetchCitySuggestions(query: string): Promise<Suggestion[]> {
 }
 
 export default function LocationModal({
+  isOpen,
   onClose,
   onSelect,
   saveToStorage = false,
@@ -124,16 +152,22 @@ export default function LocationModal({
 
   // Блокировка прокрутки при открытом модале
   useEffect(() => {
+    if (!isOpen) return;
+
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
 
     document.body.classList.add('overflow-hidden');
     document.body.style.paddingRight = `${scrollbarWidth}px`;
+
     return () => {
-      document.body.classList.remove('overflow-hidden');
-      document.body.style.paddingRight = '';
+      // Ждем завершения анимации выхода перед разблокировкой скролла
+      setTimeout(() => {
+        document.body.classList.remove('overflow-hidden');
+        document.body.style.paddingRight = '';
+      }, 200);
     };
-  }, []);
+  }, [isOpen]);
 
   // Закрытие по клику вне
   useEffect(() => {
@@ -255,94 +289,120 @@ export default function LocationModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50">
-      <div
-        ref={modalRef}
-        className="bg-white rounded-lg w-full max-w-md mx-4 p-4 shadow-2xl"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium">Выберите город</h2>
-          <button
-            onClick={() => {
-              setPreviewLabel('russia');
-              setPreviewNameNom('Все города');
-              setPreviewNamePrep('России');
-              setPreviewLat(null);
-              setPreviewLon(null);
-              setInput('');
-              setSuggestions([]);
-              setError(null);
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+          variants={backdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          onClick={onClose}
+        >
+          <motion.div
+            ref={modalRef}
+            className="bg-white rounded-xl w-full max-w-md mx-4 p-4 shadow-2xl overflow-hidden"
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{
+              duration: 0.35,
+              ease: 'easeOut',
+              type: 'spring',
+              damping: 20,
+              stiffness: 200,
             }}
-            className="text-md underline text-violet-400 font-medium hover:text-violet-500"
+            onClick={(e) => e.stopPropagation()}
           >
-            Все города
-          </button>
-        </div>
-        {/* Текущий город */}
-        <div className="mb-4">
-          <span className="text-sm text-neutral-600">Текущий город:</span>
-          <div className="mt-1 px-3 py-2 bg-gray-100 rounded-md text-neutral-800">
-            {previewNameNom || 'Не задан'}
-          </div>
-        </div>
-
-        {/* Поле ввода */}
-        <div className="relative mb-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
-              setError(null);
-            }}
-            placeholder="Начните вводить город"
-            className="w-full border border-gray-300 rounded-md pl-3 pr-10 py-2 outline-none"
-          />
-          {loading && (
-            <div className="absolute right-4.5 top-4.5 -translate-y-1/2 text-sm text-gray-500">
-              ...
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium">Выберите город</h2>
+              <button
+                onClick={() => {
+                  setPreviewLabel('russia');
+                  setPreviewNameNom('Все города');
+                  setPreviewNamePrep('России');
+                  setPreviewLat(null);
+                  setPreviewLon(null);
+                  setInput('');
+                  setSuggestions([]);
+                  setError(null);
+                }}
+                className="text-md underline text-violet-400 font-medium hover:text-violet-500"
+              >
+                Все города
+              </button>
             </div>
-          )}
-          {/* Подсказки */}
-          {suggestions.length > 0 && (
-            <ul className="absolute w-full top-full max-h-48 overflow-auto border border-gray-200 rounded-md bg-white z-50">
-              {suggestions.map((item, idx) => (
-                <li
-                  key={`${item.label}-${idx}`}
-                  onClick={() => handleSelectSuggestion(item)}
-                  className="p-2 hover:bg-gray-100 cursor-pointer"
-                >
-                  {item.nameNominative}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+            {/* Текущий город */}
+            <div className="mb-4">
+              <span className="text-sm text-neutral-600">Текущий город:</span>
+              <div className="mt-1 px-3 py-2 bg-gray-100 rounded-md text-neutral-800">
+                {previewNameNom || 'Не задан'}
+              </div>
+            </div>
 
-        {/* Ошибка */}
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+            {/* Поле ввода */}
+            <div className="relative mb-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  setError(null);
+                }}
+                placeholder="Начните вводить город"
+                className="w-full border border-gray-300 rounded-md pl-3 pr-10 py-2 outline-none"
+              />
+              {loading && (
+                <div className="absolute right-4.5 top-4.5 -translate-y-1/2 text-sm text-gray-500">
+                  ...
+                </div>
+              )}
+              {/* Подсказки */}
+              {suggestions.length > 0 && (
+                <ul className="absolute w-full top-full max-h-48 overflow-auto border border-gray-200 rounded-md bg-white z-50">
+                  {suggestions.map((item, idx) => (
+                    <li
+                      key={`${item.label}-${idx}`}
+                      onClick={() => handleSelectSuggestion(item)}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {item.nameNominative}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
-        {/* Если ничего не найдено */}
-        {!loading && input.trim().length >= 2 && suggestions.length === 0 && (
-          <p className="text-sm text-gray-500 mb-4">Ничего не найдено</p>
-        )}
+            {/* Ошибка */}
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
-        {/* Кнопки */}
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-          >
-            Отмена
-          </button>
-          <button
-            onClick={handleApply}
-            className="px-4 py-2 bg-violet-400 text-white rounded-md hover:bg-violet-500"
-          >
-            Применить
-          </button>
-        </div>
-      </div>
-    </div>
+            {/* Если ничего не найдено */}
+            {!loading &&
+              input.trim().length >= 2 &&
+              suggestions.length === 0 && (
+                <p className="text-sm text-gray-500 mb-4">Ничего не найдено</p>
+              )}
+
+            {/* Кнопки */}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleApply}
+                className="px-4 py-2 bg-violet-400 text-white rounded-md hover:bg-violet-500"
+              >
+                Применить
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -43,15 +43,14 @@ export default function HeaderMobile() {
         </div>
       </div>
 
-      {showLocationModal && (
-        <LocationModal
-          onClose={() => setShowLocationModal(false)}
-          onSelect={(label, nameNom, namePrep, lat, lon) => {
-            setLocation(label, nameNom, namePrep, lat, lon);
-            setShowLocationModal(false);
-          }}
-        />
-      )}
+      <LocationModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onSelect={(label, nameNom, namePrep, lat, lon) => {
+          setLocation(label, nameNom, namePrep, lat, lon);
+          setShowLocationModal(false);
+        }}
+      />
     </div>
   );
 }
