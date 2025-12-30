@@ -39,6 +39,19 @@ export default async function AdPage({ params }: Props) {
           email: true,
         },
       },
+      _count: {
+        select: {
+          favorites: true,
+          userViews: true,
+        },
+      },
+      userViews: {
+        where: {
+          viewedAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)), // просмотры с начала сегодняшнего дня
+          },
+        },
+      },
     },
   });
 
@@ -74,6 +87,9 @@ export default async function AdPage({ params }: Props) {
     },
     details: adFromDb.details,
     status: adFromDb.status,
+    viewCount: adFromDb._count?.userViews || 0,
+    viewsToday: adFromDb.userViews?.length || 0,
+    favoritesCount: adFromDb._count?.favorites || 0,
   };
 
   // 4. Доп. проверка: чтобы URL-адрес совпадал с данными объявления

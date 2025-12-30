@@ -250,3 +250,22 @@ export function convertToAdBase(ad: any): AdBase {
     favoritesCount: ad._count?.favorites || 0,
   };
 }
+
+/**
+ * Склоняет слово "просмотр" в зависимости от количества
+ * @param count - количество просмотров
+ * @returns правильно склоненное слово
+ */
+export function getViewsWord(count: number): string {
+  if (count % 10 === 1 && count % 100 !== 11) {
+    return 'просмотр';
+  }
+  if (
+    count % 10 >= 2 &&
+    count % 10 <= 4 &&
+    (count % 100 < 10 || count % 100 >= 20)
+  ) {
+    return 'просмотра';
+  }
+  return 'просмотров';
+}

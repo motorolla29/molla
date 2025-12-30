@@ -85,7 +85,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             alt="avatar"
           />
         </div>
-        <span className="text-xs sm:text-sm font-medium pr-1 max-w-full inline-block truncate wrap-break-words">
+        <span className="text-xs sm:text-sm font-semibold pr-1 max-w-full inline-block truncate wrap-break-words">
           {ad.seller.name}
         </span>
         <div className="flex items-center mt-2 space-x-1">

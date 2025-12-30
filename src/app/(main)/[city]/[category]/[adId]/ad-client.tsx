@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import { categoryOptions } from '@/const';
-import { getCurrencySymbol } from '@/utils';
+import { getCurrencySymbol, getViewsWord } from '@/utils';
 import { StarIcon as SolidStarIcon, PlayIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import {
@@ -18,7 +18,6 @@ import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapModal from '@/components/map-modal/map-modal';
 import FavoriteButton from '@/components/favorite-button/favorite-button';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { useToast } from '@/components/toast/toast-context';
 import { getOrCreateUserToken } from '@/utils';
 import SellerContacts from './components/seller-contacts';
@@ -257,9 +256,16 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
             {/* Блок управления для владельца активного объявления */}
             {isOwner && !isArchived && (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs sm:text-sm text-gray-600">
-                  Размещено {formatDate(ad.datePosted)}
-                </p>
+                <div className="flex flex-wrap sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
+                  <span>Опубликовано {formatDate(ad.datePosted)}</span>
+                  <span className="hidden sm:inline">·</span>
+                  <span>
+                    {ad.viewCount || 0} {getViewsWord(ad.viewCount || 0)}
+                    {ad.viewsToday && ad.viewsToday > 0
+                      ? ` (+${ad.viewsToday} сегодня)`
+                      : ''}
+                  </span>
+                </div>
                 <div className="flex max-[400px]:flex-col gap-2 w-full sm:w-auto sm:justify-end">
                   <Link
                     href={`/ad/edit/${ad.id}`}
@@ -400,7 +406,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </button>
             </div>
 
-            <div className="p-4 border border-amber-300 rounded-md">
+            {/* <div className="p-4 border border-amber-300 rounded-md">
               <h3 className="text-lg sm:text-xl font-semibold mb-2">
                 Дата размещения
               </h3>
@@ -411,13 +417,29 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   year: 'numeric',
                 })}
               </p>
-            </div>
+            </div> */}
           </aside>
         </div>
 
+        {/* Информация о дате и просмотрах для всех пользователей */}
+        {!isOwner && !isArchived && (
+          <div className="pt-8 pb-2">
+            <div className="flex flex-wrap sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
+              <span>Опубликовано {formatDate(ad.datePosted)}</span>
+              <span className="hidden sm:inline">·</span>
+              <span>
+                {ad.viewCount || 0} {getViewsWord(ad.viewCount || 0)}
+                {ad.viewsToday && ad.viewsToday > 0
+                  ? ` (+${ad.viewsToday} сегодня)`
+                  : ''}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Блок с похожими объявлениями */}
         {similarAds && similarAds.length > 0 && (
-          <section className="my-8 text-neutral-800">
+          <section className="mt-4 mb-8 text-neutral-800">
             <h2 className="text-lg sm:text-xl font-semibold mb-4">
               Похожие объявления
             </h2>

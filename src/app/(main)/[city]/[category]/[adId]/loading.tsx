@@ -9,14 +9,19 @@ export default function LoadingAdPage() {
           <li className="h-4 bg-gray-200 rounded w-16"></li>
           <li>›</li>
           <li className="h-4 bg-gray-200 rounded w-24"></li>
+          <li>›</li>
+          <li className="h-4 bg-gray-200 rounded w-24"></li>
         </ol>
       </nav>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Левая часть */}
         <div className="flex-1 space-y-6 lg:max-w-2xl">
-          {/* Заголовок */}
-          <div className="h-10 bg-gray-200 rounded w-3/4"></div>
+          {/* Заголовок с сердцем */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="h-10 bg-gray-200 rounded w-3/4"></div>
+            <div className="w-10 h-10 bg-gray-200 rounded-xl"></div>
+          </div>
 
           {/* Слайдер фото */}
           <div className="w-full lg:max-w-2xl">
@@ -62,11 +67,10 @@ export default function LoadingAdPage() {
         </div>
 
         {/* Правая часть */}
-        <aside className="w-full lg:w-1/3 lg:px-8 flex-shrink-0 space-y-4">
+        <aside className="w-full lg:w-1/3 lg:px-8 shrink-0 space-y-4">
           {/* Цена */}
-          <div className="p-4 border border-gray-200 rounded-md space-y-2">
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-6 bg-gray-200 rounded w-full"></div>
+          <div className="p-5 border border-gray-200 rounded-md space-y-2">
+            <div className="h-10 bg-gray-200 rounded w-45"></div>
           </div>
           {/* Продавец */}
           <div className="p-4 border border-amber-300 rounded-md">
@@ -82,7 +86,7 @@ export default function LoadingAdPage() {
                       className="w-4 h-4 bg-gray-200 rounded"
                     ></div>
                   ))}
-                  <div className="h-4 bg-gray-200 rounded w-8 ml-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-0 min-[300px]:w-8 ml-2"></div>
                 </div>
               </div>
             </div>
@@ -92,26 +96,27 @@ export default function LoadingAdPage() {
             </div>
           </div>
           {/* Контактная кнопка */}
-          <div className="p-4 border border-gray-200 rounded-md">
-            <div className="h-8 bg-gray-200 rounded w-full"></div>
-          </div>
+          {/* <div className="p-4 border border-gray-200 rounded-md">
+              <div className="h-8 bg-gray-200 rounded w-full"></div>
+            </div> */}
           {/* Локация */}
-          <div className="p-4 border border-gray-200 rounded-md space-y-2">
-            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-          </div>
-          {/* Дата размещения */}
-          <div className="p-4 border border-gray-200 rounded-md space-y-2">
-            <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="p-4 border border-gray-200 rounded-md space-y-3">
+            <div className="h-6 bg-gray-200 rounded w-1/2 sm:w-50"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-8 bg-gray-200 rounded w-40"></div>
           </div>
         </aside>
+      </div>
+
+      {/* Информация о просмотрах */}
+      <div className="pt-8 pb-2">
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
       </div>
 
       {/* Похожие объявления */}
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">
-          <span className="h-6 bg-gray-200 rounded inline-block w-1/3"></span>
+          <span className="h-8 bg-gray-200 rounded inline-block w-50 sm:w-80"></span>
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {[...Array(3)].map((_, idx) => (
