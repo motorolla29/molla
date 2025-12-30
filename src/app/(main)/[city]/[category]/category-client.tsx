@@ -95,7 +95,14 @@ export default function CategoryClient({
         </h1>
 
         <div className="flex gap-6 max-w-full flex-wrap lg:flex-nowrap">
-          <AsideFilters category={categoryKey} />
+          <AsideFilters
+            category={categoryKey}
+            cityLabel={cityLabel}
+            cityName={cityName}
+            cityNamePrep={cityNamePrep}
+            lat={lat}
+            lon={lon}
+          />
 
           {/* Основной блок */}
           <main className="flex-1 min-w-0">
@@ -124,6 +131,11 @@ export default function CategoryClient({
         {mobileFiltersVisible && (
           <FiltersMobile
             category={categoryKey}
+            cityLabel={cityLabel}
+            cityName={cityName}
+            cityNamePrep={cityNamePrep}
+            lat={lat}
+            lon={lon}
             setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
           />
         )}
@@ -136,6 +148,7 @@ export default function CategoryClient({
               setLocation(label, nameNom, namePrep, lat, lon);
               setShowLocationModal(false);
             }}
+            saveToStorage={true}
           />
         )}
       </div>

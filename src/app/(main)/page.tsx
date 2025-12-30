@@ -12,7 +12,8 @@ import { useLocationStore } from '@/store/useLocationStore';
 export default function Home() {
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const setLocation = useLocationStore((s) => s.setLocation);
+  const { cityLabel, cityName, cityNamePreposition, lat, lon, setLocation } =
+    useLocationStore();
   return (
     <Suspense>
       <div className="min-h-screen">
@@ -38,6 +39,11 @@ export default function Home() {
         {mobileFiltersVisible && (
           <FiltersMobile
             category={null}
+            cityLabel={cityLabel}
+            cityName={cityName}
+            cityNamePrep={cityNamePreposition}
+            lat={lat}
+            lon={lon}
             setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
           />
         )}
@@ -50,6 +56,7 @@ export default function Home() {
               setLocation(label, nameNom, namePrep, lat, lon);
               setShowLocationModal(false);
             }}
+            saveToStorage={true}
           />
         )}
       </div>

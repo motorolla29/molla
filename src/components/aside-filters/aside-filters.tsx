@@ -8,9 +8,21 @@ import { categoryOptions } from '@/const';
 
 interface AsideFiltersProps {
   category: string | null;
+  cityLabel: string | null;
+  cityName: string | null;
+  cityNamePrep: string | null;
+  lat: number | null;
+  lon: number | null;
 }
 
-export default function AsideFilters({ category }: AsideFiltersProps) {
+export default function AsideFilters({
+  category,
+  cityLabel: pageCityLabel,
+  cityName: pageCityName,
+  cityNamePrep: pageCityNamePrep,
+  lat: pageLat,
+  lon: pageLon,
+}: AsideFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -22,18 +34,16 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
     setLocation,
   } = useLocationStore();
 
-  // Локальное состояние для мобильных фильтров
+  // Локальное состояние для фильтров - инициализируем из пропов страницы
   const [cityLabel, setCityLabel] = useState<string | null>(
-    storeCityLabel ?? null
+    pageCityLabel ?? null
   );
-  const [cityName, setCityName] = useState<string | null>(
-    storeCityName ?? null
-  );
+  const [cityName, setCityName] = useState<string | null>(pageCityName ?? null);
   const [cityPrep, setCityPrep] = useState<string | null>(
-    storeCityPrep ?? null
+    pageCityNamePrep ?? null
   );
-  const [lat, setLat] = useState<number | null>(storeLat ?? null);
-  const [lon, setLon] = useState<number | null>(storeLon ?? null);
+  const [lat, setLat] = useState<number | null>(pageLat ?? null);
+  const [lon, setLon] = useState<number | null>(pageLon ?? null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [categoryKey, setCategoryKey] = useState<string | null>(category);
   const [minPrice, setMinPrice] = useState('');
@@ -41,13 +51,6 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
   const [isVip, setIsVip] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | '7' | '24'>('all');
   const [isResetting, setIsResetting] = useState(false);
-  const prevStoreRef = useRef({
-    cityLabel: storeCityLabel,
-    cityName: storeCityName,
-    cityPrep: storeCityPrep,
-    lat: storeLat,
-    lon: storeLon,
-  });
 
   // Инициализация из URL при монтировании
   useEffect(() => {
@@ -87,11 +90,11 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
     isVip !== appliedFilters.isVip ||
     timeFilter !== appliedFilters.timeFilter ||
     categoryKey !== appliedCategoryKey ||
-    cityLabel !== (storeCityLabel ?? null) ||
-    cityName !== (storeCityName ?? null) ||
-    cityPrep !== (storeCityPrep ?? null) ||
-    lat !== (storeLat ?? null) ||
-    lon !== (storeLon ?? null);
+    cityLabel !== (pageCityLabel ?? null) ||
+    cityName !== (pageCityName ?? null) ||
+    cityPrep !== (pageCityNamePrep ?? null) ||
+    lat !== (pageLat ?? null) ||
+    lon !== (pageLon ?? null);
 
   const hasAppliedFilters =
     appliedFilters.minPrice !== '' ||
@@ -150,40 +153,14 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
     router.push(path + (queryString ? `?${queryString}` : ''));
   };
 
-  // Синхронизация с глобальным стором + автоприменение при смене города снаружи
+  // Синхронизация с пропами страницы
   useEffect(() => {
-    const changed =
-      storeCityLabel !== prevStoreRef.current.cityLabel ||
-      storeCityName !== prevStoreRef.current.cityName ||
-      storeCityPrep !== prevStoreRef.current.cityPrep ||
-      storeLat !== prevStoreRef.current.lat ||
-      storeLon !== prevStoreRef.current.lon;
-
-    setCityLabel(storeCityLabel ?? null);
-    setCityName(storeCityName ?? null);
-    setCityPrep(storeCityPrep ?? null);
-    setLat(storeLat ?? null);
-    setLon(storeLon ?? null);
-
-    if (changed) {
-      // Не перезаписываем URL при инициализации, чтобы сохранить параметры из ссылки
-      // pushFilters вызывается только при явном изменении города пользователем
-      prevStoreRef.current = {
-        cityLabel: storeCityLabel,
-        cityName: storeCityName,
-        cityPrep: storeCityPrep,
-        lat: storeLat,
-        lon: storeLon,
-      };
-    }
-  }, [
-    storeCityLabel,
-    storeCityName,
-    storeCityPrep,
-    storeLat,
-    storeLon,
-    searchParams,
-  ]);
+    setCityLabel(pageCityLabel ?? null);
+    setCityName(pageCityName ?? null);
+    setCityPrep(pageCityNamePrep ?? null);
+    setLat(pageLat ?? null);
+    setLon(pageLon ?? null);
+  }, [pageCityLabel, pageCityName, pageCityNamePrep, pageLat, pageLon]);
 
   const handleApply = () => {
     if (cityLabel && cityName && cityPrep) {
@@ -375,13 +352,6 @@ export default function AsideFilters({ category }: AsideFiltersProps) {
             setLat(selLat);
             setLon(selLon);
             setLocation(label, nameNom, namePrep, selLat, selLon);
-            prevStoreRef.current = {
-              cityLabel: label,
-              cityName: nameNom,
-              cityPrep: namePrep,
-              lat: selLat,
-              lon: selLon,
-            };
             pushFilters({
               cityLabel: label,
             });

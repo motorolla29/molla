@@ -83,7 +83,14 @@ export default function CityClient({
 
         <div className="flex gap-6 max-w-full flex-wrap lg:flex-nowrap">
           {/* Sidebar - фильтры*/}
-          <AsideFilters category={null} />
+          <AsideFilters
+            category={null}
+            cityLabel={cityLabel}
+            cityName={cityName}
+            cityNamePrep={cityNamePrep}
+            lat={lat}
+            lon={lon}
+          />
 
           {/* Основной блок с объявлениями */}
 
@@ -112,6 +119,11 @@ export default function CityClient({
         {mobileFiltersVisible && (
           <FiltersMobile
             category={null}
+            cityLabel={cityLabel}
+            cityName={cityName}
+            cityNamePrep={cityNamePrep}
+            lat={lat}
+            lon={lon}
             setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
           />
         )}
@@ -124,6 +136,7 @@ export default function CityClient({
               setLocation(label, nameNom, namePrep, lat, lon);
               setShowLocationModal(false);
             }}
+            saveToStorage={true}
           />
         )}
       </div>

@@ -11,11 +11,21 @@ import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 interface FiltersMobileProps {
   setFiltersVisible: (bool: boolean) => void;
   category: string | null;
+  cityLabel: string | null;
+  cityName: string | null;
+  cityNamePrep: string | null;
+  lat: number | null;
+  lon: number | null;
 }
 
 export default function FiltersMobile({
   setFiltersVisible,
   category,
+  cityLabel: pageCityLabel,
+  cityName: pageCityName,
+  cityNamePrep: pageCityNamePrep,
+  lat: pageLat,
+  lon: pageLon,
 }: FiltersMobileProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,18 +41,16 @@ export default function FiltersMobile({
     setLocation,
   } = useLocationStore();
 
-  // Локальное состояние фильтров:
+  // Локальное состояние фильтров - инициализируем из пропов страницы:
   const [cityLabel, setCityLabel] = useState<string | null>(
-    storeCityLabel ?? null
+    pageCityLabel ?? null
   );
-  const [cityName, setCityName] = useState<string | null>(
-    storeCityName ?? null
-  );
+  const [cityName, setCityName] = useState<string | null>(pageCityName ?? null);
   const [cityPrep, setCityPrep] = useState<string | null>(
-    storeCityPrep ?? null
+    pageCityNamePrep ?? null
   );
-  const [lat, setLat] = useState<number | null>(storeLat ?? null);
-  const [lon, setLon] = useState<number | null>(storeLon ?? null);
+  const [lat, setLat] = useState<number | null>(pageLat ?? null);
+  const [lon, setLon] = useState<number | null>(pageLon ?? null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [categoryKey, setCategoryKey] = useState<string | null>(category);
 
@@ -66,14 +74,14 @@ export default function FiltersMobile({
     // Город из стора уже синхронизирован в useEffect ниже
   }, []);
 
-  // При монтировании и при изменении стора синхронизируем начальное состояние
+  // Синхронизация с пропами страницы
   useEffect(() => {
-    setCityLabel(storeCityLabel ?? null);
-    setCityName(storeCityName ?? null);
-    setCityPrep(storeCityPrep ?? null);
-    setLat(storeLat ?? null);
-    setLon(storeLon ?? null);
-  }, [storeCityLabel, storeCityName, storeCityPrep, storeLat, storeLon]);
+    setCityLabel(pageCityLabel ?? null);
+    setCityName(pageCityName ?? null);
+    setCityPrep(pageCityNamePrep ?? null);
+    setLat(pageLat ?? null);
+    setLon(pageLon ?? null);
+  }, [pageCityLabel, pageCityName, pageCityNamePrep, pageLat, pageLon]);
 
   const displayCity =
     cityLabel === 'russia' ? 'Все города' : cityName || 'Город не выбран';

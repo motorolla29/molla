@@ -114,11 +114,11 @@ export default function LocationInitializer() {
                   localStorage.setItem(
                     'userLocation',
                     JSON.stringify({
-                      cityLabel,
-                      cityName,
-                      cityNamePreposition,
-                      lat,
-                      lon,
+                      label,
+                      nom,
+                      prep,
+                      latJson,
+                      lonJson,
                     })
                   );
                 } catch (e) {
@@ -152,11 +152,11 @@ export default function LocationInitializer() {
                 localStorage.setItem(
                   'userLocation',
                   JSON.stringify({
-                    cityLabel,
-                    cityName,
-                    cityNamePreposition,
-                    lat,
-                    lon,
+                    label,
+                    nom,
+                    prep,
+                    latJson,
+                    lonJson,
                   })
                 );
               } catch (e) {

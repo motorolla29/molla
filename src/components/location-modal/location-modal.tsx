@@ -21,6 +21,7 @@ interface LocationModalProps {
     lat: number | null,
     lon: number | null
   ) => void;
+  saveToStorage?: boolean;
 }
 
 let citiesData: CityRaw[] | null = null;
@@ -76,6 +77,7 @@ async function fetchCitySuggestions(query: string): Promise<Suggestion[]> {
 export default function LocationModal({
   onClose,
   onSelect,
+  saveToStorage = false,
 }: LocationModalProps) {
   const {
     cityName: currentCityName,
@@ -193,7 +195,30 @@ export default function LocationModal({
   // Применение
   const handleApply = () => {
     if (previewLabel === 'russia' && previewNameNom === 'Все города') {
-      onSelect('russia', 'Россия', 'России', null, null);
+      const cityLabel = 'russia';
+      const cityName = 'Россия';
+      const cityNamePreposition = 'России';
+      const lat = null;
+      const lon = null;
+
+      onSelect(cityLabel, cityName, cityNamePreposition, lat, lon);
+
+      if (saveToStorage) {
+        try {
+          localStorage.setItem(
+            'userLocation',
+            JSON.stringify({
+              cityLabel,
+              cityName,
+              cityNamePreposition,
+              lat,
+              lon,
+            })
+          );
+        } catch (e) {
+          console.warn('Не удалось сохранить location в localStorage', e);
+        }
+      }
     } else if (
       previewLabel &&
       previewNameNom &&
@@ -208,6 +233,23 @@ export default function LocationModal({
         previewLat,
         previewLon
       );
+
+      if (saveToStorage) {
+        try {
+          localStorage.setItem(
+            'userLocation',
+            JSON.stringify({
+              cityLabel: previewLabel,
+              cityName: previewNameNom,
+              cityNamePreposition: previewNamePrep,
+              lat: previewLat,
+              lon: previewLon,
+            })
+          );
+        } catch (e) {
+          console.warn('Не удалось сохранить location в localStorage', e);
+        }
+      }
     }
     onClose();
   };

@@ -35,7 +35,9 @@ export default function UserProfileSidebar({
       {/* Аватар и основная информация */}
       <div className="flex flex-col items-center text-center mb-6">
         <div
-          className="w-20 h-20 rounded-full overflow-hidden mb-4 cursor-pointer"
+          className={`w-20 h-20 rounded-full overflow-hidden mb-4 ${
+            user.avatar ? 'cursor-pointer' : ''
+          }`}
           onClick={() => user.avatar && onAvatarClick()}
         >
           <img
