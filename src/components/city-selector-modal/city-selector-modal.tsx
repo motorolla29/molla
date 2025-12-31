@@ -37,7 +37,7 @@ export default function CitySelectorModal({
     if (isOpen) {
       loadCities();
       // Фокус на поле ввода
-      setTimeout(() => inputRef.current?.focus(), 100);
+      setTimeout(() => inputRef.current?.focus(), 200);
     }
   }, [isOpen]);
 
@@ -165,7 +165,7 @@ export default function CitySelectorModal({
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={{ duration: 0.2, ease: 'easeOut' }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
           onClick={onClose}
         >
           <motion.div
@@ -176,7 +176,7 @@ export default function CitySelectorModal({
             animate="visible"
             exit="exit"
             transition={{
-              duration: 0.25,
+              duration: 0.35,
               ease: 'easeOut',
               type: 'spring',
               //damping: 20,
