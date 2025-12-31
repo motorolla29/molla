@@ -37,7 +37,7 @@ export default function CitySelectorModal({
     if (isOpen) {
       loadCities();
       // Фокус на поле ввода
-      setTimeout(() => inputRef.current?.focus(), 200);
+      setTimeout(() => inputRef.current?.focus(), 350);
     }
   }, [isOpen]);
 
