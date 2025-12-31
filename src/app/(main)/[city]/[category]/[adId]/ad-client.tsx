@@ -270,9 +270,9 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   </span>
                   <span>
                     {ad.viewCount || 0} {getViewsWord(ad.viewCount || 0)}
-                    {ad.viewsToday &&
-                      ad.viewsToday > 0 &&
-                      ` (+${ad.viewsToday} сегодня)`}
+                    {ad.viewsToday && ad.viewsToday > 0
+                      ? ` (+${ad.viewsToday} сегодня)`
+                      : ''}
                   </span>
                 </div>
                 <div className="flex max-[400px]:flex-col gap-2 w-full sm:w-auto sm:justify-end">

@@ -190,6 +190,7 @@ export default function CitySelectorModal({
                 Выберите город
               </h3>
               <button
+                type="button"
                 onClick={onClose}
                 className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
@@ -237,6 +238,7 @@ export default function CitySelectorModal({
                         city.namecase?.nominative || city.name || '';
                       return (
                         <button
+                          type="button"
                           key={`${city.label}-${index}`}
                           onClick={() => handleCitySelect(city)}
                           className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-left hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100"
