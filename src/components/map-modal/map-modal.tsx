@@ -102,7 +102,7 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
       {isOpen && (
         <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY }}>
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 pt-4 pb-12"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"

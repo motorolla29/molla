@@ -35,7 +35,7 @@ export default function AvatarModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-6"
+          className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 px-6 pt-4 pb-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -51,8 +51,8 @@ export default function AvatarModal({
               duration: 0.35,
               ease: 'easeOut',
               type: 'spring',
-              damping: 20,
-              stiffness: 200,
+              //damping: 20,
+              //stiffness: 200,
             }}
             onClick={(e) => e.stopPropagation()}
           >
