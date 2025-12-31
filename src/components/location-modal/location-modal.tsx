@@ -214,6 +214,31 @@ export default function LocationModal({
     };
   }, [input]);
 
+  // Синхронизируем preview состояния с текущими значениями из store
+  useEffect(() => {
+    setPreviewLabel(currentCityLabel);
+    setPreviewNameNom(currentCityName);
+    setPreviewNamePrep(currentCityPrepositional);
+    setPreviewLat(currentLat ?? null);
+    setPreviewLon(currentLon ?? null);
+  }, [
+    currentCityLabel,
+    currentCityName,
+    currentCityPrepositional,
+    currentLat,
+    currentLon,
+  ]);
+
+  // Очищаем состояния при закрытии модала
+  useEffect(() => {
+    if (!isOpen) {
+      setInput('');
+      setSuggestions([]);
+      setLoading(false);
+      setError(null);
+    }
+  }, [isOpen]);
+
   // Выбор подсказки
   const handleSelectSuggestion = (item: Suggestion) => {
     setPreviewLabel(item.label);
@@ -302,7 +327,7 @@ export default function LocationModal({
         >
           <motion.div
             ref={modalRef}
-            className="bg-white rounded-xl w-full max-w-sm sm:max-w-md mx-3 sm:mx-4 p-3 sm:p-4 shadow-2xl overflow-hidden"
+            className="bg-white rounded-xl w-full max-w-sm sm:max-w-md mx-3 sm:mx-4 p-3 sm:p-4 shadow-2xl"
             variants={modalVariants}
             initial="hidden"
             animate="visible"
@@ -311,8 +336,8 @@ export default function LocationModal({
               duration: 0.35,
               ease: 'easeOut',
               type: 'spring',
-              damping: 20,
-              stiffness: 200,
+              //damping: 20,
+              //stiffness: 200,
             }}
             onClick={(e) => e.stopPropagation()}
           >

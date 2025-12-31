@@ -50,6 +50,7 @@ export default function HeaderMobile() {
           setLocation(label, nameNom, namePrep, lat, lon);
           setShowLocationModal(false);
         }}
+        saveToStorage={true}
       />
     </div>
   );

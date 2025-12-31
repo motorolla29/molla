@@ -62,7 +62,7 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
       // Показываем карту после завершения анимации входа
       const timer = setTimeout(() => {
         setShowMap(true);
-      }, 400); // Задержка чуть больше времени анимации
+      }, 200);
       return () => clearTimeout(timer);
     } else {
       // Скрываем карту сразу при закрытии
@@ -121,8 +121,8 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
                 duration: 0.35,
                 ease: 'easeOut',
                 type: 'spring',
-                damping: 20,
-                stiffness: 200,
+                //damping: 20,
+                //stiffness: 200,
               }}
               onClick={(e) => e.stopPropagation()}
             >
