@@ -26,6 +26,8 @@ interface MapGlProps {
   maxZoom?: number;
   cityLabel?: string;
   category?: string;
+  lat?: number | null;
+  lon?: number | null;
 }
 
 export default function MapGl({
@@ -36,6 +38,8 @@ export default function MapGl({
   maxZoom = 18,
   cityLabel,
   category,
+  lat,
+  lon,
 }: MapGlProps) {
   const { lat: storeLat, lon: storeLon } = useLocationStore();
   const searchParams = useSearchParams();
@@ -49,7 +53,11 @@ export default function MapGl({
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const targetCenter = useMemo<[number, number]>(() => {
+    // На страницах города/категории используем переданные координаты города
+    if (cityLabel && lat && lon) return [lat, lon];
+    // На главной странице используем координаты из стейта
     if (storeLat && storeLon) return [storeLat, storeLon];
+    // Если есть объявления, центрируем на первом
     if (ads.length > 0) {
       const first = ads[0].location;
       if (first.lat && first.lng) {
@@ -57,11 +65,13 @@ export default function MapGl({
       }
     }
     return DEFAULT_CENTER;
-  }, [ads, storeLat, storeLon]);
+  }, [ads, storeLat, storeLon, cityLabel, lat, lon]);
 
   const clampZoom = (zoom: number) =>
     Math.min(Math.max(zoom, minZoom), maxZoom);
-  const targetZoom = clampZoom(storeLat && storeLon ? CITY_ZOOM : DEFAULT_ZOOM);
+  const targetZoom = clampZoom(
+    (cityLabel && lat && lon) || (storeLat && storeLon) ? CITY_ZOOM : DEFAULT_ZOOM
+  );
 
   const [mapState, setMapState] = useState<{
     center: [number, number];

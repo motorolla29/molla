@@ -367,7 +367,9 @@ export default function LocationModal({
                 Текущий город:
               </span>
               <div className="mt-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 rounded-md text-sm sm:text-base text-neutral-800">
-                {previewNameNom || 'Не задан'}
+                {previewLabel === 'russia'
+                  ? 'Все города'
+                  : previewNameNom || 'Не задан'}
               </div>
             </div>
 

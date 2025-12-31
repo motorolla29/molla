@@ -12,9 +12,11 @@ interface MapSlotProps {
   ads: AdBase[];
   cityLabel?: string;
   category?: string;
+  lat?: number | null;
+  lon?: number | null;
 }
 
-export default function MapSlot({ ads, cityLabel, category }: MapSlotProps) {
+export default function MapSlot({ ads, cityLabel, category, lat, lon }: MapSlotProps) {
   const searchParams = useSearchParams();
   const [showFullMap, setShowFullMap] = useState(false);
 
@@ -50,6 +52,8 @@ export default function MapSlot({ ads, cityLabel, category }: MapSlotProps) {
           ads={ads}
           cityLabel={cityLabel}
           category={category}
+          lat={lat}
+          lon={lon}
           onPinClick={() => setShowFullMap(true)}
           onClusterClick={() => setShowFullMap(true)}
         />
@@ -69,6 +73,8 @@ export default function MapSlot({ ads, cityLabel, category }: MapSlotProps) {
               ads={ads}
               cityLabel={cityLabel}
               category={category}
+              lat={lat}
+              lon={lon}
               onPinClick={handleFullPinClick}
               onClusterClick={handleFullClusterClick}
             />

@@ -96,7 +96,7 @@ export default function CityClient({
 
           <main className="flex-1 min-w-0">
             <div className="mb-6">
-              <MapSlot ads={[]} />
+              <MapSlot ads={[]} cityLabel={cityLabel} lat={lat} lon={lon} />
             </div>
             <GalleryTopPanel
               viewType={viewType}
