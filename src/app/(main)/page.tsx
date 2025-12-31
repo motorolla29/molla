@@ -36,17 +36,16 @@ export default function Home() {
         </div>
         <HomePageFreshAndRecommendedAdsBlock />
         {/* Модал/Overlay с фильтрами во весь экран для мобильных */}
-        {mobileFiltersVisible && (
-          <FiltersMobile
-            category={null}
-            cityLabel={cityLabel}
-            cityName={cityName}
-            cityNamePrep={cityNamePreposition}
-            lat={lat}
-            lon={lon}
-            setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
-          />
-        )}
+        <FiltersMobile
+          isVisible={mobileFiltersVisible}
+          category={null}
+          cityLabel={cityLabel}
+          cityName={cityName}
+          cityNamePrep={cityNamePreposition}
+          lat={lat}
+          lon={lon}
+          setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+        />
 
         {/* Модальное окно выбора локации */}
         <LocationModal

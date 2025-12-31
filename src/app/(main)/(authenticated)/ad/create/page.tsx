@@ -36,6 +36,7 @@ export default function AddCreatePage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
 
   const [validationErrors, setValidationErrors] = useState<{
     [key: string]: string;
@@ -61,6 +62,10 @@ export default function AddCreatePage() {
     },
     [clearValidationError]
   );
+
+  const handlePhotoUploadStatusChange = useCallback((isUploading: boolean) => {
+    setIsUploadingPhotos(isUploading);
+  }, []);
 
   // Очистка ошибок происходит при повторной отправке формы
 
@@ -169,7 +174,11 @@ export default function AddCreatePage() {
           {/* Левая колонка: основной контент */}
           <div className="space-y-6">
             {/* Фотографии */}
-            <AdPhotoUploader maxPhotos={10} onChange={setPhotoUrls} />
+            <AdPhotoUploader
+              maxPhotos={10}
+              onChange={setPhotoUrls}
+              onUploadStatusChange={handlePhotoUploadStatusChange}
+            />
 
             {/* Основные данные */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-4">
@@ -301,10 +310,14 @@ export default function AddCreatePage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploadingPhotos}
             className="w-full py-3 rounded-xl bg-violet-500 text-white text-sm font-semibold shadow-sm hover:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
           >
-            {isSubmitting ? 'Публикация...' : 'Опубликовать объявление'}
+            {isSubmitting
+              ? 'Публикация...'
+              : isUploadingPhotos
+              ? 'Ожидание загрузки фото...'
+              : 'Опубликовать объявление'}
           </button>
         </form>
       </div>

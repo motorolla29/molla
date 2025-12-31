@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocationStore } from '@/store/useLocationStore';
 import { CityRaw } from '@/types/city-raw';
+import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface Suggestion {
   label: string;
@@ -150,21 +151,15 @@ export default function LocationModal({
     };
   }, []);
 
-  // Блокировка прокрутки при открытом модале
+  // Блокируем скролл страницы при открытом модальном окне
   useEffect(() => {
     if (!isOpen) return;
 
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.classList.add('overflow-hidden');
-    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    lockScroll();
 
     return () => {
-      // Ждем завершения анимации выхода перед разблокировкой скролла
       setTimeout(() => {
-        document.body.classList.remove('overflow-hidden');
-        document.body.style.paddingRight = '';
+        unlockScroll();
       }, 200);
     };
   }, [isOpen]);

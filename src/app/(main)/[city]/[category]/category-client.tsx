@@ -107,7 +107,13 @@ export default function CategoryClient({
           {/* Основной блок */}
           <main className="flex-1 min-w-0">
             <div className="mb-6">
-              <MapSlot ads={[]} cityLabel={cityLabel} category={categoryKey} lat={lat} lon={lon} />
+              <MapSlot
+                ads={[]}
+                cityLabel={cityLabel}
+                category={categoryKey}
+                lat={lat}
+                lon={lon}
+              />
             </div>
             <GalleryTopPanel
               viewType={viewType}
@@ -128,17 +134,16 @@ export default function CategoryClient({
           </main>
         </div>
         {/* Модал/Overlay с фильтрами во весь экран для мобильных */}
-        {mobileFiltersVisible && (
-          <FiltersMobile
-            category={categoryKey}
-            cityLabel={cityLabel}
-            cityName={cityName}
-            cityNamePrep={cityNamePrep}
-            lat={lat}
-            lon={lon}
-            setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
-          />
-        )}
+        <FiltersMobile
+          isVisible={mobileFiltersVisible}
+          category={categoryKey}
+          cityLabel={cityLabel}
+          cityName={cityName}
+          cityNamePrep={cityNamePrep}
+          lat={lat}
+          lon={lon}
+          setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
+        />
 
         {/* Модальное окно выбора локации */}
         <LocationModal

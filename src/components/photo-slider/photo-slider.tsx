@@ -187,7 +187,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
       {isZoomOpen && (
         <div
           onClick={() => setIsZoomOpen(false)}
-          className="fixed mb-0 inset-0 z-50 bg-neutral-200/50 bg-opacity-90 backdrop-blur-xl flex flex-col justify-center items-center group"
+          className="fixed mb-0 inset-0 z-50 bg-black/50 backdrop-blur-xl flex flex-col justify-center items-center group"
         >
           <div
             className="w-full h-full max-h-screen overflow-hidden cursor-grab"
@@ -214,7 +214,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
           <div className="absolute top-3 right-6 md:top-4 md:right-12">
             <button
               onClick={() => setIsZoomOpen(false)}
-              className="text-neutral-800 w-12 h-12 text-xl md:w-18 md:h-18 md:text-3xl flex items-center justify-center border border-neutral-800 p-4 font-bold z-[100] bg-white/70 rounded-full hover:bg-white"
+              className="text-neutral-800 w-12 h-12 text-xl md:w-18 md:h-18 md:text-3xl flex items-center justify-center border border-neutral-800 p-4 font-bold z-100 bg-white/70 rounded-full hover:bg-white"
             >
               ✕
             </button>

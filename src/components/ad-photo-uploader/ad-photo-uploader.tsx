@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UploadedPhoto {
   id: string;
@@ -14,18 +14,21 @@ interface AdPhotoUploaderProps {
   maxPhotos?: number;
   initialUrls?: string[];
   onChange?: (urls: string[]) => void;
+  onUploadStatusChange?: (isUploading: boolean) => void;
 }
 
 export default function AdPhotoUploader({
   maxPhotos = 10,
   initialUrls = [],
   onChange,
+  onUploadStatusChange,
 }: AdPhotoUploaderProps) {
   const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
+  const initializedRef = useRef(false);
 
   // Инициализация из уже загруженных URL (например, при редактировании)
   useEffect(() => {
-    if (initialUrls.length > 0 && photos.length === 0) {
+    if (initialUrls.length > 0 && !initializedRef.current) {
       const fromUrls: UploadedPhoto[] = initialUrls.map((url, index) => ({
         id: `initial-${index}-${url}`,
         file: new File([], `photo-${index}.jpg`),
@@ -33,8 +36,9 @@ export default function AdPhotoUploader({
         status: 'done',
       }));
       setPhotos(fromUrls);
+      initializedRef.current = true;
     }
-  }, [initialUrls, photos.length]);
+  }, [initialUrls]);
 
   // Репортим наружу только успешно загруженные URL
   useEffect(() => {
@@ -43,6 +47,12 @@ export default function AdPhotoUploader({
       .map((p) => p.url!);
     onChange?.(urls);
   }, [photos, onChange]);
+
+  // Отслеживаем статус загрузки
+  useEffect(() => {
+    const hasUploadingPhotos = photos.some((p) => p.status === 'uploading');
+    onUploadStatusChange?.(hasUploadingPhotos);
+  }, [photos, onUploadStatusChange]);
 
   const handleSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -169,7 +179,7 @@ export default function AdPhotoUploader({
               <button
                 type="button"
                 onClick={() => handleRemovePhoto(p.id)}
-                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-70 hover:opacity-100 transition-opacity"
               >
                 ✕
               </button>

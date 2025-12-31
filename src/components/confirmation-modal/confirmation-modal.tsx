@@ -55,7 +55,7 @@ export default function ConfirmationModal({
     setIsExiting(true);
     setTimeout(() => {
       onClose();
-    }, 300); // Время анимации выхода
+    }, 200);
   };
 
   const handleConfirm = () => {

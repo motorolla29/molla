@@ -53,6 +53,7 @@ export default function AdEditPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
 
   const [validationErrors, setValidationErrors] = useState<{
     [key: string]: string;
@@ -85,6 +86,10 @@ export default function AdEditPage() {
     },
     [clearValidationError]
   );
+
+  const handlePhotoUploadStatusChange = useCallback((isUploading: boolean) => {
+    setIsUploadingPhotos(isUploading);
+  }, []);
 
   // Загрузка данных объявления
   useEffect(() => {
@@ -299,6 +304,7 @@ export default function AdEditPage() {
               maxPhotos={10}
               onChange={setPhotoUrls}
               initialUrls={photoUrls}
+              onUploadStatusChange={handlePhotoUploadStatusChange}
             />
 
             {/* Основные данные */}
@@ -437,10 +443,14 @@ export default function AdEditPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingPhotos}
               className="w-full py-3 rounded-xl bg-violet-500 text-white text-sm font-semibold shadow-sm hover:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
+              {isSubmitting
+                ? 'Сохранение...'
+                : isUploadingPhotos
+                ? 'Ожидание загрузки фото...'
+                : 'Сохранить изменения'}
             </button>
           </div>
         </form>

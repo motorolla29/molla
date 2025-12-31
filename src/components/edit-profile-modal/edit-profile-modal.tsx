@@ -85,10 +85,9 @@ export function EditProfileModal({
     lockScroll();
 
     return () => {
-      // Ждем завершения анимации выхода перед разблокировкой скролла
       setTimeout(() => {
         unlockScroll();
-      }, 250);
+      }, 200);
     };
   }, [isOpen]);
 

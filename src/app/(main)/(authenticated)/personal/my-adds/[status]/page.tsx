@@ -219,7 +219,8 @@ export default function MyAddsPage() {
   };
 
   const handleEdit = (adId: string) => {
-    window.location.href = `/ad/edit/${adId}`;
+    //window.location.href = `/ad/edit/${adId}`;
+    router.push(`/ad/edit/${adId}`);
   };
 
   const handleToggleStatus = (adId: string, status: 'active' | 'archived') => {

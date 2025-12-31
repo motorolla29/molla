@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocationStore } from '@/store/useLocationStore';
 import LocationModal from '../location-modal/location-modal';
 import { categoryOptions } from '@/const';
@@ -9,6 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 interface FiltersMobileProps {
+  isVisible: boolean;
   setFiltersVisible: (bool: boolean) => void;
   category: string | null;
   cityLabel: string | null;
@@ -19,6 +21,7 @@ interface FiltersMobileProps {
 }
 
 export default function FiltersMobile({
+  isVisible,
   setFiltersVisible,
   category,
   cityLabel: pageCityLabel,
@@ -95,11 +98,16 @@ export default function FiltersMobile({
 
   // Блокировка скролла фона
   useEffect(() => {
-    lockScroll();
-    return () => {
-      unlockScroll();
-    };
-  }, []);
+    if (isVisible) {
+      lockScroll();
+      return () => {
+        // Ждем завершения анимации выхода перед разблокировкой скролла
+        setTimeout(() => {
+          unlockScroll();
+        }, 250);
+      };
+    }
+  }, [isVisible]);
 
   const handleApply = () => {
     // обновляем стор локации
@@ -141,179 +149,209 @@ export default function FiltersMobile({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col pb-[env(safe-area-inset-bottom)]">
-      {/* Хедер */}
-      <div className="flex items-center justify-between p-4 shadow-md">
-        <h2 className="text-lg font-medium">Фильтры</h2>
-        <button onClick={() => setFiltersVisible(false)} className="p-2">
-          <XMarkIcon className="w-6 h-6 text-gray-600" />
-        </button>
-      </div>
-
-      {/* Содержимое: прокручиваемая область */}
-      <div className="flex-1 overflow-auto p-4 space-y-6 mb-10">
-        {/* Фильтр по городу */}
-        <div>
-          <h3 className="text-md font-semibold mb-2">Город</h3>
-          <button
-            onClick={() => setShowLocationModal(true)}
-            className="w-full flex items-center justify-between border border-gray-300 rounded-md px-3 py-2 hover:bg-gray-50"
-          >
-            <span className="truncate">{displayCity}</span>
-            {/* Стрелка вправо */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Фильтр по цене */}
-        <div>
-          <h3 className="text-md font-semibold mb-2">Цена</h3>
-          <div className="flex items-center space-x-2">
-            <input
-              type="number"
-              placeholder="От"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
-              min={0}
-            />
-            <input
-              type="number"
-              placeholder="До"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
-              min={0}
-            />
-          </div>
-        </div>
-
-        {/* Выбор категории (1 из 4) */}
-        <div>
-          <h3 className="text-md font-semibold mb-2">Категория</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {categoryOptions.slice(0, 4).map((opt) => {
-              const selected = categoryKey === opt.key;
-              return (
-                <button
-                  key={opt.key}
-                  onClick={() => setCategoryKey(selected ? null : opt.key)}
-                  className={`flex items-center px-3 py-2 border rounded-md ${
-                    selected
-                      ? 'bg-violet-100 border-violet-400'
-                      : 'bg-white border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
-                    alt={opt.label}
-                    className="w-5 h-5 mr-2"
-                  />
-                  <span className="truncate">{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* VIP объявления */}
-        <div className="flex items-center">
-          <input
-            id="vip-checkbox"
-            type="checkbox"
-            checked={isVip}
-            onChange={(e) => setIsVip(e.target.checked)}
-            className="h-4 w-4 text-violet-500 border-gray-300 rounded"
+    <AnimatePresence>
+      {isVisible && (
+        <>
+          {/* Затемнение фона */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/60 z-40"
+            onClick={() => setFiltersVisible(false)}
           />
-          <label htmlFor="vip-checkbox" className="ml-2 select-none">
-            Только VIP объявления
-          </label>
-        </div>
 
-        {/* Фильтр по времени размещения */}
-        <div>
-          <h3 className="text-md font-semibold mb-2">Размещено</h3>
-          <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="timeFilter"
-                value="all"
-                checked={timeFilter === 'all'}
-                onChange={() => setTimeFilter('all')}
-                className="h-4 w-4 text-violet-500 border-gray-300"
-              />
-              <span className="ml-2 select-none">За все время</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="timeFilter"
-                value="7"
-                checked={timeFilter === '7'}
-                onChange={() => setTimeFilter('7')}
-                className="h-4 w-4 text-violet-500 border-gray-300"
-              />
-              <span className="ml-2 select-none">За 7 дней</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="timeFilter"
-                value="24"
-                checked={timeFilter === '24'}
-                onChange={() => setTimeFilter('24')}
-                className="h-4 w-4 text-violet-500 border-gray-300"
-              />
-              <span className="ml-2 select-none">За 24 часа</span>
-            </label>
-          </div>
-        </div>
-        {/* Футер с кнопками */}
-        <div className="p-4 border-t border-violet-400/50 bg-white">
-          <button
-            onClick={handleApply}
-            className="w-full py-2 text-white rounded-full bg-violet-500 hover:bg-violet-600 active:bg-violet-700"
+          {/* Панель фильтров */}
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{
+              duration: 0.25,
+              ease: 'easeIn',
+              //damping: 30,
+              //stiffness: 300,
+            }}
+            className="fixed inset-0 bg-white z-50 flex flex-col pb-[env(safe-area-inset-bottom)]"
           >
-            Применить
-          </button>
-          {(hasUrlFilters || null) && (
-            <button
-              onClick={handleReset}
-              className="w-full py-2 mt-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
-            >
-              Сбросить фильтры
-            </button>
-          )}
-        </div>
-      </div>
+            {/* Хедер */}
+            <div className="flex items-center justify-between p-4 shadow-md">
+              <h2 className="text-lg font-medium">Фильтры</h2>
+              <button onClick={() => setFiltersVisible(false)} className="p-2">
+                <XMarkIcon className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
 
-      {/* Модал выбора города */}
-      <LocationModal
-        isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        onSelect={(label, nameNom, namePrep, selLat, selLon) => {
-          setCityLabel(label);
-          setCityName(nameNom);
-          setCityPrep(namePrep);
-          setLat(selLat);
-          setLon(selLon);
-          setShowLocationModal(false);
-        }}
-      />
-    </div>
+            {/* Содержимое: прокручиваемая область */}
+            <div className="flex-1 overflow-auto p-4 space-y-6 mb-10">
+              {/* Фильтр по городу */}
+              <div>
+                <h3 className="text-md font-semibold mb-2">Город</h3>
+                <button
+                  onClick={() => setShowLocationModal(true)}
+                  className="w-full flex items-center justify-between border border-gray-300 rounded-md px-3 py-2 hover:bg-gray-50"
+                >
+                  <span className="truncate">{displayCity}</span>
+                  {/* Стрелка вправо */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Фильтр по цене */}
+              <div>
+                <h3 className="text-md font-semibold mb-2">Цена</h3>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    placeholder="От"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
+                    min={0}
+                  />
+                  <input
+                    type="number"
+                    placeholder="До"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="flex-1 min-w-0 bg-white border border-gray-300 rounded-md p-2 focus:outline-none focus:border-amber-500"
+                    min={0}
+                  />
+                </div>
+              </div>
+
+              {/* Выбор категории (1 из 4) */}
+              <div>
+                <h3 className="text-md font-semibold mb-2">Категория</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {categoryOptions.slice(0, 4).map((opt) => {
+                    const selected = categoryKey === opt.key;
+                    return (
+                      <button
+                        key={opt.key}
+                        onClick={() =>
+                          setCategoryKey(selected ? null : opt.key)
+                        }
+                        className={`flex items-center px-3 py-2 border rounded-md ${
+                          selected
+                            ? 'bg-violet-100 border-violet-400'
+                            : 'bg-white border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <img
+                          src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
+                          alt={opt.label}
+                          className="w-5 h-5 mr-2"
+                        />
+                        <span className="truncate">{opt.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* VIP объявления */}
+              <div className="flex items-center">
+                <input
+                  id="vip-checkbox"
+                  type="checkbox"
+                  checked={isVip}
+                  onChange={(e) => setIsVip(e.target.checked)}
+                  className="h-4 w-4 text-violet-500 border-gray-300 rounded"
+                />
+                <label htmlFor="vip-checkbox" className="ml-2 select-none">
+                  Только VIP объявления
+                </label>
+              </div>
+
+              {/* Фильтр по времени размещения */}
+              <div>
+                <h3 className="text-md font-semibold mb-2">Размещено</h3>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="timeFilter"
+                      value="all"
+                      checked={timeFilter === 'all'}
+                      onChange={() => setTimeFilter('all')}
+                      className="h-4 w-4 text-violet-500 border-gray-300"
+                    />
+                    <span className="ml-2 select-none">За все время</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="timeFilter"
+                      value="7"
+                      checked={timeFilter === '7'}
+                      onChange={() => setTimeFilter('7')}
+                      className="h-4 w-4 text-violet-500 border-gray-300"
+                    />
+                    <span className="ml-2 select-none">За 7 дней</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="timeFilter"
+                      value="24"
+                      checked={timeFilter === '24'}
+                      onChange={() => setTimeFilter('24')}
+                      className="h-4 w-4 text-violet-500 border-gray-300"
+                    />
+                    <span className="ml-2 select-none">За 24 часа</span>
+                  </label>
+                </div>
+              </div>
+              {/* Футер с кнопками */}
+              <div className="p-4 border-t border-violet-400/50 bg-white">
+                <button
+                  onClick={handleApply}
+                  className="w-full py-2 text-white rounded-full bg-violet-500 hover:bg-violet-600 active:bg-violet-700"
+                >
+                  Применить
+                </button>
+                {(hasUrlFilters || null) && (
+                  <button
+                    onClick={handleReset}
+                    className="w-full py-2 mt-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                  >
+                    Сбросить фильтры
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Модал выбора города */}
+            <LocationModal
+              isOpen={showLocationModal}
+              onClose={() => setShowLocationModal(false)}
+              onSelect={(label, nameNom, namePrep, selLat, selLon) => {
+                setCityLabel(label);
+                setCityName(nameNom);
+                setCityPrep(namePrep);
+                setLat(selLat);
+                setLon(selLon);
+                setShowLocationModal(false);
+              }}
+            />
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

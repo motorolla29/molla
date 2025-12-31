@@ -49,10 +49,9 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
     lockScroll();
 
     return () => {
-      // Ждем завершения анимации выхода перед разблокировкой скролла
       setTimeout(() => {
         unlockScroll();
-      }, 250);
+      }, 200);
     };
   }, [isOpen]);
 
