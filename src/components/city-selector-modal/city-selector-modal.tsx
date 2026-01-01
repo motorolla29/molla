@@ -55,7 +55,6 @@ export default function CitySelectorModal({
     lockScroll();
 
     return () => {
-      // Ждем завершения анимации выхода перед разблокировкой скролла
       setTimeout(() => {
         unlockScroll();
       }, 200);
@@ -165,7 +164,7 @@ export default function CitySelectorModal({
           initial="hidden"
           animate="visible"
           exit="exit"
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
           onClick={onClose}
         >
           <motion.div
@@ -176,9 +175,9 @@ export default function CitySelectorModal({
             animate="visible"
             exit="exit"
             transition={{
-              duration: 0.35,
+              duration: 0.25,
               ease: 'easeOut',
-              type: 'spring',
+              //type: 'spring',
               //damping: 20,
               //stiffness: 200,
             }}
