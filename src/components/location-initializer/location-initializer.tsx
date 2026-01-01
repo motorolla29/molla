@@ -20,16 +20,12 @@ export default function LocationInitializer() {
     if (tried) return;
     setTried(true);
 
-    console.log('🔍 LocationInitializer: Начинаем инициализацию локации');
-
     // 1) пробуем достать из localStorage:
     try {
       const json = localStorage.getItem('userLocation');
-      console.log('🔍 LocationInitializer: localStorage userLocation:', json);
 
       if (json) {
         const obj = JSON.parse(json);
-        console.log('🔍 LocationInitializer: Распарсили объект:', obj);
 
         // Поля: cityLabel, cityName, cityNamePreposition, lat, lon
         if (
@@ -40,10 +36,6 @@ export default function LocationInitializer() {
           (obj.lat === null || typeof obj.lat === 'number') &&
           (obj.lon === null || typeof obj.lon === 'number')
         ) {
-          console.log(
-            '✅ LocationInitializer: Устанавливаем город из localStorage:',
-            obj.cityName
-          );
           setLocation(
             obj.cityLabel,
             obj.cityName,
@@ -53,16 +45,9 @@ export default function LocationInitializer() {
           );
           return;
         }
-      } else {
-        console.log(
-          '❌ LocationInitializer: localStorage пустой, будет геолокация'
-        );
       }
     } catch (e) {
       console.warn('Не удалось прочитать location из localStorage', e);
-      console.log(
-        '❌ LocationInitializer: Ошибка чтения localStorage, будет геолокация'
-      );
     }
 
     // Если нет сохранённой локации, сначала ставим дефолт из констант
@@ -76,13 +61,8 @@ export default function LocationInitializer() {
 
     // 2) Затем пробуем геолокацию: после получения coords ищем ближайший город
     if (navigator.geolocation) {
-      console.log('🚀 LocationInitializer: Запускаем геолокацию');
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          console.log(
-            '📍 LocationInitializer: Геолокация получена:',
-            position.coords
-          );
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
 
@@ -131,20 +111,16 @@ export default function LocationInitializer() {
                 const prep = matched.namecase?.prepositional ?? nom;
                 const latJson = matched.coords!.lat!;
                 const lonJson = matched.coords!.lon!;
-                console.log(
-                  '✅ LocationInitializer: Город найден по имени:',
-                  nom
-                );
                 setLocation(label, nom, prep, latJson, lonJson);
                 try {
                   localStorage.setItem(
                     'userLocation',
                     JSON.stringify({
-                      label,
-                      nom,
-                      prep,
-                      latJson,
-                      lonJson,
+                      cityLabel: label,
+                      cityName: nom,
+                      cityNamePreposition: prep,
+                      lat: latJson,
+                      lon: lonJson,
                     })
                   );
                 } catch (e) {
@@ -173,20 +149,16 @@ export default function LocationInitializer() {
               const prep = nearest.namecase.prepositional ?? nom;
               const latJson = nearest.coords!.lat!;
               const lonJson = nearest.coords!.lon!;
-              console.log(
-                '✅ LocationInitializer: Город найден по координатам:',
-                nom
-              );
               setLocation(label, nom, prep, latJson, lonJson);
               try {
                 localStorage.setItem(
                   'userLocation',
                   JSON.stringify({
-                    label,
-                    nom,
-                    prep,
-                    latJson,
-                    lonJson,
+                    cityLabel: label,
+                    cityName: nom,
+                    cityNamePreposition: prep,
+                    lat: latJson,
+                    lon: lonJson,
                   })
                 );
               } catch (e) {
@@ -206,7 +178,6 @@ export default function LocationInitializer() {
             '❌ LocationInitializer: Геолокация отклонена или недоступна',
             err
           );
-          console.log('⚠️ LocationInitializer: Остается дефолтная локация');
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );

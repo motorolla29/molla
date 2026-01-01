@@ -42,7 +42,6 @@ export default function CategoryClient({
   const setLocation = useLocationStore((s) => s.setLocation);
 
   useEffect(() => {
-    console.log('🏙️ CategoryClient: Устанавливаю город из URL:', cityName, {cityLabel, cityName, cityNamePrep, lat, lon});
     setLocation(cityLabel, cityName, cityNamePrep, lat, lon);
   }, [cityLabel, cityName, cityNamePrep, lat, lon, setLocation]);
 

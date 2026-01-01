@@ -36,7 +36,6 @@ export async function sendVerificationCode(
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent successfully to ${email}`);
     return true;
   } catch (error: any) {
     console.error(
@@ -67,9 +66,6 @@ export async function sendVerificationCode(
       retryCount < 2 &&
       ['ECONNREFUSED', 'ETIMEDOUT', 'SOCKET_CLOSE'].includes(error.code)
     ) {
-      console.log(
-        `🔄 Retrying email send in 2 seconds... (${retryCount + 1}/2)`
-      );
       await new Promise((resolve) => setTimeout(resolve, 2000));
       return sendVerificationCode(email, code, retryCount + 1);
     }

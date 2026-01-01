@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
       const tempData = await registrationCache.get(normalizedEmail);
 
       if (!tempData) {
-        console.log('No temp data found in Redis');
         return NextResponse.json(
           {
             error:
@@ -78,7 +77,6 @@ export async function POST(request: NextRequest) {
       const tempData = await registrationCache.get(normalizedEmail);
 
       if (!tempData) {
-        console.log('No temp data found in Redis for login');
         return NextResponse.json(
           {
             error:

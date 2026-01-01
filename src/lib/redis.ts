@@ -12,18 +12,6 @@ redisClient.on('error', (err) => {
   console.warn('Redis Client Error:', err);
 });
 
-redisClient.on('connect', () => {
-  console.log('Connected to Redis');
-});
-
-redisClient.on('ready', () => {
-  console.log('Redis client ready');
-});
-
-redisClient.on('end', () => {
-  console.log('Redis connection ended');
-});
-
 // Подключаемся к Redis
 let isConnected = false;
 let connectionPromise: Promise<void> | null = null;
@@ -38,7 +26,6 @@ async function ensureConnection(): Promise<void> {
       try {
         await redisClient.connect();
         isConnected = true;
-        console.log('✅ Redis connected successfully');
       } catch (error) {
         console.error('❌ Failed to connect to Redis:', error);
         console.warn('⚠️ Redis unavailable - using memory fallback');
@@ -74,7 +61,6 @@ export const registrationCache = {
           ttlSeconds,
           JSON.stringify(data)
         );
-        console.log('✅ Registration data saved to Redis for:', email);
         return true;
       } catch (error) {
         console.error('❌ Redis set error:', error);
@@ -83,7 +69,6 @@ export const registrationCache = {
           data,
           expires: Date.now() + ttlSeconds * 1000,
         });
-        console.log('⚠️ Using memory fallback for:', email);
         return false;
       }
     } else {
@@ -92,7 +77,6 @@ export const registrationCache = {
         data,
         expires: Date.now() + ttlSeconds * 1000,
       });
-      console.log('⚠️ Redis not connected, using memory fallback for:', email);
       return false;
     }
   },

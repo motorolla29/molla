@@ -22,10 +22,8 @@ export default function TopSearchPanel({
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const { cityLabel, cityName, cityNamePreposition, setLocation } =
-    useLocationStore();
+  const { cityLabel, cityName, cityNamePreposition } = useLocationStore();
 
-  console.log('🖥️ TopSearchPanel render, cityName:', cityName);
   const dropdownRef = useRef<HTMLDivElement>(null); // <== ссылка на dropdown
 
   // Закрытие по клику вне dropdown
