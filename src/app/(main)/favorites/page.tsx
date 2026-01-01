@@ -10,6 +10,11 @@ export default function FavoritesPage() {
   const isStoreLoading = useFavoritesStore((s) => s.isLoading);
   const hasHydrated = useFavoritesStore((s) => s.hasHydrated);
 
+  // Скролл вверх при загрузке страницы избранного (для мобильных браузеров)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Снэпшот избранных: фиксируем список один раз после первой успешной загрузки/гидрации
   const [favoritesSnapshot, setFavoritesSnapshot] = useState<AdBase[]>([]);
   const [hasSnapshot, setHasSnapshot] = useState(false);

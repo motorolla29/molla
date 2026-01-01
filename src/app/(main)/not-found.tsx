@@ -1,6 +1,13 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function NotFound() {
+  // Скролл вверх при загрузке страницы 404 (для мобильных браузеров)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div className="min-h-[calc(100vh-48px-48px)] lg:min-h-[calc(100vh-60px)] flex flex-col items-center justify-center text-neutral-600">
       {/* 48px - header mobile height, 48px - mobile bottom panel height, 60px - header desktop height */}
