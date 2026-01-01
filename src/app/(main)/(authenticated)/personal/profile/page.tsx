@@ -97,10 +97,10 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-2 lg:px-6">
+    <div className="p-2">
       {/* Аватар и имя */}
-      <div className="flex items-center mb-8 sm:mb-12">
-        <div className="relative">
+      <div className="flex flex-col min-[320px]:flex-row items-center mb-8 sm:mb-12">
+        <div className="relative shrink-0 min-w-16 sm:min-w-20">
           {user.avatar ? (
             <img
               src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
@@ -119,7 +119,7 @@ export default function Profile() {
           <button
             onClick={handleAvatarClick}
             disabled={isAvatarUploading}
-            className="absolute -bottom-1 -right-1 bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 disabled:cursor-not-allowed border-2 border-white"
+            className="absolute -bottom-1 -right-1 bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 disabled:cursor-not-allowed border-2 border-white shrink-0"
             aria-label="Установить аватар"
           >
             {isAvatarUploading ? (
