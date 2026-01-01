@@ -159,7 +159,7 @@ export default function CitySelectorModal({
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4 pt-2 pb-14 lg:pb-2"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -169,7 +169,7 @@ export default function CitySelectorModal({
         >
           <motion.div
             ref={modalRef}
-            className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar-2"
+            className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[calc(100vh-3rem)] overflow-y-auto custom-scrollbar-2"
             variants={modalVariants}
             initial="hidden"
             animate="visible"

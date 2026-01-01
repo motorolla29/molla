@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
@@ -10,11 +9,15 @@ import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-m
 import AvatarModal from '@/components/avatar-modal/avatar-modal';
 
 export default function Profile() {
-  const router = useRouter();
   const { user, logout, updateUser } = useAuthStore();
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
+
+  // Скролл вверх при загрузке страницы профиля (для мобильных браузеров)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Состояние для модального окна редактирования профиля
   const [showEditProfile, setShowEditProfile] = useState(false);

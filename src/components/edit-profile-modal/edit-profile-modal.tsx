@@ -294,7 +294,7 @@ export function EditProfileModal({
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 px-4 pt-2 pb-14 lg:pb-2"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
