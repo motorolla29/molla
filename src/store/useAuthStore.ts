@@ -45,13 +45,22 @@ export const useAuthStore = create<AuthState>()(
         set({ isAuthChecking: true });
         try {
           const response = await fetch('/api/auth/check');
-          console.log('🔐 AuthStore.checkAuth: Ответ получен, status:', response.status);
+          console.log(
+            '🔐 AuthStore.checkAuth: Ответ получен, status:',
+            response.status
+          );
           if (response.ok) {
             const data = await response.json();
-            console.log('🔐 AuthStore.checkAuth: Авторизован, пользователь:', data.user?.name);
+            console.log(
+              '🔐 AuthStore.checkAuth: Авторизован, пользователь:',
+              data.user?.name
+            );
             set({ isLoggedIn: true, user: data.user, isAuthChecking: false });
           } else {
-            console.log('🔐 AuthStore.checkAuth: Не авторизован, status:', response.status);
+            console.log(
+              '🔐 AuthStore.checkAuth: Не авторизован, status:',
+              response.status
+            );
             set({ isLoggedIn: false, user: null, isAuthChecking: false });
           }
         } catch (error) {
@@ -107,7 +116,10 @@ export const useAuthStore = create<AuthState>()(
         console.log('🔐 AuthStore.initialize: Начинаю проверку авторизации');
         // Проверяем авторизацию через API
         await get().checkAuth();
-        console.log('🔐 AuthStore.initialize: checkAuth завершен, isLoggedIn:', get().isLoggedIn);
+        console.log(
+          '🔐 AuthStore.initialize: checkAuth завершен, isLoggedIn:',
+          get().isLoggedIn
+        );
 
         // Если авторизован, загружаем избранное
         if (get().isLoggedIn) {
