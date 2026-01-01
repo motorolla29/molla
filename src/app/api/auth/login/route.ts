@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true, // Защищает от XSS атак
       secure: isSecure,
       sameSite: isSecure ? 'none' : 'lax',
-      maxAge: 86400, // 24 часа
+      maxAge: 2592000, // 30 дней
       path: '/',
     });
 

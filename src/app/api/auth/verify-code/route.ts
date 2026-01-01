@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true, // Защищает от XSS атак
       secure: isSecure,
       sameSite: isSecure ? 'none' : 'lax', // Защита от CSRF
-      maxAge: 60 * 60 * 24 * 7, // 7 дней
+      maxAge: 2592000, // 30 дней
       path: '/', // Доступен для всего сайта
     });
 
