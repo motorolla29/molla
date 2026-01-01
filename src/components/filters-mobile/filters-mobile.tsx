@@ -348,6 +348,7 @@ export default function FiltersMobile({
                 setLon(selLon);
                 setShowLocationModal(false);
               }}
+              disableScrollLock={true}
             />
           </motion.div>
         </>

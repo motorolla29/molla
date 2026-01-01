@@ -25,6 +25,7 @@ interface LocationModalProps {
     lon: number | null
   ) => void;
   saveToStorage?: boolean;
+  disableScrollLock?: boolean;
 }
 
 // Анимации для модального окна
@@ -107,6 +108,7 @@ export default function LocationModal({
   onClose,
   onSelect,
   saveToStorage = false,
+  disableScrollLock = false,
 }: LocationModalProps) {
   const {
     cityName: currentCityName,
@@ -153,7 +155,7 @@ export default function LocationModal({
 
   // Блокируем скролл страницы при открытом модальном окне
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || disableScrollLock) return;
 
     lockScroll();
 
@@ -162,7 +164,7 @@ export default function LocationModal({
         unlockScroll();
       }, 200);
     };
-  }, [isOpen]);
+  }, [isOpen, disableScrollLock]);
 
   // Закрытие по клику вне
   useEffect(() => {
