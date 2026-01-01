@@ -12,7 +12,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <>
       <Header />
       <HeaderMobile />
-      <div className="container mx-auto min-h-screen">{children}</div>
+      <div className="container mx-auto min-h-[calc(100vh-48px-48px)] lg:min-h-[calc(100vh-60px)]">
+        {/* 48px - header mobile height, 48px - mobile bottom panel height, 60px - header desktop height */}
+        {children}
+      </div>
       <ScrollToTopButton />
       <MobileBottomNav />
       <Footer />

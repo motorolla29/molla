@@ -2,7 +2,8 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="h-screen flex flex-col items-center justify-center text-neutral-600">
+    <div className="min-h-[calc(100vh-48px-48px)] lg:min-h-[calc(100vh-60px)] flex flex-col items-center justify-center text-neutral-600">
+      {/* 48px - header mobile height, 48px - mobile bottom panel height, 60px - header desktop height */}
       <img
         className="w-20 sm:w-24 mb-2 "
         src="https://ik.imagekit.io/motorolla29/molla/icons/oshibka_404.svg"
