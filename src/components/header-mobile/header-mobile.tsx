@@ -10,6 +10,8 @@ import Link from 'next/link';
 export default function HeaderMobile() {
   const { cityName, setLocation } = useLocationStore();
   const { isLoggedIn, user } = useAuthStore();
+
+  console.log('📱 HeaderMobile render, cityName:', cityName);
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   return (
