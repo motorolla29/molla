@@ -29,14 +29,20 @@ export default function CitySelectorModal({
   const [cities, setCities] = useState<CityRaw[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Загружаем города при открытии модала
+  // Загружаем города при первом монтировании компонента
+  useEffect(() => {
+    if (!hasLoaded) {
+      loadCities();
+    }
+  }, [hasLoaded]);
+
+  // Фокус на поле ввода при открытии модала
   useEffect(() => {
     if (isOpen) {
-      loadCities();
-      // Фокус на поле ввода
       setTimeout(() => inputRef.current?.focus(), 350);
     }
   }, [isOpen]);
@@ -81,6 +87,7 @@ export default function CitySelectorModal({
       setIsLoading(true);
       const citiesData = await loadCitiesData();
       setCities(citiesData);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Error loading cities:', error);
     } finally {
