@@ -93,7 +93,7 @@ export default function MobileBottomNav() {
               <Icon size={18} className={colorClass} />
               {/* Показываем подпись только на ширине >=640px, иначе скрываем */}
               <span
-                className={`text-[10px] mb-1 mt-0.5 truncate ${colorClass}`}
+                className={`text-[10px] mb-1 mt-0.5 truncate ${colorClass} hidden min-[320px]:block`}
               >
                 {label}
               </span>

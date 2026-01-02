@@ -4,7 +4,7 @@ export default function AdEditSkeleton() {
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <div className="animate-pulse">
           {/* Заголовок страницы */}
-          <div className="h-8 bg-gray-200 rounded-xl w-80 mb-8"></div>
+          <div className="h-8 bg-gray-200 rounded-xl w-2/3 sm:w-80 mb-8"></div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[2fr,1.4fr] gap-6">
             {/* Левая колонка: основной контент */}
