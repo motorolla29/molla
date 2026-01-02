@@ -40,7 +40,7 @@ export function getCurrencySymbol(currencyCode: Currency) {
   }
 }
 
-let citiesDataCache: CityRaw[] | null = null;
+export let citiesDataCache: CityRaw[] | null = null;
 
 export async function loadCitiesData(): Promise<CityRaw[]> {
   if (!citiesDataCache) {

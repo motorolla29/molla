@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { loadCitiesData } from '@/utils';
+import { loadCitiesData, citiesDataCache } from '@/utils';
 import { CityRaw } from '@/types/city-raw';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
@@ -80,6 +80,12 @@ export default function CitySelectorModal({
   }, [isOpen, onClose]);
 
   const loadCities = async () => {
+    // Проверяем, есть ли уже данные в глобальном кеше (загружены другим компонентом)
+    if (citiesDataCache && citiesDataCache.length > 0) {
+      setCities(citiesDataCache);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const citiesData = await loadCitiesData();
