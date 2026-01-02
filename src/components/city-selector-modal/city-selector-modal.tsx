@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loadCitiesData } from '@/utils';
 import { CityRaw } from '@/types/city-raw';
@@ -29,16 +29,13 @@ export default function CitySelectorModal({
   const [cities, setCities] = useState<CityRaw[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Загружаем города при первом монтировании компонента
   useEffect(() => {
-    if (!hasLoaded) {
-      loadCities();
-    }
-  }, [hasLoaded]);
+    loadCities();
+  }, []);
 
   // Фокус на поле ввода при открытии модала
   useEffect(() => {
@@ -87,7 +84,6 @@ export default function CitySelectorModal({
       setIsLoading(true);
       const citiesData = await loadCitiesData();
       setCities(citiesData);
-      setHasLoaded(true);
     } catch (error) {
       console.error('Error loading cities:', error);
     } finally {
@@ -95,27 +91,29 @@ export default function CitySelectorModal({
     }
   };
 
-  // Фильтруем города по поисковому запросу
-  const filteredCities = cities
-    .filter((city) => {
-      if (!searchTerm.trim()) {
-        // Показываем крупные города (население > 500к) или столицы
-        return (
-          (city.population && city.population > 500000) ||
-          city.isCapital === true
-        );
-      }
-      const cityName = city.namecase?.nominative || city.name || '';
-      return cityName.toLowerCase().includes(searchTerm.toLowerCase());
-    })
-    .sort((a, b) => {
-      // Сортируем по населению (по убыванию) только для крупных городов
-      if (!searchTerm.trim()) {
-        return (b.population || 0) - (a.population || 0);
-      }
-      return 0; // Для поиска оставляем порядок как есть
-    })
-    .slice(0, 20); // Ограничиваем до 20 результатов для производительности
+  // Фильтруем города по поисковому запросу (оптимизировано с useMemo)
+  const filteredCities = useMemo(() => {
+    return cities
+      .filter((city) => {
+        if (!searchTerm.trim()) {
+          // Показываем крупные города (население > 500к) или столицы
+          return (
+            (city.population && city.population > 500000) ||
+            city.isCapital === true
+          );
+        }
+        const cityName = city.namecase?.nominative || city.name || '';
+        return cityName.toLowerCase().includes(searchTerm.toLowerCase());
+      })
+      .sort((a, b) => {
+        // Сортируем по населению (по убыванию) только для крупных городов
+        if (!searchTerm.trim()) {
+          return (b.population || 0) - (a.population || 0);
+        }
+        return 0; // Для поиска оставляем порядок как есть
+      })
+      .slice(0, 20); // Ограничиваем до 20 результатов для производительности
+  }, [cities, searchTerm]);
 
   const handleCitySelect = (city: CityRaw) => {
     const cityName = city.namecase?.nominative || city.name || '';
@@ -236,7 +234,7 @@ export default function CitySelectorModal({
               </div>
 
               {/* Список городов */}
-              {filteredCities.length > 0 && (
+              {filteredCities.length > 0 && !isLoading && (
                 <div className="mt-3 max-h-64 overflow-y-auto custom-scrollbar-2">
                   <div className="space-y-1">
                     {filteredCities.map((city, index) => {
@@ -274,9 +272,11 @@ export default function CitySelectorModal({
                 )}
 
               {/* Начальное состояние */}
-              {!searchTerm.trim() && !isLoading && (
-                <div className="mt-4 text-center py-6 sm:py-8">
-                  <div className="text-gray-400 text-sm">Популярные города</div>
+              {!searchTerm.trim() && !isLoading && cities.length > 0 && (
+                <div className="text-center py-2">
+                  <div className="text-gray-400 text-xs sm:text-sm">
+                    Популярные города
+                  </div>
                 </div>
               )}
             </div>
