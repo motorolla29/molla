@@ -201,37 +201,42 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
         )}
 
         {/* Хлебные крошки */}
-        <nav
-          className="text-xs sm:text-sm mb-4 overflow-hidden"
-          aria-label="Breadcrumb"
-        >
-          <ol className="flex items-center space-x-2 min-w-0 overflow-hidden">
+        <nav className="text-xs sm:text-sm mb-4" aria-label="Breadcrumb">
+          <ol className="flex flex-wrap items-center gap-1 sm:gap-2 min-w-0">
             <li>
-              <a href="/" className="text-blue-500 hover:underline">
+              <a
+                href="/"
+                className="text-blue-500 hover:underline whitespace-nowrap"
+              >
                 Главная
               </a>
             </li>
-            <li>›</li>
-            <li>
+            <li className="text-gray-400">›</li>
+            <li className="min-w-0">
               <a
                 href={`/${ad.cityLabel}`}
-                className="text-blue-500 hover:underline"
+                className="text-blue-500 hover:underline truncate max-w-[120px] sm:max-w-none"
+                title={ad.city}
               >
                 {ad.city}
               </a>
             </li>
-            <li>›</li>
-            <li>
+            <li className="text-gray-400">›</li>
+            <li className="min-w-0">
               <a
                 href={`/${ad.cityLabel}/${ad.category}`}
-                className="text-blue-500 hover:underline"
+                className="text-blue-500 hover:underline truncate max-w-[120px] sm:max-w-none"
+                title={
+                  categoryOptions.find((c) => c.key === ad.category)?.label ||
+                  ad.category
+                }
               >
                 {categoryOptions.find((c) => c.key === ad.category)?.label ||
                   ad.category}
               </a>
             </li>
-            <li>›</li>
-            <li className="text-gray-500 truncate max-w-full overflow-hidden min-w-0 flex-1">
+            <li className="text-gray-400">›</li>
+            <li className="text-gray-500 truncate min-w-0 max-w-[200px] sm:max-w-none flex-1">
               {ad.title}
             </li>
           </ol>

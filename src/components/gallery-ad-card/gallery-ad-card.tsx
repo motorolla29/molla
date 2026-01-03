@@ -12,6 +12,7 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
   return (
     <Link
       href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
+      target="blank"
       className="flex flex-col w-full overflow-hidden h-full min-w-0"
     >
       <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg">

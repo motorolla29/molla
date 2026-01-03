@@ -19,6 +19,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       <Link
         className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 overflow-hidden"
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
+        target="blank"
       >
         <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
@@ -33,6 +34,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       <Link
         className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative min-w-0"
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
+        target="blank"
       >
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-0 right-0" />
@@ -74,6 +76,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       {/* Информация о продавце */}
       <Link
         href={`/user/${ad.seller.id}/active`}
+        target="blank"
         className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
       >
         <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">

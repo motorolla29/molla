@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { AdBase } from '@/types/ad';
-import Link from 'next/link';
 import { FidgetSpinner } from 'react-loader-spinner';
 import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 

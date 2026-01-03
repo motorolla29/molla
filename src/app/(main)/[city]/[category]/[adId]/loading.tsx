@@ -4,13 +4,13 @@ export default function LoadingAdPage() {
       {/* Breadcrumbs */}
       <nav className="text-sm mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
-          <li className="h-4 bg-gray-200 rounded w-16"></li>
+          <li className="h-4 bg-gray-200 rounded w-1/4 sm:w-16"></li>
           <li>›</li>
-          <li className="h-4 bg-gray-200 rounded w-16"></li>
+          <li className="h-4 bg-gray-200 rounded w-1/4 sm:w-16"></li>
           <li>›</li>
-          <li className="h-4 bg-gray-200 rounded w-24"></li>
+          <li className="h-4 bg-gray-200 rounded w-1/4 sm:w-24"></li>
           <li>›</li>
-          <li className="h-4 bg-gray-200 rounded w-24"></li>
+          <li className="h-4 bg-gray-200 rounded w-1/4 sm:w-24"></li>
         </ol>
       </nav>
 
@@ -35,8 +35,8 @@ export default function LoadingAdPage() {
             {/* Миниатюры: адаптивные размеры */}
             <div className="mt-4 overflow-hidden" ref={null}>
               <div className="pb-2">
-                <div className="flex gap-1 xs:gap-2 sm:gap-3">
-                  {[...Array(6)].map((_, idx) => (
+                <div className="flex gap-1.5 sm:gap-3 max-w-30">
+                  {[...Array(4)].map((_, idx) => (
                     <div
                       key={idx}
                       className="bg-gray-200 rounded-md w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 shrink-0"
@@ -70,7 +70,7 @@ export default function LoadingAdPage() {
         <aside className="w-full lg:w-1/3 lg:px-8 shrink-0 space-y-4">
           {/* Цена */}
           <div className="p-5 border border-gray-200 rounded-md space-y-2">
-            <div className="h-10 bg-gray-200 rounded w-45"></div>
+            <div className="h-10 bg-gray-200 rounded w-1/3 sm:w-45"></div>
           </div>
           {/* Продавец */}
           <div className="p-4 border border-amber-300 rounded-md">

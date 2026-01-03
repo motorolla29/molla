@@ -9,7 +9,7 @@ let originalPaddingRight: string = '';
 /**
  * Вычисляет ширину полосы прокрутки
  */
-function getScrollbarWidth(): number {
+export function getScrollbarWidth(): number {
   if (scrollbarWidth !== 0) return scrollbarWidth;
 
   const scrollDiv = document.createElement('div');

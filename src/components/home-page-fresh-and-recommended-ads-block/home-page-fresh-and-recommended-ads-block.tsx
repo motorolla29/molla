@@ -11,7 +11,7 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
       <div className="flex border-b border-gray-200 mb-6">
         <button
           onClick={() => setActiveTab('recommend')}
-          className={`px-4 py-2 font-semibold hover:cursor-pointer border-b-2 border-transparent ${
+          className={`px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer border-b-2 border-transparent ${
             activeTab === 'recommend'
               ? 'border-violet-400 text-violet-400'
               : 'text-neutral-400 hover:text-gray-400'
@@ -21,7 +21,7 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
         </button>
         <button
           onClick={() => setActiveTab('fresh')}
-          className={`ml-4 px-4 py-2 font-semibold hover:cursor-pointer border-b-2 border-transparent ${
+          className={`ml-2 sm:ml-4 px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer border-b-2 border-transparent ${
             activeTab === 'fresh'
               ? 'border-violet-400 text-violet-400'
               : 'text-neutral-400 hover:text-gray-400'
