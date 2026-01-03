@@ -79,8 +79,18 @@ export default function FavoriteButton({
           return;
         }
 
-        // Если запрос провалился, сбрасываем оптимистичное состояние
-        setOptimisticFavorite(null);
+        // Специфическая обработка ошибки "не найдено в избранном"
+        if (
+          error instanceof Error &&
+          error.message.includes('не найдено в избранном')
+        ) {
+          // Если товар не найден в избранном, значит он точно не в избранном
+          setOptimisticFavorite(false);
+        } else {
+          // Для других ошибок сбрасываем к состоянию store
+          setOptimisticFavorite(null);
+        }
+
         toast.error('Ошибка при работе с избранным');
         console.error('Ошибка при работе с избранным:', error);
       } finally {
