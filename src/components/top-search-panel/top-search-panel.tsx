@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { categoryOptions } from '@/const';
 import Link from 'next/link';
 import { useLocationStore } from '@/store/useLocationStore';
@@ -25,6 +26,25 @@ export default function TopSearchPanel({
   const { cityLabel, cityName, cityNamePreposition } = useLocationStore();
 
   const dropdownRef = useRef<HTMLDivElement>(null); // <== ссылка на dropdown
+
+  // Варианты анимации для выпадающего списка
+  const dropdownVariants = {
+    hidden: {
+      opacity: 0,
+      y: -10,
+      scale: 0.95,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+    },
+    exit: {
+      opacity: 0,
+      y: -5,
+      scale: 0.98,
+    },
+  };
 
   // Закрытие по клику вне dropdown
   useEffect(() => {
@@ -68,32 +88,57 @@ export default function TopSearchPanel({
               />
             </svg>
           </button>
-          {showFilterDropdown && (
-            <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
-              <div className="p-2 text-sm font-medium text-gray-700">
-                Выберете категорию
-              </div>
-              <div className="flex flex-col pb-3">
-                {categoryOptions.map((opt) => (
-                  <div key={opt.key} className="flex items-center px-2">
-                    <Link
-                      className="flex w-full items-center"
-                      href={`/${cityLabel}/${opt.key}`}
+          <AnimatePresence>
+            {showFilterDropdown && (
+              <motion.div
+                className="absolute z-50 left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                variants={dropdownVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{
+                  duration: 0.2,
+                  ease: 'easeOut',
+                  type: 'spring',
+                  damping: 25,
+                  stiffness: 300,
+                }}
+              >
+                <div className="p-2 text-sm font-medium text-gray-700">
+                  Выберете категорию
+                </div>
+                <div className="flex flex-col pb-3">
+                  {categoryOptions.map((opt, index) => (
+                    <motion.div
+                      key={opt.key}
+                      className="flex items-center px-2"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: index * 0.1, // Небольшая задержка для каждого элемента
+                        duration: 0.15,
+                        ease: 'easeOut',
+                      }}
                     >
-                      <img
-                        src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
-                        alt="cat-icon"
-                        className="w-6 h-6 aspect-auto mr-1"
-                      />
-                      <span className="flex grow items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
-                        {opt.label}
-                      </span>
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                      <Link
+                        className="flex w-full items-center"
+                        href={`/${cityLabel}/${opt.key}`}
+                      >
+                        <img
+                          src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
+                          alt="cat-icon"
+                          className="w-6 h-6 aspect-auto mr-1"
+                        />
+                        <span className="flex grow items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
+                          {opt.label}
+                        </span>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Поисковая строка */}
