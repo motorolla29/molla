@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function AuthenticatedLayout({
@@ -9,6 +9,10 @@ export default function AuthenticatedLayout({
   children: ReactNode;
 }) {
   const { isLoggedIn, isAuthChecking } = useAuthStore();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Показываем loading пока проверяется авторизация
   if (isAuthChecking || !isLoggedIn) {

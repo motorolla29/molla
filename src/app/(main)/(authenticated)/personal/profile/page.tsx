@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
@@ -13,11 +13,6 @@ export default function Profile() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
-
-  // Скролл вверх при загрузке страницы профиля (для мобильных браузеров)
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   // Состояние для модального окна редактирования профиля
   const [showEditProfile, setShowEditProfile] = useState(false);
