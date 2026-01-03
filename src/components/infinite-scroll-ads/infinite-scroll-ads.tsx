@@ -128,9 +128,16 @@ export default function InfiniteScrollAds({
     };
   }, [hasMore, loadingMore, loading, ads.length, fetchAds]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
+  return (
+    <>
+      {/* Спиннер начальной загрузки */}
+      <div
+        className={`flex justify-center items-center transition-opacity duration-200 ${
+          loading
+            ? 'py-12 opacity-100'
+            : 'h-0 opacity-0 pointer-events-none overflow-hidden'
+        }`}
+      >
         <FidgetSpinner
           ariaLabel="fidget-spinner-loading"
           width={'100%'}
@@ -140,12 +147,8 @@ export default function InfiniteScrollAds({
           ballColors={['#D5FF4D', '#FE9A00', '#737373']}
         />
       </div>
-    );
-  }
 
-  return (
-    <>
-      {ads.length > 0 ? (
+      {!loading && ads.length > 0 ? (
         <div className={className}>
           {ads.map((ad) =>
             viewType === 'gallery' ? (
@@ -158,22 +161,24 @@ export default function InfiniteScrollAds({
           )}
         </div>
       ) : (
-        <div className="w-full flex flex-col justify-center items-center text-neutral-500">
-          <div className="flex flex-col justify-center items-center max-w-75 my-6 sm:my-10">
-            <img
-              className="w-16 sm:w-20"
-              src="https://ik.imagekit.io/motorolla29/molla/icons/%D0%BD%D0%B8%D1%87%D0%B5%D0%B3%D0%BE-%D0%BD%D0%B5-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BE-100.png"
-              alt="nothing-found"
-            />
-            <p className="text-sm sm:text-base text-center">
-              Нет объявлений по выбранным параметрам.
-            </p>
+        !loading && (
+          <div className="w-full flex flex-col justify-center items-center text-neutral-500">
+            <div className="flex flex-col justify-center items-center max-w-75 my-6 sm:my-10">
+              <img
+                className="w-16 sm:w-20"
+                src="https://ik.imagekit.io/motorolla29/molla/icons/%D0%BD%D0%B8%D1%87%D0%B5%D0%B3%D0%BE-%D0%BD%D0%B5-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BE-100.png"
+                alt="nothing-found"
+              />
+              <p className="text-sm sm:text-base text-center">
+                Нет объявлений по выбранным параметрам.
+              </p>
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Элемент для Intersection Observer */}
-      {hasMore && (
+      {!loading && hasMore && (
         <div
           ref={observerRef}
           className={`flex justify-center items-center transition-opacity duration-200 ${
@@ -196,7 +201,7 @@ export default function InfiniteScrollAds({
       )}
 
       {/* Сообщение о конце списка */}
-      {showEndMessage && !hasMore && ads.length > 0 && (
+      {!loading && showEndMessage && !hasMore && ads.length > 0 && (
         <div className="text-center py-4 text-neutral-500">
           <p className="text-sm">Это все объявления</p>
         </div>
