@@ -67,8 +67,6 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       addFavorite: async (ad: AdBase, signal?: AbortSignal) => {
-        const { favoriteIds, favorites } = get();
-
         set({ isLoading: true, error: null });
 
         try {
@@ -99,22 +97,19 @@ export const useFavoritesStore = create<FavoritesState>()(
             throw new Error(errorMessage);
           }
 
-          // Проверяем, не был ли уже добавлен в избранное
-          const isAlreadyFavorite = favoriteIds.has(ad.id);
+          // Обновляем состояние с использованием функциональной формы
+          set((state) => {
+            if (state.favoriteIds.has(ad.id)) {
+              // Уже добавлен, просто снимаем loading
+              return { isLoading: false };
+            }
 
-          if (!isAlreadyFavorite) {
-            const newFavoriteIds = new Set(favoriteIds);
-            newFavoriteIds.add(ad.id);
-
-            set({
-              favorites: [ad, ...favorites],
-              favoriteIds: newFavoriteIds,
+            return {
+              favorites: [ad, ...state.favorites],
+              favoriteIds: new Set([...state.favoriteIds, ad.id]),
               isLoading: false,
-            });
-          } else {
-            // Уже в избранном, просто снимаем loading
-            set({ isLoading: false });
-          }
+            };
+          });
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : 'Ошибка добавления',
@@ -130,8 +125,6 @@ export const useFavoritesStore = create<FavoritesState>()(
         signal?: AbortSignal
       ) => {
         const { isLoggedIn } = useAuthStore.getState();
-        const { favoriteIds, favorites } = get();
-
         // Для авторизованных пользователей - синхронизация с API
         if (isLoggedIn) {
           set({ isLoading: true, error: null });
@@ -158,22 +151,21 @@ export const useFavoritesStore = create<FavoritesState>()(
 
             // Обновляем состояние только если не пропущено
             if (!skipStateUpdate) {
-              // Проверяем, был ли уже удален из избранного
-              const isCurrentlyFavorite = favoriteIds.has(adId);
+              set((state) => {
+                if (!state.favoriteIds.has(adId)) {
+                  // Уже удален, просто снимаем loading
+                  return { isLoading: false };
+                }
 
-              if (isCurrentlyFavorite) {
-                const newFavoriteIds = new Set(favoriteIds);
+                const newFavoriteIds = new Set(state.favoriteIds);
                 newFavoriteIds.delete(adId);
 
-                set({
-                  favorites: favorites.filter((ad) => ad.id !== adId),
+                return {
+                  favorites: state.favorites.filter((ad) => ad.id !== adId),
                   favoriteIds: newFavoriteIds,
                   isLoading: false,
-                });
-              } else {
-                // Уже удален, просто снимаем loading
-                set({ isLoading: false });
-              }
+                };
+              });
             } else {
               set({ isLoading: false });
             }
@@ -186,12 +178,14 @@ export const useFavoritesStore = create<FavoritesState>()(
           }
         } else {
           // Для неавторизованных пользователей - только localStorage
-          const newFavoriteIds = new Set(favoriteIds);
-          newFavoriteIds.delete(adId);
+          set((state) => {
+            const newFavoriteIds = new Set(state.favoriteIds);
+            newFavoriteIds.delete(adId);
 
-          set({
-            favorites: favorites.filter((ad) => ad.id !== adId),
-            favoriteIds: newFavoriteIds,
+            return {
+              favorites: state.favorites.filter((ad) => ad.id !== adId),
+              favoriteIds: newFavoriteIds,
+            };
           });
         }
       },
