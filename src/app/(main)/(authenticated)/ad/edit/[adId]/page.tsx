@@ -444,7 +444,7 @@ export default function AdEditPage() {
             <button
               type="submit"
               disabled={isSubmitting || isUploadingPhotos}
-              className="w-full py-3 rounded-xl bg-violet-500 text-white text-sm font-semibold shadow-sm hover:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 rounded-xl bg-violet-500 text-white text-xs sm:text-sm font-semibold shadow-sm hover:bg-violet-600 disabled:bg-violet-300 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting
                 ? 'Сохранение...'
