@@ -13,7 +13,11 @@ interface FavoritesState {
   hasHydrated: boolean; // Флаг окончания гидрации persist
   loadFavorites: () => Promise<void>;
   addFavorite: (ad: AdBase, signal?: AbortSignal) => Promise<void>;
-  removeFavorite: (adId: string, skipStateUpdate?: boolean, signal?: AbortSignal) => Promise<void>;
+  removeFavorite: (
+    adId: string,
+    skipStateUpdate?: boolean,
+    signal?: AbortSignal
+  ) => Promise<void>;
   isFavorite: (adId: string) => boolean;
   toggleFavorite: (ad: AdBase) => Promise<void>;
   clearError: () => void;
@@ -78,6 +82,7 @@ export const useFavoritesStore = create<FavoritesState>()(
             body: JSON.stringify({
               adId: ad.id,
               localUserToken,
+              createdAt: new Date().toISOString(),
             }),
             signal,
           });
@@ -119,7 +124,11 @@ export const useFavoritesStore = create<FavoritesState>()(
         }
       },
 
-      removeFavorite: async (adId: string, skipStateUpdate = false, signal?: AbortSignal) => {
+      removeFavorite: async (
+        adId: string,
+        skipStateUpdate = false,
+        signal?: AbortSignal
+      ) => {
         const { isLoggedIn } = useAuthStore.getState();
         const { favoriteIds, favorites } = get();
 
