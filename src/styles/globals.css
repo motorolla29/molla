@@ -39,6 +39,25 @@ button:not(:disabled) {
   background: #cebeff;
 }
 
+/* Кастомизация скроллбара chat */
+.custom-scrollbar-chat::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar-chat::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.custom-scrollbar-chat::-webkit-scrollbar-thumb {
+  background: #c8c8c8;
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.custom-scrollbar-chat::-webkit-scrollbar-thumb:hover {
+  background: #bebebe;
+}
+
 /* Кастомизация скроллбара с отступами для модального окна */
 .custom-scrollbar-2::-webkit-scrollbar {
   width: 8px;

@@ -36,7 +36,7 @@ export default function Header() {
               clipRule="evenodd"
             />
           </svg>
-          <Link href="/chats">
+          <Link href="/personal/messenger">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"

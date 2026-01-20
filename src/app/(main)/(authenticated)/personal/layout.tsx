@@ -3,11 +3,12 @@
 import { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, List, ArrowLeft } from 'lucide-react';
+import { User, List, ArrowLeft, MessageCircle } from 'lucide-react';
 
 const navItems = [
   { href: '/personal/profile', Icon: User, label: 'Профиль' },
   { href: '/personal/my-adds', Icon: List, label: 'Мои объявления' },
+  { href: '/personal/messenger', Icon: MessageCircle, label: 'Сообщения' },
 ];
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
@@ -16,7 +17,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header с кнопкой назад */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 lg:px-6">
+      <div className="bg-white border-b border-gray-200 px-4 py-3 lg:px-6 hidden lg:block">
         <div className="flex items-center">
           <Link
             href="/"
@@ -65,7 +66,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
 
         {/* Основной контент */}
         <main className="flex-1">
-          <div className="p-4 lg:p-6">{children}</div>
+          <div>{children}</div>
         </main>
       </div>
     </div>

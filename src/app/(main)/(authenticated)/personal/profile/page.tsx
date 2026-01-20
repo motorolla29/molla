@@ -92,7 +92,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-2">
+    <div className="m-4 lg:m-6 p-2">
       {/* Аватар и имя */}
       <div className="flex flex-col min-[320px]:flex-row items-center mb-8 sm:mb-12">
         <div className="relative shrink-0 min-w-16 sm:min-w-20">

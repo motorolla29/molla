@@ -9,7 +9,12 @@ const navItems = [
   { href: '/', Icon: Home, label: 'Главная', id: 'home' },
   { href: '/favorites', Icon: Heart, label: 'Избранное', id: 'favorites' },
   { href: '/personal/my-adds', Icon: List, label: 'Объявления', id: 'ads' },
-  { href: '/chats', Icon: MessageCircle, label: 'Сообщения', id: 'chats' },
+  {
+    href: '/personal/messenger',
+    Icon: MessageCircle,
+    label: 'Сообщения',
+    id: 'chats',
+  },
   { href: '/personal/profile', Icon: User, label: 'Профиль', id: 'profile' },
 ];
 
@@ -38,7 +43,7 @@ export default function MobileBottomNav() {
     } else if (pathname.startsWith('/personal/my-adds')) {
       setNavContext('ads');
       sessionStorage.setItem(NAV_CONTEXT_KEY, 'ads');
-    } else if (pathname.startsWith('/chats')) {
+    } else if (pathname.startsWith('/personal/messenger')) {
       setNavContext('chats');
       sessionStorage.setItem(NAV_CONTEXT_KEY, 'chats');
     } else if (pathname.startsWith('/personal/profile')) {
@@ -50,7 +55,7 @@ export default function MobileBottomNav() {
   const specialPaths = [
     '/favorites',
     '/personal/my-adds',
-    '/chats',
+    '/personal/messenger',
     '/personal/profile',
   ];
   const isHomeActive =

@@ -36,6 +36,15 @@ model Seller {
   // Связь с просмотрами
   views      UserView[]
 
+  // Связь с чатами (как покупатель)
+  buyerChats Chat[]     @relation("BuyerChats")
+
+  // Связь с чатами (как продавец)
+  sellerChats Chat[]    @relation("SellerChats")
+
+  // Связь с отправленными сообщениями
+  sentMessages Message[]
+
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
@@ -73,6 +82,9 @@ model Ad {
 
   // Связь с просмотрами пользователей
   userViews     UserView[]
+
+  // Связь с чатами
+  chats         Chat[]
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -130,4 +142,81 @@ model UserView {
   @@unique([localUserToken, adId]) // Один неавторизованный пользователь (по токену) может просмотреть объявление только один раз
   @@unique([userId, localUserToken, adId]) // Предотвращает дубликаты при наличии обоих идентификаторов
   @@map("user_views")
+}
+
+// Модель чата
+model Chat {
+  id          String   @id @default(cuid())
+  adId        String
+  buyerId     Int      // ID покупателя
+  sellerId    Int      // ID продавца
+
+  // Связи
+  ad          Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  buyer       Seller   @relation("BuyerChats", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller      Seller   @relation("SellerChats", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  // Сообщения в чате
+  messages    Message[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Уникальный индекс: один чат на пару пользователь-объявление
+  @@unique([adId, buyerId])
+  @@map("chats")
+}
+
+// Модель сообщения
+model Message {
+  id          String   @id @default(cuid())
+  chatId      String
+  senderId    Int      // ID отправителя
+  content     String?  // Текст сообщения (может быть null для сообщений только с файлами)
+  messageType MessageType @default(text) // Тип сообщения
+  status      MessageStatus @default(sent) // Статус сообщения
+
+  // Связи
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender      Seller   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  // Вложения
+  attachments MessageAttachment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("messages")
+}
+
+// Типы сообщений
+enum MessageType {
+  text
+  image
+  system
+}
+
+// Статусы сообщений
+enum MessageStatus {
+  sending
+  sent
+  delivered
+  read
+}
+
+// Модель вложений к сообщениям
+model MessageAttachment {
+  id         String   @id @default(cuid())
+  messageId  String
+  fileUrl    String   // URL файла
+  fileName   String   // Оригинальное имя файла
+  fileSize   Int      // Размер файла в байтах
+  fileType   String   // MIME тип файла
+
+  // Связь с сообщением
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@map("message_attachments")
 }

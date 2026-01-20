@@ -1,14 +1,30 @@
 import { useState, useRef, useEffect } from 'react';
-import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, ClipboardDocumentIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useToast } from '@/components/toast/toast-context';
 
 interface SellerContactsProps {
   phone?: string;
   email?: string;
+  sellerId?: number;
+  adId?: string;
+  showMessageButton?: boolean;
 }
 
-export default function SellerContacts({ phone, email }: SellerContactsProps) {
+export default function SellerContacts({
+  phone,
+  email,
+  sellerId,
+  adId,
+  showMessageButton = false
+}: SellerContactsProps) {
+  const router = useRouter();
+  const { user, isLoggedIn } = useAuthStore();
+  const toast = useToast();
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState(false);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const copyToClipboard = async (text: string, field: string) => {
@@ -42,8 +58,57 @@ export default function SellerContacts({ phone, email }: SellerContactsProps) {
     };
   }, []);
 
+  const handleStartChat = async () => {
+    if (!isLoggedIn || !user || !sellerId || !adId) {
+      toast.show('Необходимо авторизоваться для начала чата', {
+        type: 'error',
+      });
+      return;
+    }
+
+    // Проверяем, что пользователь не пытается написать сам себе
+    if (parseInt(user.id) === sellerId) {
+      toast.show('Нельзя начать чат с самим собой', {
+        type: 'error',
+      });
+      return;
+    }
+
+    try {
+      setIsCreatingChat(true);
+
+      const response = await fetch('/api/messenger/chats/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adId: adId,
+          sellerId: sellerId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        router.push(`/personal/messenger/channel/${data.chatId}`);
+      } else {
+        const errorData = await response.json();
+        toast.show(errorData.error || 'Не удалось начать чат', {
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      toast.show('Произошла ошибка при создании чата', {
+        type: 'error',
+      });
+    } finally {
+      setIsCreatingChat(false);
+    }
+  };
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {phone && (
         <div
           className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
@@ -89,6 +154,18 @@ export default function SellerContacts({ phone, email }: SellerContactsProps) {
             )}
           </div>
         </div>
+      )}
+
+      {/* Кнопка "Написать" */}
+      {showMessageButton && sellerId && adId && (
+        <button
+          onClick={handleStartChat}
+          disabled={isCreatingChat}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white text-sm sm:text-base font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+        >
+          <ChatBubbleLeftRightIcon className="w-5 h-5" />
+          {isCreatingChat ? 'Создание чата...' : 'Написать'}
+        </button>
       )}
     </div>
   );

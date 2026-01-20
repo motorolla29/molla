@@ -406,6 +406,9 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               <SellerContacts
                 phone={ad.seller.contact.phone}
                 email={ad.seller.contact.email}
+                sellerId={ad.seller.id}
+                adId={ad.id}
+                showMessageButton={!isOwner}
               />
             </div>
 

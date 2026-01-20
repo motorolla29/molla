@@ -236,7 +236,7 @@ export default function MyAddsPage() {
   }
 
   return (
-    <div>
+    <div className="m-4 lg:m-6">
       {/* Заголовок для мобильных */}
       <div className="mb-4 lg:mb-0">
         <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-medium mb-4 lg:hidden">

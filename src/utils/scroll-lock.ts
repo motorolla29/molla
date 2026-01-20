@@ -59,3 +59,22 @@ export function unlockScroll(): void {
   // Сбрасываем CSS переменную
   document.documentElement.style.setProperty('--scrollbar-compensation', '0px');
 }
+
+/**
+ * Блокирует скролл без компенсации ширины полосы прокрутки
+ */
+export function lockScrollSimple(): void {
+  if (typeof document === 'undefined') return;
+
+  originalOverflow = document.body.style.overflow || '';
+  document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Разблокирует скролл без компенсации
+ */
+export function unlockScrollSimple(): void {
+  if (typeof document === 'undefined') return;
+
+  document.body.style.overflow = originalOverflow;
+}
