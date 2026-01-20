@@ -208,10 +208,11 @@ enum MessageStatus {
 model MessageAttachment {
   id         String   @id @default(cuid())
   messageId  String
-  fileUrl    String   // URL файла
+  fileUrl    String   // Полный URL файла из ImageKit
   fileName   String   // Оригинальное имя файла
   fileSize   Int      // Размер файла в байтах
   fileType   String   // MIME тип файла
+  storageType String? // 'local' | 'cloud' - тип хранилища
 
   // Связь с сообщением
   message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)

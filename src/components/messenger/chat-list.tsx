@@ -118,23 +118,24 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                 )}
               </div>
 
-              {/* Индикатор непрочитанных сообщений */}
-              {chat.unreadCount > 0 && (
-                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
-                  {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
-                </div>
-              )}
+              {/* Индикатор непрочитанных сообщений - убрал из аватара */}
             </div>
 
             {/* Информация о чате */}
             <div className="flex-1 min-w-0 flex flex-col justify-center">
-              <div className="flex items-start justify-between mb-1">
+              <div className="relative flex items-start justify-between">
                 <h3 className="text-sm font-semibold text-gray-900 truncate">
                   {chat.otherUserName}
                 </h3>
-                <span className="text-xs text-gray-500 flex-shrink-0">
+                <span className="text-xs text-gray-500 shrink-0">
                   {formatTime(chat.lastMessageTime)}
                 </span>
+                {/* Индикатор непрочитанных сообщений */}
+                {chat.unreadCount > 0 && (
+                  <div className="absolute right-0 top-6 bg-amber-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center font-medium">
+                    {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+                  </div>
+                )}
               </div>
 
               <p className="text-xs text-gray-600 truncate mb-1">

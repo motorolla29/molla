@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import MessageInput from './message-input';
+import ImageModal from './image-modal';
 
 interface Message {
   id: string;
@@ -24,9 +25,13 @@ interface Message {
 
 interface Chat {
   id: string;
+  adId: string;
   adTitle: string;
   adPhoto: string;
   adPrice?: string;
+  adCity: string;
+  adCityLabel: string;
+  adCategory: string;
   otherUserName: string;
   otherUserAvatar?: string;
   otherUserId: number;
@@ -58,6 +63,12 @@ export default function ChatArea({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] =
     useState<Message[]>(initialMessages);
+
+  // Состояние для модального окна просмотра изображений
+  const [selectedImage, setSelectedImage] = useState<{
+    url: string;
+    alt: string;
+  } | null>(null);
 
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
@@ -111,6 +122,15 @@ export default function ChatArea({
     );
   };
 
+  // Обработчики для модального окна изображений
+  const openImageModal = (imageUrl: string, altText: string) => {
+    setSelectedImage({ url: imageUrl, alt: altText });
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+  };
+
   const handleSendMessage = async (content: string, attachments?: File[]) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
@@ -143,7 +163,7 @@ export default function ChatArea({
 
   return (
     <div className="max-h-[calc(100vh-95px)] lg:max-h-[calc(100vh-105px)] flex flex-col">
-      <div className="bg-white p-4 border-b border-r border-gray-200 shrink-0 sticky top-12 z-1 sm:static">
+      <div className="bg-white p-4 border-b border-gray-200 shrink-0 sticky top-12 z-1 sm:static">
         <div className="flex items-center space-x-4">
           {/* Кнопка назад */}
           {showBackButton && (
@@ -160,11 +180,15 @@ export default function ChatArea({
             {/* Фото товара */}
             <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
               {chat?.adPhoto ? (
-                <img
-                  src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}`}
-                  alt={chat.adTitle}
-                  className="w-full h-full object-cover"
-                />
+                <Link
+                  href={`/${chat.adCityLabel}/${chat.adCategory}/${chat.adId}`}
+                >
+                  <img
+                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-80`}
+                    alt={chat.adTitle}
+                    className="w-full h-full object-cover cursor-pointer transition-opacity"
+                  />
+                </Link>
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                   <svg
@@ -185,29 +209,33 @@ export default function ChatArea({
             </div>
 
             {/* Аватар собеседника в левом верхнем углу */}
-            <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white">
-              {chat?.otherUserAvatar ? (
-                <img
-                  src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}`}
-                  alt={chat.otherUserName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-violet-500 flex items-center justify-center">
-                  <span className="text-white font-medium text-xs">
-                    {chat?.otherUserName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
+            <Link href={`/user/${chat?.otherUserId}/active`}>
+              <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
+                {chat?.otherUserAvatar ? (
+                  <img
+                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}`}
+                    alt={chat.otherUserName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-violet-500 flex items-center justify-center">
+                    <span className="text-white font-medium text-xs">
+                      {chat?.otherUserName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </Link>
           </div>
 
           {/* Информация о чате */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-gray-900 truncate">
-                {chat?.otherUserName || 'Загрузка...'}
-              </h3>
+              <Link href={`/user/${chat?.otherUserId}/active`}>
+                <h3 className="text-sm font-semibold text-gray-900 truncate cursor-pointer hover:opacity-90 transition-colors">
+                  {chat?.otherUserName || 'Загрузка...'}
+                </h3>
+              </Link>
               <span className="text-xs text-gray-400 flex-shrink-0">
                 в сети в 16:09
               </span>
@@ -303,10 +331,18 @@ export default function ChatArea({
                         src={
                           attachment.fileUrl.startsWith('blob:')
                             ? attachment.fileUrl
-                            : `/uploads/chat-attachments/${attachment.fileUrl}`
+                            : attachment.fileUrl // Теперь полный URL из ImageKit
                         }
                         alt={attachment.fileName}
-                        className="rounded-lg max-w-full h-auto"
+                        className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() =>
+                          openImageModal(
+                            attachment.fileUrl.startsWith('blob:')
+                              ? attachment.fileUrl
+                              : attachment.fileUrl,
+                            attachment.fileName
+                          )
+                        }
                       />
                     ))}
                   </div>
@@ -344,6 +380,14 @@ export default function ChatArea({
       <div className="bg-gray-50 shrink-0">
         <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
+
+      {/* Модальное окно для просмотра изображений */}
+      <ImageModal
+        isOpen={!!selectedImage}
+        onClose={closeImageModal}
+        imageUrl={selectedImage?.url || ''}
+        altText={selectedImage?.alt || ''}
+      />
     </div>
   );
 }

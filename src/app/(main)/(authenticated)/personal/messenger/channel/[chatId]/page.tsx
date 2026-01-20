@@ -44,13 +44,20 @@ export default function ChatPage() {
   const params = useParams();
   const chatId = params.chatId as string;
 
-  // Блокировка скролла и прокрутка вверх при заходе на страницу
+  // Блокировка скролла и прокрутка вверх при заходе на страницу (только для мобильных)
   useEffect(() => {
-    lockScrollSimple();
+    // Проверяем ширину экрана - блокируем скролл только для экранов менее 640px
+    const isMobile = window.innerWidth < 640;
+
+    if (isMobile) {
+      lockScrollSimple();
+    }
     window.scrollTo(0, 0);
 
     return () => {
-      unlockScrollSimple();
+      if (isMobile) {
+        unlockScrollSimple();
+      }
     };
   }, []);
 

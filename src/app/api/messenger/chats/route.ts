@@ -28,8 +28,11 @@ export async function GET(request: NextRequest) {
       include: {
         ad: {
           select: {
+            id: true,
             title: true,
             photos: true,
+            city: true,
+            category: true,
           },
         },
         buyer: {
@@ -78,6 +81,9 @@ export async function GET(request: NextRequest) {
         adId: chat.adId,
         adTitle: chat.ad.title,
         adPhoto: chat.ad.photos[0] || '',
+        adCity: chat.ad.city,
+        adCityLabel: chat.ad.cityLabel,
+        adCategory: chat.ad.category,
         otherUserId: otherUser.id,
         otherUserName: otherUser.name,
         otherUserAvatar: otherUser.avatar,

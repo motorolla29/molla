@@ -33,10 +33,14 @@ export async function GET(
       include: {
         ad: {
           select: {
+            id: true,
             title: true,
             photos: true,
             price: true,
             currency: true,
+            city: true,
+            cityLabel: true,
+            category: true,
           },
         },
         buyer: {
@@ -66,10 +70,13 @@ export async function GET(
 
     const formattedChat = {
       id: chat.id,
-      adId: chat.adId,
+      adId: chat.ad.id,
       adTitle: chat.ad.title,
       adPhoto: chat.ad.photos[0] || '',
       adPrice: chat.ad.price ? `${chat.ad.price.toLocaleString('ru-RU')} ${chat.ad.currency || 'RUB'}` : undefined,
+      adCity: chat.ad.city,
+      adCityLabel: chat.ad.cityLabel,
+      adCategory: chat.ad.category,
       otherUserId: otherUser.id,
       otherUserName: otherUser.name,
       otherUserAvatar: otherUser.avatar,

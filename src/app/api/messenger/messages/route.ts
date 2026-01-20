@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,42 +58,61 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Обрабатываем вложения
+    // Обрабатываем вложение (только одно фото)
     if (attachments.length > 0) {
-      // Создаем директорию для вложений чатов, если она не существует
-      const uploadDir = join(
-        process.cwd(),
-        'public',
-        'uploads',
-        'chat-attachments'
-      );
-      try {
-        await mkdir(uploadDir, { recursive: true });
-      } catch (error) {
-        // Директория может уже существовать
+      const attachment = attachments[0]; // Берем только первое фото
+
+      // Получаем ключи ImageKit
+      const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
+      const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
+      const endpoint = process.env.IMAGEKIT_UPLOAD_ENDPOINT || 'https://upload.imagekit.io/api/v1/files/upload';
+
+      if (!privateKey || !publicKey) {
+        console.error('IMAGEKIT keys are not configured');
+        return NextResponse.json(
+          { error: 'Image upload is not configured' },
+          { status: 500 }
+        );
       }
 
-      // Сохраняем каждое вложение
-      for (const attachment of attachments) {
-        const fileExtension = attachment.name.split('.').pop() || 'jpg';
-        const fileName = `${randomUUID()}.${fileExtension}`;
-        const filePath = join(uploadDir, fileName);
+      // Загружаем в ImageKit
+      const uploadForm = new FormData();
+      uploadForm.append('file', attachment);
+      uploadForm.append('fileName', attachment.name);
+      uploadForm.append('folder', '/molla/chat-attachments');
+      uploadForm.append('useUniqueFileName', 'true');
 
-        // Сохраняем файл
-        const bytes = await attachment.arrayBuffer();
-        await writeFile(filePath, Buffer.from(bytes));
+      // ImageKit авторизация
+      const authHeader = 'Basic ' + Buffer.from(`${privateKey}:`).toString('base64');
 
-        // Создаем запись в базе данных
-        await prisma.messageAttachment.create({
-          data: {
-            messageId: message.id,
-            fileUrl: fileName,
-            fileName: attachment.name,
-            fileSize: attachment.size,
-            fileType: attachment.type,
-          },
-        });
+      const imageKitRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: authHeader,
+        },
+        body: uploadForm,
+      });
+
+      const imageKitData = await imageKitRes.json();
+
+      if (!imageKitRes.ok) {
+        console.error('ImageKit upload error:', imageKitData);
+        return NextResponse.json(
+          { error: 'Не удалось загрузить изображение' },
+          { status: 500 }
+        );
       }
+
+      // Создаем запись в базе данных с полным URL
+      await prisma.messageAttachment.create({
+        data: {
+          messageId: message.id,
+          fileUrl: imageKitData.url, // Полный URL из ImageKit
+          fileName: attachment.name,
+          fileSize: attachment.size,
+          fileType: attachment.type,
+        },
+      });
     }
 
     // Обновляем время последнего обновления чата

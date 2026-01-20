@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Smile, Paperclip } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MessageInputProps {
   onSendMessage: (content: string, attachments?: File[]) => void;
@@ -13,7 +14,7 @@ export default function MessageInput({
   disabled = false,
 }: MessageInputProps) {
   const [message, setMessage] = useState('');
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -40,13 +41,10 @@ export default function MessageInput({
   }, [showEmojiPicker]);
 
   const handleSend = () => {
-    if ((message.trim() || attachments.length > 0) && !disabled) {
-      onSendMessage(
-        message.trim(),
-        attachments.length > 0 ? attachments : undefined
-      );
+    if ((message.trim() || attachment) && !disabled) {
+      onSendMessage(message.trim(), attachment ? [attachment] : undefined);
       setMessage('');
-      setAttachments([]);
+      setAttachment(null);
     }
   };
 
@@ -59,9 +57,12 @@ export default function MessageInput({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    // Фильтруем только изображения
-    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-    setAttachments((prev) => [...prev, ...imageFiles]);
+    // Берем только первое изображение
+    const imageFile = files.find((file) => file.type.startsWith('image/'));
+
+    if (imageFile) {
+      setAttachment(imageFile);
+    }
 
     // Очищаем input
     if (fileInputRef.current) {
@@ -69,13 +70,13 @@ export default function MessageInput({
     }
   };
 
-  const removeAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  const removeAttachment = () => {
+    setAttachment(null);
   };
 
   const insertEmoji = (emoji: string) => {
     setMessage((prev) => prev + emoji);
-    setShowEmojiPicker(false);
+    // Не закрываем picker, чтобы можно было выбрать несколько эмодзи
   };
 
   // Простой набор эмодзи
@@ -104,24 +105,22 @@ export default function MessageInput({
 
   return (
     <div className=" border-gray-200 rounded-2xl bg-white p-4 m-4 mt-0">
-      {/* Предпросмотр вложений */}
-      {attachments.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2">
-          {attachments.map((file, index) => (
-            <div key={index} className="relative">
-              <img
-                src={URL.createObjectURL(file)}
-                alt={file.name}
-                className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-              />
-              <button
-                onClick={() => removeAttachment(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-              >
-                ×
-              </button>
-            </div>
-          ))}
+      {/* Предпросмотр вложения */}
+      {attachment && (
+        <div className="mb-3">
+          <div className="relative inline-block">
+            <img
+              src={URL.createObjectURL(attachment)}
+              alt={attachment.name}
+              className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+            />
+            <button
+              onClick={removeAttachment}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
 
@@ -131,7 +130,7 @@ export default function MessageInput({
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder="Напишите сообщение..."
             className="w-full flex px-4 py-3 pr-20 outline-1 outline-gray-300 rounded-lg resize-none focus:outline-violet-500 transition-colors duration-200"
             rows={1}
@@ -152,24 +151,36 @@ export default function MessageInput({
               </button>
 
               {/* Emoji picker */}
-              {showEmojiPicker && (
-                <div
-                  ref={emojiPickerRef}
-                  className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 max-h-35 sm:max-h-50 overflow-y-auto w-35 sm:w-80 z-50"
-                >
-                  <div className="flex flex-wrap gap-1">
-                    {emojis.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => insertEmoji(emoji)}
-                        className="text-lg hover:bg-gray-100 rounded p-1"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {showEmojiPicker && (
+                  <motion.div
+                    ref={emojiPickerRef}
+                    className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 max-h-35 sm:max-h-50 overflow-y-auto w-35 sm:w-80 z-50"
+                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 5 }}
+                    transition={{
+                      duration: 0.2,
+                      ease: 'easeOut',
+                      type: 'spring',
+                      //damping: 20,
+                      //stiffness: 300,
+                    }}
+                  >
+                    <div className="flex flex-wrap gap-1">
+                      {emojis.map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={() => insertEmoji(emoji)}
+                          className="text-lg hover:bg-gray-100 rounded p-1 transition-colors"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <button
@@ -185,7 +196,7 @@ export default function MessageInput({
         {/* Кнопка отправки */}
         <button
           onClick={handleSend}
-          disabled={disabled || (!message.trim() && attachments.length === 0)}
+          disabled={disabled || (!message.trim() && !attachment)}
           className="bg-violet-500 hover:bg-violet-600 disabled:bg-gray-300 text-white p-3 rounded-lg transition-colors flex-shrink-0 h-12 w-12 flex items-center justify-center"
         >
           <Send size={18} />
