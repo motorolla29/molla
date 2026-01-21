@@ -111,7 +111,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                   />
                 ) : (
                   <div className="w-full h-full bg-violet-500 flex items-center justify-center">
-                    <span className="text-white font-medium text-xs">
+                    <span className="text-white font-semibold text-xs">
                       {chat.otherUserName.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -132,7 +132,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                 </span>
                 {/* Индикатор непрочитанных сообщений */}
                 {chat.unreadCount > 0 && (
-                  <div className="absolute right-0 top-6 bg-amber-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center font-medium">
+                  <div className="absolute right-0 top-6 bg-amber-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center font-semibold">
                     {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
                   </div>
                 )}
@@ -149,7 +149,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
               <p
                 className={`text-sm truncate ${
                   chat.unreadCount > 0
-                    ? 'text-gray-900 font-medium'
+                    ? 'text-gray-900 font-semibold'
                     : 'text-gray-600'
                 }`}
               >

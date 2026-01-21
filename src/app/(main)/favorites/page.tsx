@@ -41,7 +41,7 @@ export default function FavoritesPage() {
   return (
     <Suspense>
       <div className="container text-neutral-800 mx-auto px-4 pb-10">
-        <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-medium mt-4 mb-6">
+        <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-semibold mt-4 mb-6">
           <span>Избранное</span>
           {!isLoading && (
             <span className="text-xs sm:text-sm font-bold text-neutral-500 ml-2">

@@ -104,7 +104,7 @@ export default function TopSearchPanel({
                   stiffness: 300,
                 }}
               >
-                <div className="p-2 text-sm font-medium text-gray-700">
+                <div className="p-2 text-sm font-semibold text-gray-700">
                   Выберете категорию
                 </div>
                 <div className="flex flex-col pb-3">

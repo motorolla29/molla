@@ -143,7 +143,7 @@ export default function ConfirmationModal({
             <button
               onClick={handleCancel}
               className="
-                flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-700
+                flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-gray-700
                 bg-gray-100 hover:bg-gray-200
                 rounded-lg sm:rounded-xl transition-colors duration-200
                 focus:outline-none focus:ring-2 focus:ring-gray-300
@@ -154,7 +154,7 @@ export default function ConfirmationModal({
             <button
               onClick={handleConfirm}
               className="
-                flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-white
+                flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white
                 bg-violet-500 hover:bg-violet-600
                 rounded-lg sm:rounded-xl transition-colors duration-200
                 focus:outline-none focus:ring-2 focus:ring-violet-300

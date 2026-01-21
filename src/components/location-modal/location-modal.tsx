@@ -339,7 +339,7 @@ export default function LocationModal({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-3 sm:mb-4">
-              <h2 className="text-base sm:text-lg font-medium">
+              <h2 className="text-base sm:text-lg font-semibold">
                 Выберите город
               </h2>
               <button
@@ -353,7 +353,7 @@ export default function LocationModal({
                   setSuggestions([]);
                   setError(null);
                 }}
-                className="text-sm sm:text-base underline text-violet-400 font-medium hover:text-violet-500"
+                className="text-sm sm:text-base underline text-violet-400 font-semibold hover:text-violet-500"
               >
                 Все города
               </button>

@@ -526,7 +526,7 @@ export default function AdLocationSelector({
       <h2 className="text-base sm:text-lg font-semibold">Локация</h2>
 
       <div className="mt-3">
-        <label className="block text-xs sm:text-sm font-medium mb-1">
+        <label className="block text-xs sm:text-sm font-semibold mb-1">
           Город
         </label>
         <div className="flex items-center justify-between gap-2">
@@ -536,7 +536,7 @@ export default function AdLocationSelector({
           <button
             type="button"
             onClick={() => setShowLocationModal(true)}
-            className="px-3 py-1.5 text-xs sm:text-sm bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-colors font-medium"
+            className="px-3 py-1.5 text-xs sm:text-sm bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-colors font-semibold"
           >
             Выбрать город
           </button>
@@ -544,7 +544,7 @@ export default function AdLocationSelector({
       </div>
 
       <div className="relative mt-3">
-        <label className="block text-xs sm:text-sm font-medium mb-1">
+        <label className="block text-xs sm:text-sm font-semibold mb-1">
           Адрес (улица, дом)
         </label>
         <input
@@ -633,7 +633,7 @@ export default function AdLocationSelector({
             <button
               type="button"
               onClick={() => setIsMapOverlayVisible(false)}
-              className="px-5 py-3 text-xs sm:text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors font-medium shadow-lg"
+              className="px-5 py-3 text-xs sm:text-sm bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors font-semibold shadow-lg"
             >
               Указать на карте
             </button>

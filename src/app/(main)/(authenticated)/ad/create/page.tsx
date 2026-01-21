@@ -183,7 +183,7 @@ export default function AddCreatePage() {
             {/* Основные данные */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-4">
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-semibold mb-1">
                   Заголовок объявления *
                 </label>
                 <input
@@ -220,7 +220,7 @@ export default function AddCreatePage() {
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-semibold mb-1">
                   Описание
                 </label>
                 <textarea
@@ -233,7 +233,7 @@ export default function AddCreatePage() {
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-semibold mb-1">
                   Детали
                 </label>
                 <textarea
@@ -258,7 +258,7 @@ export default function AddCreatePage() {
             <h2 className="text-base sm:text-lg font-semibold">Цена</h2>
             <div className="flex gap-3 items-center mb-0">
               <div className="flex-1">
-                <label className="block text-xs sm:text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-semibold mb-1">
                   Стоимость *
                 </label>
                 <input

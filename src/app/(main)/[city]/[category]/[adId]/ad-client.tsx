@@ -182,7 +182,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 <button
                   onClick={toggleAdStatus}
                   disabled={isUpdatingStatus}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-green-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-green-500 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <PlayIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   Опубликовать
@@ -190,7 +190,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 <button
                   onClick={deleteAd}
                   disabled={isUpdatingStatus}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-gray-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-gray-500 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   Удалить
@@ -247,7 +247,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           <div className="flex-1 space-y-6 lg:max-w-2xl">
             <div className="flex items-start justify-between gap-4 mb-4">
               <h1
-                className={`text-2xl sm:text-3xl font-medium line-clamp-2 flex-1 min-w-0 overflow-hidden wrap-break-word ${
+                className={`text-2xl sm:text-3xl font-semibold line-clamp-2 flex-1 min-w-0 overflow-hidden wrap-break-word ${
                   !isAuthChecking && isArchived && !isOwner
                     ? 'text-neutral-500'
                     : 'text-neutral-700'
@@ -283,7 +283,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 <div className="flex max-[400px]:flex-col gap-2 w-full sm:w-auto sm:justify-end">
                   <Link
                     href={`/ad/edit/${ad.id}`}
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-violet-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-violet-600 transition-colors"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-violet-500 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-violet-600 transition-colors"
                   >
                     <PencilIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     Редактировать
@@ -291,7 +291,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   <button
                     onClick={toggleAdStatus}
                     disabled={isUpdatingStatus}
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-orange-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 py-2 bg-orange-500 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ArchiveBoxIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     Снять с публикации
@@ -302,7 +302,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
 
             {!isAuthChecking && isArchived && !isOwner && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-                <p className="text-amber-800 font-medium text-center">
+                <p className="text-amber-800 font-semibold text-center">
                   Объявление снято с публикации
                 </p>
               </div>
@@ -420,7 +420,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </p>
               <button
                 onClick={() => setIsMapModalOpen(true)}
-                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-colors font-medium"
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-colors font-semibold"
               >
                 <MapPinIcon className="w-4 h-4" />
                 Посмотреть на карте

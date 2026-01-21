@@ -91,7 +91,7 @@ export default function UserProfileSidebar({
       {/* Контакты */}
       {(user.phone || user.email) && (
         <div className="border-t border-gray-100 pt-4">
-          <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-3">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3">
             Контакты
           </h3>
           <SellerContacts phone={user.phone} email={user.email} />

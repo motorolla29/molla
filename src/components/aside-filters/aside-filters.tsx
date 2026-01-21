@@ -192,7 +192,7 @@ export default function AsideFilters({
     <aside className="hidden lg:flex w-80 xl:w-72 2xl:w-80 h-fit flex-col shrink-0 bg-amber-100 p-4 rounded-xl max-w-[300px]">
       {/* Город */}
       <div className="mb-4">
-        <h2 className="text-lg font-medium mb-2">Город</h2>
+        <h2 className="text-lg font-semibold mb-2">Город</h2>
         <button
           onClick={() => setShowLocationModal(true)}
           className="w-full flex items-center justify-between border border-gray-300 rounded-md px-3 py-2 bg-white hover:bg-gray-50"
@@ -216,7 +216,7 @@ export default function AsideFilters({
       </div>
       {/* Цена */}
       <div className="mb-4">
-        <h2 className="text-lg font-medium mb-2">Цена</h2>
+        <h2 className="text-lg font-semibold mb-2">Цена</h2>
         <div className="flex gap-2">
           <input
             type="number"
@@ -246,7 +246,7 @@ export default function AsideFilters({
       </div>
       {/* Категория */}
       <div className="mb-4">
-        <h2 className="text-lg font-medium mb-2">Категория</h2>
+        <h2 className="text-lg font-semibold mb-2">Категория</h2>
         <div className="grid grid-cols-2 gap-2">
           {categoryOptions.slice(0, 4).map((opt) => {
             const selected = categoryKey === opt.key;
@@ -286,7 +286,7 @@ export default function AsideFilters({
       </div>
       {/* Время */}
       <div className="mb-4">
-        <h2 className="text-lg font-medium mb-2">Размещено</h2>
+        <h2 className="text-lg font-semibold mb-2">Размещено</h2>
         <div className="space-y-2">
           <label className="flex items-center cursor-pointer">
             <input

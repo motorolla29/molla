@@ -60,7 +60,7 @@ export default function AdsList({
             />
           </svg>
         </div>
-        <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
           {activeTab === 'active'
             ? 'Нет активных объявлений'
             : 'Нет объявлений в архиве'}

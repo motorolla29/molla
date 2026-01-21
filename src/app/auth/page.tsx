@@ -243,7 +243,7 @@ export default function AuthPage() {
                 setErrors({});
                 resetToForm();
               }}
-              className={`px-4 py-2 font-medium ${
+              className={`px-4 py-2 font-semibold ${
                 mode === 'login'
                   ? 'border-b-2 border-violet-500 text-violet-500'
                   : 'text-gray-500'
@@ -257,7 +257,7 @@ export default function AuthPage() {
                 setErrors({});
                 resetToForm();
               }}
-              className={`px-4 py-2 font-medium ${
+              className={`px-4 py-2 font-semibold ${
                 mode === 'register'
                   ? 'border-b-2 border-violet-500 text-violet-500'
                   : 'text-gray-500'

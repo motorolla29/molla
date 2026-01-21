@@ -44,7 +44,7 @@ export default function AdContactsSelector({
       <div className="space-y-3">
         {/* Настройки видимости контактов */}
         <div>
-          <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-3">
+          <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3">
             Какие контакты показывать в объявлении?
           </h3>
 
@@ -63,7 +63,7 @@ export default function AdContactsSelector({
                   htmlFor="phone-checkbox"
                   className="flex-1 cursor-pointer"
                 >
-                  <div className="text-sm sm:text-base font-medium text-gray-900">
+                  <div className="text-sm sm:text-base font-semibold text-gray-900">
                     Телефон: {user.phone}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-500">
@@ -87,7 +87,7 @@ export default function AdContactsSelector({
                   htmlFor="email-checkbox"
                   className="flex-1 cursor-pointer"
                 >
-                  <div className="text-sm sm:text-base font-medium text-gray-900">
+                  <div className="text-sm sm:text-base font-semibold text-gray-900">
                     Email: {user.email}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-500">
@@ -115,7 +115,7 @@ export default function AdContactsSelector({
           </p>
           <div className="text-sm sm:text-base text-gray-800 space-y-1">
             <div>
-              <span className="font-medium">Имя:</span> {user?.name || '—'}
+              <span className="font-semibold">Имя:</span> {user?.name || '—'}
             </div>
             {(showPhone || showEmail) && (
               <div className="text-xs sm:text-sm text-amber-600 mt-2">

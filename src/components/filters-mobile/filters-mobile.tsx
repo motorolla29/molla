@@ -177,7 +177,7 @@ export default function FiltersMobile({
           >
             {/* Хедер */}
             <div className="flex items-center justify-between p-4 shadow-md">
-              <h2 className="text-lg font-medium">Фильтры</h2>
+              <h2 className="text-lg font-semibold">Фильтры</h2>
               <button onClick={() => setFiltersVisible(false)} className="p-2">
                 <XMarkIcon className="w-6 h-6 text-gray-600" />
               </button>

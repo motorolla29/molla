@@ -219,7 +219,7 @@ export default function ChatArea({
                   />
                 ) : (
                   <div className="w-full h-full bg-violet-500 flex items-center justify-center">
-                    <span className="text-white font-medium text-xs">
+                    <span className="text-white font-semibold text-xs">
                       {chat?.otherUserName.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -294,9 +294,27 @@ export default function ChatArea({
                   : 'justify-start'
               }`}
             >
+              {/* Аватарка собеседника для входящих сообщений */}
+              {message.senderId !== currentUserId && (
+                <div className="shrink-0 mr-2 self-start">
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                    {chat?.otherUserAvatar ? (
+                      <img
+                        src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}?tr=w-32,h-32`}
+                        alt={chat.otherUserName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-600 font-semibold text-sm">
+                        {chat?.otherUserName?.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
               {/* Индикатор статуса для исходящих сообщений - слева от блока */}
               {message.senderId === currentUserId && (
-                <div className="flex items-end justify-start mr-1 mb-1">
+                <div className="flex items-end justify-start mr-1 mb-1 self-end">
                   {message.status === 'sending' && (
                     <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
                   )}
@@ -331,7 +349,7 @@ export default function ChatArea({
                         src={
                           attachment.fileUrl.startsWith('blob:')
                             ? attachment.fileUrl
-                            : attachment.fileUrl // Теперь полный URL из ImageKit
+                            : `${attachment.fileUrl}?tr=w-350` // Миниатюра для чата
                         }
                         alt={attachment.fileName}
                         className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
@@ -339,7 +357,7 @@ export default function ChatArea({
                           openImageModal(
                             attachment.fileUrl.startsWith('blob:')
                               ? attachment.fileUrl
-                              : attachment.fileUrl,
+                              : attachment.fileUrl, // Полный размер для модала
                             attachment.fileName
                           )
                         }

@@ -246,10 +246,10 @@ export default function Profile() {
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wide">
                       Город
                     </p>
-                    <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
                       {user.city || 'Не указан'}
                     </p>
                   </div>
@@ -274,10 +274,10 @@ export default function Profile() {
                 </svg>
               </div>
               <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wide">
                   Email
                 </p>
-                <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
                   {user.email}
                 </p>
               </div>
@@ -300,10 +300,10 @@ export default function Profile() {
                 </svg>
               </div>
               <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wide">
                   Телефон
                 </p>
-                <p className="text-sm sm:text-base font-medium text-gray-900 mt-1">
+                <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
                   {user.phone || 'Не указан'}
                 </p>
               </div>

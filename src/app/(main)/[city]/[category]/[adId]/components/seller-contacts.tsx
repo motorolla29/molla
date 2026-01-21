@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { CheckIcon, ClipboardDocumentIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import {
+  CheckIcon,
+  ClipboardDocumentIcon,
+  ChatBubbleLeftRightIcon,
+} from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
@@ -17,7 +21,7 @@ export default function SellerContacts({
   email,
   sellerId,
   adId,
-  showMessageButton = false
+  showMessageButton = false,
 }: SellerContactsProps) {
   const router = useRouter();
   const { user, isLoggedIn } = useAuthStore();
@@ -161,7 +165,7 @@ export default function SellerContacts({
         <button
           onClick={handleStartChat}
           disabled={isCreatingChat}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white text-sm sm:text-base font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white text-sm sm:text-base font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
         >
           <ChatBubbleLeftRightIcon className="w-5 h-5" />
           {isCreatingChat ? 'Создание чата...' : 'Написать'}

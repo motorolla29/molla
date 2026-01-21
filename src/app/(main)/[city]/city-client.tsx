@@ -67,7 +67,7 @@ export default function CityClient({
           </ol>
         </nav>
 
-        <h1 className="text-xl sm:text-3xl font-medium mb-5">
+        <h1 className="text-xl sm:text-3xl font-semibold mb-5">
           Объявления в {cityNamePrep}
           {searchParams.get('search') && (
             <span className="text-neutral-400">

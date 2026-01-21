@@ -51,7 +51,7 @@ export default function AdCard({
                 {/* Мобильная версия */}
                 <div className="sm:hidden">
                   <div className="mb-1">
-                    <h3 className="text-base font-medium text-gray-900 truncate">
+                    <h3 className="text-base font-semibold text-gray-900 truncate">
                       {ad.title}
                     </h3>
                   </div>
@@ -64,7 +64,7 @@ export default function AdCard({
 
                 {/* Десктоп версия - заголовок в одной строке с ценой и кнопкой */}
                 <div className="hidden sm:flex items-center justify-between gap-4 my-1">
-                  <h3 className="text-lg font-medium text-gray-900 truncate flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 min-w-0">
                     {ad.title}
                   </h3>
                   <div className="text-right px-1 shrink-0">
@@ -96,7 +96,7 @@ export default function AdCard({
                       <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 shrink-0" />
                       <span>{ad.viewCount || 0}</span>
                       {ad.viewsToday && ad.viewsToday > 0 ? (
-                        <span className="text-green-600 font-medium ml-1">
+                        <span className="text-green-600 font-semibold ml-1">
                           (+{ad.viewsToday})
                         </span>
                       ) : null}

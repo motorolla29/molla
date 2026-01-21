@@ -24,7 +24,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft size={20} className="mr-2" />
-            <span className="text-sm font-medium">На главную</span>
+            <span className="text-sm font-semibold">На главную</span>
           </Link>
         </div>
       </div>
@@ -44,7 +44,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
                         ? '/personal/my-adds/active'
                         : href
                     }
-                    className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`flex items-center px-3 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
                       isActive
                         ? 'bg-violet-50 text-violet-700'
                         : 'text-gray-600 hover:bg-gray-50'

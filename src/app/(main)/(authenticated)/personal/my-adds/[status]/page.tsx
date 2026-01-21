@@ -239,7 +239,7 @@ export default function MyAddsPage() {
     <div className="m-4 lg:m-6">
       {/* Заголовок для мобильных */}
       <div className="mb-4 lg:mb-0">
-        <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-medium mb-4 lg:hidden">
+        <h1 className="flex items-center justify-between text-xl sm:text-2xl w-fit font-semibold mb-4 lg:hidden">
           <span>Мои объявления</span>
           <span className="text-xs sm:text-sm font-bold text-neutral-500 ml-2">
             {totalAdsCount}
@@ -251,14 +251,14 @@ export default function MyAddsPage() {
       <div className="flex items-center justify-between mb-6">
         <Link
           href="/ad/create"
-          className="w-full text-center inline-flex items-center justify-center px-4 py-2 bg-violet-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-violet-600 active:bg-violet-700 transition-colors lg:hidden"
+          className="w-full text-center inline-flex items-center justify-center px-4 py-2 bg-violet-500 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-violet-600 active:bg-violet-700 transition-colors lg:hidden"
         >
           <Plus className="mr-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="whitespace-nowrap">Создать объявление</span>
         </Link>
         <Link
           href="/ad/create"
-          className="hidden lg:inline-flex items-center px-4 py-2 bg-violet-500 text-white text-sm font-medium rounded-lg hover:bg-violet-600 active:bg-violet-700 transition-colors"
+          className="hidden lg:inline-flex items-center px-4 py-2 bg-violet-500 text-white text-sm font-semibold rounded-lg hover:bg-violet-600 active:bg-violet-700 transition-colors"
         >
           <Plus className="mr-2 w-4 h-4" />
           Создать объявление

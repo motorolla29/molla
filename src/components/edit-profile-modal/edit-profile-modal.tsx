@@ -335,7 +335,7 @@ export function EditProfileModal({
               >
                 {/* Имя */}
                 <div>
-                  <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
+                  <label className="block text-sm max-sm:text-xs font-semibold text-gray-700 mb-2">
                     Имя *
                   </label>
                   <input
@@ -352,7 +352,7 @@ export function EditProfileModal({
 
                 {/* Город */}
                 <div>
-                  <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
+                  <label className="block text-sm max-sm:text-xs font-semibold text-gray-700 mb-2">
                     Город
                   </label>
                   <div className="relative">
@@ -400,7 +400,7 @@ export function EditProfileModal({
 
                 {/* Телефон */}
                 <div>
-                  <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
+                  <label className="block text-sm max-sm:text-xs font-semibold text-gray-700 mb-2">
                     Телефон
                   </label>
                   <div className="flex items-center px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-transparent">
@@ -450,7 +450,7 @@ export function EditProfileModal({
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm max-sm:text-xs font-medium text-gray-700 mb-2">
+                  <label className="block text-sm max-sm:text-xs font-semibold text-gray-700 mb-2">
                     Email
                   </label>
 

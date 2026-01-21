@@ -255,7 +255,7 @@ export default function AdEditPage() {
             Редактировать объявление
           </h1>
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <div className="text-red-600 text-base sm:text-lg font-medium mb-2">
+            <div className="text-red-600 text-base sm:text-lg font-semibold mb-2">
               Доступ запрещен
             </div>
             <div className="text-red-500 text-sm sm:text-base">{error}</div>
@@ -310,7 +310,7 @@ export default function AdEditPage() {
             {/* Основные данные */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-4">
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-semibold mb-1">
                   Заголовок объявления *
                 </label>
                 <input
@@ -347,7 +347,7 @@ export default function AdEditPage() {
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-semibold mb-1">
                   Описание
                 </label>
                 <textarea
@@ -360,7 +360,7 @@ export default function AdEditPage() {
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1">
+                <label className="block text-xs sm:text-sm font-semibold mb-1">
                   Детали
                 </label>
                 <textarea
@@ -388,7 +388,7 @@ export default function AdEditPage() {
               <h2 className="text-base sm:text-lg font-semibold">Цена</h2>
               <div className="flex gap-3 items-center mb-0">
                 <div className="flex-1">
-                  <label className="block text-xs sm:text-sm font-medium mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold mb-1">
                     Стоимость *
                   </label>
                   <input

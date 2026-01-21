@@ -112,7 +112,7 @@ export default function ClusterAdsDrawer({
   return (
     <div className="absolute bg-white shadow-lg overflow-auto z-10 bottom-12 left-0 w-full h-2/5 lg:top-0 lg:bottom-0 lg:left-0 lg:w-1/4 lg:h-full custom-scrollbar">
       <div className="flex justify-between items-center px-4 py-2 sm:p-4 shadow-md sticky top-0 bg-violet-100 z-10">
-        <h2 className="text-base sm:text-lg font-medium">
+        <h2 className="text-base sm:text-lg font-semibold">
           {isSingleAd ? 'Объявление' : `Объявления (${adIds.length})`}
         </h2>
         <button

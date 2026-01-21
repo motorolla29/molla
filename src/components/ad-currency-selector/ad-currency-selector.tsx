@@ -65,7 +65,7 @@ export default function AdCurrencySelector({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="block text-xs sm:text-sm font-medium mb-1">
+      <label className="block text-xs sm:text-sm font-semibold mb-1">
         Валюта
       </label>
       <button

@@ -125,7 +125,7 @@ export default function Toast({
 
         <div className="flex-1 min-w-0">
           <p
-            className={`text-xs sm:text-sm font-medium ${styles.text} wrap-break-word`}
+            className={`text-xs sm:text-sm font-semibold ${styles.text} wrap-break-word`}
           >
             {message}
           </p>
