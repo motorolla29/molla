@@ -78,19 +78,58 @@ export default function ChatArea({
     alt: string;
   } | null>(null);
 
+  // Состояние для отслеживания положения скролла
+  const [isNearBottom, setIsNearBottom] = useState(true);
+
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
     setLocalMessages(initialMessages);
   }, [initialMessages]);
 
-  // Автопрокрутка к последнему сообщению без таймаутов
+  // Обработчик скролла для определения положения пользователя
   useEffect(() => {
     const container = messagesContainerRef.current;
-    if (container) {
-      // Используем scrollTop вместо scrollIntoView для изоляции от скролла страницы
-      container.scrollTop = container.scrollHeight;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      // Считаем пользователя "в конце" если он в пределах 100px от конца
+      setIsNearBottom(distanceFromBottom < 100);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    // Инициализируем состояние
+    handleScroll();
+
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Умная автопрокрутка - только если пользователь в конце чата
+  useEffect(() => {
+    if (isNearBottom) {
+      const container = messagesContainerRef.current;
+      if (container) {
+        // Небольшая задержка для учета изменений высоты при загрузке изображений
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 50);
+      }
     }
-  }, [localMessages]);
+  }, [localMessages, isNearBottom]);
+
+  // Прокрутка при появлении индикатора печати
+  useEffect(() => {
+    if (isTyping && isNearBottom) {
+      const container = messagesContainerRef.current;
+      if (container) {
+        // Прокручиваем вниз при появлении индикатора печати
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 50);
+      }
+    }
+  }, [isTyping, isNearBottom]);
 
   const formatTime = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -304,6 +343,7 @@ export default function ChatArea({
       {/* Область сообщений - растянута на всё оставшееся место */}
       <div
         ref={messagesContainerRef}
+        data-messages-container
         className="flex-1 overflow-y-auto p-4 pb-6 min-h-0 custom-scrollbar-chat flex flex-col"
       >
         {/* Пустой блок для прижимания сообщений к низу */}
@@ -402,24 +442,42 @@ export default function ChatArea({
                   {message.attachments && message.attachments.length > 0 && (
                     <div className="mb-2">
                       {message.attachments.map((attachment) => (
-                        <img
-                          key={attachment.id}
-                          src={
-                            attachment.fileUrl.startsWith('blob:')
-                              ? attachment.fileUrl
-                              : `${attachment.fileUrl}?tr=w-300` // Миниатюра для чата
-                          }
-                          alt={attachment.fileName}
-                          className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() =>
-                            openImageModal(
+                        <div key={attachment.id} className="relative inline-block">
+                          {/* Loading overlay for non-blob URLs */}
+                          {!attachment.fileUrl.startsWith('blob:') && message.status === 'sending' && (
+                            <div className="absolute inset-0 bg-white bg-opacity-75 rounded-lg flex items-center justify-center z-10">
+                              <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                          <img
+                            src={
                               attachment.fileUrl.startsWith('blob:')
                                 ? attachment.fileUrl
-                                : attachment.fileUrl, // Полный размер для модала
-                              attachment.fileName
-                            )
-                          }
-                        />
+                                : `${attachment.fileUrl}?tr=w-300` // Миниатюра для чата
+                            }
+                            alt={attachment.fileName}
+                            className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() =>
+                              openImageModal(
+                                attachment.fileUrl.startsWith('blob:')
+                                  ? attachment.fileUrl
+                                  : attachment.fileUrl, // Полный размер для модала
+                                attachment.fileName
+                              )
+                            }
+                            onLoad={() => {
+                              // Smart scroll: only scroll if user is near bottom
+                              setTimeout(() => {
+                                if (isNearBottom) {
+                                  const container = messagesContainerRef.current;
+                                  if (container) {
+                                    container.scrollTop = container.scrollHeight;
+                                  }
+                                }
+                              }, 100);
+                            }}
+                          />
+                        </div>
                       ))}
                     </div>
                   )}
@@ -449,19 +507,42 @@ export default function ChatArea({
           })
         )}
 
-        {/* Typing indicator */}
-        {isTyping && (
-          <div className="flex justify-start mt-3">
-            <div className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg">
+        {/* Typing indicator - показывается только если пользователь в конце чата */}
+        {isTyping && isNearBottom && (() => {
+          // Определяем отступ как для сообщений
+          const lastMessage = localMessages[localMessages.length - 1];
+          const isFirstInGroup = !lastMessage || lastMessage.senderId !== currentUserId;
+          const marginTop = isFirstInGroup ? 'mt-1' : 'mt-4';
+
+          return (
+            <div className={`flex justify-start ${marginTop}`}>
+            {/* Аватарка собеседника для индикатора печати */}
+            <div className="shrink-0 mr-2 self-start">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-violet-500 flex items-center justify-center">
+                {chat?.otherUserAvatar ? (
+                  <img
+                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}?tr=w-32,h-32`}
+                    alt={chat.otherUserName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white font-semibold text-sm">
+                    {chat?.otherUserName?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-2xl">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
                 <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.1s]" />
                 <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
               </span>
-              <span className="text-xs text-gray-500">печатает...</span>
             </div>
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {/* Реф для прокрутки */}
         <div ref={messagesEndRef} />

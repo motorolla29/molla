@@ -86,7 +86,7 @@ export default function MessageInput({
   const insertEmoji = (emoji: string) => {
     setMessage((prev) => prev + emoji);
     // Не закрываем picker, чтобы можно было выбрать несколько эмодзи
-    handleTyping(); // Вызываем typing при вставке эмодзи
+    onTyping?.(); // Вызываем typing при вставке эмодзи
   };
 
   const handleChange = (value: string) => {

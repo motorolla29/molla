@@ -30,6 +30,7 @@ interface Chat {
 
 interface Message {
   id: string;
+  chatId?: string;
   content: string;
   senderId: number;
   senderName: string;
@@ -147,6 +148,18 @@ export default function ChatPage() {
           },
         ];
       });
+
+      // Smart scroll: only scroll if user is near bottom
+      setTimeout(() => {
+        const container = document.querySelector('[data-messages-container]') as HTMLElement;
+        if (container) {
+          const { scrollTop, scrollHeight, clientHeight } = container;
+          const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+          if (distanceFromBottom < 100) {
+            container.scrollTop = container.scrollHeight;
+          }
+        }
+      }, payload.attachments && payload.attachments.length > 0 ? 200 : 50);
     };
 
     const handleMessageSaved = ({
