@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         senderId: userId,
         content: content || null,
         messageType: messageType,
-        status: 'sent',
+        status: 'sent', // Will be updated to delivered after sending
       },
     });
 
@@ -115,11 +115,41 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Обновляем статус сообщения на delivered
+    await prisma.message.update({
+      where: { id: message.id },
+      data: { status: 'delivered' },
+    });
+
     // Обновляем время последнего обновления чата
     await prisma.chat.update({
       where: { id: chatId },
       data: { updatedAt: new Date() },
     });
+
+    // Отправляем WebSocket событие для доставки сообщения в реальном времени
+    try {
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
+      const response = await fetch(`${socketUrl}/emit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event: 'message_delivered',
+          data: {
+            messageIds: [message.id],
+            userId: userId,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Error sending socket event via HTTP:', response.status, await response.text());
+      }
+    } catch (socketError) {
+      console.error('Error sending socket event:', socketError);
+    }
 
     const messageWithAttachments = await prisma.message.findUnique({
       where: { id: message.id },
@@ -139,7 +169,7 @@ export async function POST(request: NextRequest) {
             senderId: messageWithAttachments.senderId,
             content: messageWithAttachments.content || '',
             messageType: messageWithAttachments.messageType,
-            status: messageWithAttachments.status,
+            status: 'delivered',
             createdAt: messageWithAttachments.createdAt,
             attachments: messageWithAttachments.attachments.map((attachment) => ({
               id: attachment.id,

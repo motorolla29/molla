@@ -33,9 +33,94 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:3000')
   .split(',')
   .map((v) => v.trim());
 
-const httpServer = createServer((_, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Socket server is running');
+const httpServer = createServer((req, res) => {
+  // Handle POST requests to /emit for triggering socket events
+  if (req.method === 'POST' && req.url === '/emit') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', () => {
+      try {
+        const { event, data } = JSON.parse(body);
+
+        if (event === 'mark_messages_read') {
+          // Handle the mark_messages_read event
+          const { chatId, userId, updatedMessageIds } = data;
+
+          // Verify the user has access to this chat (optional, for security)
+          ensureChatAccess(chatId, userId).then(chat => {
+            if (chat) {
+              // Send message status update to all participants in the chat
+              io.to(`chat:${chatId}`).emit('message_status_update', {
+                chatId,
+                messageIds: updatedMessageIds,
+                status: 'read',
+                updatedBy: userId,
+              });
+              console.log(`Broadcasted message status update for chat ${chatId}: ${updatedMessageIds.length} messages marked as read`);
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true }));
+            } else {
+              res.writeHead(403, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Forbidden' }));
+            }
+          }).catch(err => {
+            console.error('Error in /emit:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+          });
+        } else if (event === 'message_delivered') {
+          // Handle the message_delivered event
+          const { messageIds, userId } = data;
+
+          // Get chat IDs for the messages to send updates to correct chat rooms
+          prisma.message.findMany({
+            where: { id: { in: messageIds } },
+            select: { id: true, chatId: true },
+          }).then(messages => {
+            // Group messages by chatId
+            const chatMessages = {};
+            messages.forEach(msg => {
+              if (!chatMessages[msg.chatId]) {
+                chatMessages[msg.chatId] = [];
+              }
+              chatMessages[msg.chatId].push(msg.id);
+            });
+
+            // Send message status update for each chat
+            Object.entries(chatMessages).forEach(([chatId, msgIds]) => {
+              io.to(`chat:${chatId}`).emit('message_status_update', {
+                chatId,
+                messageIds: msgIds,
+                status: 'delivered',
+                updatedBy: userId,
+              });
+            });
+
+            console.log(`Broadcasted message delivered status for ${messageIds.length} messages`);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true }));
+          }).catch(err => {
+            console.error('Error in message_delivered:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+          });
+        } else {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Unsupported event' }));
+        }
+      } catch (err) {
+        console.error('Error parsing request body:', err);
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      }
+    });
+  } else {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Socket server is running');
+  }
 });
 
 const io = new Server(httpServer, {
@@ -205,12 +290,18 @@ io.on('connection', async (socket) => {
         content: message.content || '',
         timestamp: message.createdAt,
         type: 'text',
-        status: message.status,
+        status: 'delivered', // Message is delivered immediately to online recipients
         attachments: [],
       };
 
       io.to(`chat:${chatId}`).emit('new_message', { ...payload, tempId });
       socket.emit('message_saved', { tempId, message: payload });
+
+      // Update message status to delivered in database
+      await prisma.message.update({
+        where: { id: message.id },
+        data: { status: 'delivered' },
+      });
 
       // Notify the recipient about unread message update
       const recipientId = chat.buyerId === userId ? chat.sellerId : chat.buyerId;

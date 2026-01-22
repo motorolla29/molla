@@ -100,10 +100,8 @@ export default function MobileBottomNav() {
               <div className="relative">
                 <Icon size={18} className={colorClass} />
                 {id === 'chats' && totalUnreadCount > 0 && (
-                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold text-[10px]">
-                    {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
-                  </div>
-                )}
+              <div className="absolute top-0 -right-0.5 bg-red-500 outline-2 outline-neutral-100 rounded-full w-2 h-2 flex items-center justify-center font-semibold"/>
+            )}
               </div>
               {/* Показываем подпись только на ширине >=640px, иначе скрываем */}
               <span

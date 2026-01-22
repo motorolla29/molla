@@ -177,10 +177,10 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                         <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
                       )}
                       {chat.lastMessageStatus === 'sent' && (
-                        <div className="text-xs text-violet-500">✓</div>
+                        <div className="text-xs text-gray-500">✓</div>
                       )}
                       {chat.lastMessageStatus === 'delivered' && (
-                        <div className="text-xs text-violet-500">✓✓</div>
+                        <div className="text-xs text-violet-500">✓</div>
                       )}
                       {chat.lastMessageStatus === 'read' && (
                         <div className="text-xs text-violet-500">✓✓</div>

@@ -43,6 +43,16 @@ export async function POST(
     // Определяем ID другого пользователя
     const otherUserId = chat.buyerId === userId ? chat.sellerId : chat.buyerId;
 
+    // Получаем ID сообщений которые будут обновлены (для отправки через WebSocket)
+    const messagesToUpdate = await prisma.message.findMany({
+      where: {
+        chatId: chatId,
+        senderId: otherUserId, // Только сообщения от другого пользователя
+        status: { not: 'read' }, // Не прочитанные
+      },
+      select: { id: true },
+    });
+
     // Отмечаем все сообщения от другого пользователя как прочитанные
     const updateResult = await prisma.message.updateMany({
       where: {
@@ -54,6 +64,34 @@ export async function POST(
         status: 'read',
       },
     });
+
+    // Отправляем WebSocket событие для обновления статуса в реальном времени
+    if (updateResult.count > 0 && messagesToUpdate.length > 0) {
+      try {
+        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
+        const response = await fetch(`${socketUrl}/emit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            event: 'mark_messages_read',
+            data: {
+              chatId: chatId,
+              userId: userId,
+              updatedMessageIds: messagesToUpdate.map(msg => msg.id),
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('Error sending socket event via HTTP:', response.status, await response.text());
+        }
+      } catch (socketError) {
+        console.error('Error sending socket event:', socketError);
+        // Не прерываем выполнение API из-за ошибки сокета
+      }
+    }
 
     // Возвращаем количество обновленных сообщений
     return NextResponse.json({

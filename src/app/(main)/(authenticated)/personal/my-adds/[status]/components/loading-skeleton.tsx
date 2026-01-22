@@ -2,11 +2,11 @@ import CardSkeleton from './card-skeleton';
 
 export default function LoadingSkeleton() {
   return (
-    <div className="sm:px-6 lg:px-8">
+    <div className="m-4 lg:m-6">
       {/* Заголовок для мобильных */}
       <div className="mb-4 lg:mb-0">
         <div className="flex items-center lg:hidden">
-          <div className="h-7 bg-gray-200 rounded w-44 animate-pulse"></div>
+          <div className="h-7 bg-gray-200 rounded-lg w-44 animate-pulse"></div>
         </div>
       </div>
 

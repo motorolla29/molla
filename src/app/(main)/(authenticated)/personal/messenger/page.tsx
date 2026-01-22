@@ -20,6 +20,8 @@ interface Chat {
   otherUserLastSeenAt?: string | null;
   lastMessage: string;
   lastMessageTime: Date | string;
+  lastMessageStatus?: string | null;
+  lastMessageIsOutgoing?: boolean;
   unreadCount: number;
 }
 
@@ -156,6 +158,7 @@ export default function MessengerPage() {
             lastMessage: displayMessage,
             lastMessageTime: payload.timestamp || new Date(),
             lastMessageStatus: payload.status || 'sent',
+            lastMessageIsOutgoing: payload.senderId === Number(user?.id),
             unreadCount: newUnreadCount
           };
         }
@@ -184,12 +187,45 @@ export default function MessengerPage() {
 
     socket.on('unread_update', handleUnreadUpdate);
 
+    // Обработка обновлений статуса сообщений (delivered или read)
+    const handleMessageStatusUpdate = ({
+      chatId,
+      messageIds,
+      status,
+      updatedBy
+    }: {
+      chatId: string;
+      messageIds: string[];
+      status: string;
+      updatedBy: number;
+    }) => {
+      console.log('MessengerPage message_status_update:', { chatId, messageIds, status, updatedBy });
+
+      // Обновляем статус последнего сообщения в списке чатов
+      setChats(prevChats => prevChats.map(chat => {
+        if (chat.id === chatId) {
+          // Обновляем статус, если сообщение было отправлено текущим пользователем
+          const isCurrentUserSender = chat.lastMessageIsOutgoing;
+          if (isCurrentUserSender && (status === 'delivered' || status === 'read')) {
+            return {
+              ...chat,
+              lastMessageStatus: status
+            };
+          }
+        }
+        return chat;
+      }));
+    };
+
+    socket.on('message_status_update', handleMessageStatusUpdate);
+
     return () => {
       console.log('MessengerPage cleanup event handlers');
       socket.off('typing', handleTyping);
       socket.off('stop_typing', handleStopTyping);
       socket.off('new_message', handleNewMessage);
       socket.off('unread_update', handleUnreadUpdate);
+      socket.off('message_status_update', handleMessageStatusUpdate);
       socket.off('connect');
       socket.off('disconnect');
     };

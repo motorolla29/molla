@@ -52,9 +52,7 @@ export default function Header() {
               />
             </svg>
             {totalUnreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
-                {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-              </div>
+              <div className="absolute top-0 right-3 bg-red-500 outline-2 outline-neutral-100 rounded-full w-2 h-2 flex items-center justify-center font-semibold"/>
             )}
           </Link>
 

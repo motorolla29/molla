@@ -419,10 +419,10 @@ export default function ChatArea({
                       <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
                     )}
                     {message.status === 'sent' && (
-                      <div className="text-xs text-violet-500">✓</div>
+                      <div className="text-xs text-gray-500">✓</div>
                     )}
                     {message.status === 'delivered' && (
-                      <div className="text-xs text-violet-500">✓✓</div>
+                      <div className="text-xs text-violet-500">✓</div>
                     )}
                     {message.status === 'read' && (
                       <div className="text-xs text-violet-500">✓✓</div>

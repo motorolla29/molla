@@ -175,13 +175,32 @@ export default function ChatPage() {
       });
 
       // Если сообщение от другого пользователя, автоматически отмечаем его как прочитанное
+      // (поскольку пользователь находится в чате и видит новые сообщения)
       if (isFromOtherUser) {
         try {
-          await fetch(`/api/messenger/chats/${chatId}/read`, {
+          // Сначала отмечаем как доставленное
+          await fetch('/api/messenger/messages/delivered', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messageIds: [payload.id],
+            }),
+          });
+
+          // Автоматически отмечаем как прочитанное, поскольку пользователь в чате
+          const readResponse = await fetch(`/api/messenger/chats/${chatId}/read`, {
             method: 'POST',
           });
+
+          if (readResponse.ok) {
+            // Обновляем глобальный store с непрочитанными сообщениями
+            const { markChatAsRead } = useUnreadMessagesStore.getState();
+            markChatAsRead(chatId);
+          }
         } catch (error) {
-          console.error('Error auto-marking message as read:', error);
+          console.error('Error marking message as read:', error);
         }
       }
 
@@ -267,8 +286,32 @@ export default function ChatPage() {
       clearTyping(chatId, fromUserId);
     };
 
+    const handleMessageStatusUpdate = ({
+      chatId: incomingChatId,
+      messageIds,
+      status,
+      updatedBy
+    }: {
+      chatId: string;
+      messageIds: string[];
+      status: string;
+      updatedBy: number;
+    }) => {
+      if (incomingChatId !== chatId) return;
+
+      // Обновляем статус сообщений в локальном состоянии
+      setMessages((prev) =>
+        prev.map((msg) =>
+          messageIds.includes(msg.id) ? { ...msg, status: status as Message['status'] } : msg
+        )
+      );
+
+      console.log(`Updated ${messageIds.length} messages to status '${status}' in chat ${chatId}`);
+    };
+
     socket.on('new_message', handleNewMessage);
     socket.on('message_saved', handleMessageSaved);
+    socket.on('message_status_update', handleMessageStatusUpdate);
     socket.on('typing', handleTyping);
     socket.on('stop_typing', handleStopTyping);
 
@@ -276,6 +319,7 @@ export default function ChatPage() {
       socket.emit('leave_chat', { chatId });
       socket.off('new_message', handleNewMessage);
       socket.off('message_saved', handleMessageSaved);
+      socket.off('message_status_update', handleMessageStatusUpdate);
       socket.off('typing', handleTyping);
       socket.off('stop_typing', handleStopTyping);
     };
@@ -326,7 +370,7 @@ export default function ChatPage() {
               data.message.messageType === 'image'
                 ? 'image'
                 : ('text' as const),
-            status: data.message.status as Message['status'],
+            status: 'delivered' as Message['status'],
             attachments: (data.message.attachments || []).map((att: any) => ({
               id: att.id,
               fileUrl: att.fileUrl,
