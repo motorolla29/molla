@@ -19,6 +19,24 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
+/* Firefox специфичные стили для скроллбаров */
+@supports (-moz-appearance: none) {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #d3caef #dedde4;
+  }
+
+  .custom-scrollbar-chat {
+    scrollbar-width: thin;
+    scrollbar-color: #c8c8c8 #f0f0f0;
+  }
+
+  .custom-scrollbar-2 {
+    scrollbar-width: thin;
+    scrollbar-color: #bebec3 transparent;
+  }
+}
+
 /* Кастомизация скроллбара для Webkit браузеров */
 .custom-scrollbar::-webkit-scrollbar {
   width: 10px;
@@ -39,7 +57,7 @@ button:not(:disabled) {
   background: #cebeff;
 }
 
-/* Кастомизация скроллбара chat */
+/* Кастомизация скроллбара chat для Webkit браузеров */
 .custom-scrollbar-chat::-webkit-scrollbar {
   width: 8px;
 }
@@ -58,7 +76,7 @@ button:not(:disabled) {
   background: #bebebe;
 }
 
-/* Кастомизация скроллбара с отступами для модального окна */
+/* Кастомизация скроллбара с отступами для модального окна для Webkit браузеров */
 .custom-scrollbar-2::-webkit-scrollbar {
   width: 8px;
 }
@@ -93,6 +111,16 @@ button:not(:disabled) {
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+/* Скрытие скроллбара */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 /* Ограничение текста до 2 строк с многоточием */

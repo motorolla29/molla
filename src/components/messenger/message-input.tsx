@@ -123,7 +123,7 @@ export default function MessageInput({
   ];
 
   return (
-    <div className=" border-gray-200 rounded-2xl bg-white p-4 m-4 mt-0">
+    <div className=" border-gray-200 rounded-2xl bg-amber-500 p-2 min-[340px]:bg-white min-[340px]:p-4 mb-2 min-[340px]:m-4 mt-0">
       {/* Предпросмотр вложения */}
       {attachment && (
         <div className="mb-3">
@@ -151,7 +151,8 @@ export default function MessageInput({
             onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Напишите сообщение..."
-            className="w-full flex px-4 py-3 pr-20 outline-1 outline-gray-300 rounded-lg resize-none focus:outline-violet-500 transition-colors duration-200"
+            className="w-full flex px-3 py-3 pr-17 outline-1 outline-gray-300 rounded-lg resize-none focus:outline-violet-500
+            transition-colors duration-200 text-sm max-[390px]:text-xs max-[390px]:pl-2 max-[340px]:h-18 bg-white scrollbar-hide"
             rows={1}
             style={{ minHeight: '48px', maxHeight: '120px' }}
             disabled={disabled}
@@ -174,7 +175,7 @@ export default function MessageInput({
                 {showEmojiPicker && (
                   <motion.div
                     ref={emojiPickerRef}
-                    className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 max-h-35 sm:max-h-50 overflow-y-auto w-35 sm:w-80 z-50"
+                    className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 max-h-35 sm:max-h-50 overflow-y-auto w-25 min-[360px]:w-35 sm:w-80 z-50 custom-scrollbar-2"
                     initial={{ opacity: 0, scale: 0.8, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 5 }}
@@ -191,7 +192,7 @@ export default function MessageInput({
                         <button
                           key={emoji}
                           onClick={() => insertEmoji(emoji)}
-                          className="text-lg hover:bg-gray-100 rounded p-1 transition-colors"
+                          className="text-base sm:text-lg hover:bg-gray-100 rounded p-1 transition-colors"
                         >
                           {emoji}
                         </button>

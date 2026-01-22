@@ -31,6 +31,7 @@ export default function MessengerPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { socket } = useChatSocket();
+
   console.log('MessengerPage socket:', socket);
 
   // Ref для управления таймерами typing

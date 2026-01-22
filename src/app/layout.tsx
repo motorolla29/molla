@@ -1,5 +1,6 @@
 import LocationInitializer from '@/components/location-initializer/location-initializer';
 import AuthInitializer from '@/components/auth-initializer/auth-initializer';
+import GlobalActivityTracker from '@/components/global-activity-tracker/global-activity-tracker';
 import GlobalMessageListener from '@/components/global-message-listener/global-message-listener';
 import { ToastProvider } from '@/components/toast/toast-context';
 import ToastContainer from '@/components/toast/toast-container';
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <LocationInitializer />
         <AuthInitializer />
+        <GlobalActivityTracker />
         <GlobalMessageListener />
         <ConfirmationModalProvider>
           <ToastProvider>

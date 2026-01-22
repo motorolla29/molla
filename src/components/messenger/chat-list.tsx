@@ -1,6 +1,8 @@
 'use client';
 
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
+import { useOnlineUsersStore } from '@/store/useOnlineUsersStore';
+import { useEffect } from 'react';
 
 interface Chat {
   id: string;
@@ -25,19 +27,16 @@ interface ChatListProps {
 }
 
 export default function ChatList({ chats, onChatSelect }: ChatListProps) {
-  const onlineUserIds = useChatPresenceStore((state) => state.onlineUserIds);
+  const { fetchUsersStatuses, getUserStatus } = useOnlineUsersStore();
   const typingMap = useChatPresenceStore((state) => state.typing);
 
-  console.log('ChatList onlineUserIds:', Array.from(onlineUserIds));
-  console.log('ChatList typingMap:', typingMap);
-  console.log(
-    'ChatList chats:',
-    chats.map((c) => ({
-      id: c.id,
-      otherUserId: c.otherUserId,
-      name: c.otherUserName,
-    }))
-  );
+  // Загружаем статусы пользователей при монтировании
+  useEffect(() => {
+    const userIds = chats.map(chat => chat.otherUserId);
+    if (userIds.length > 0) {
+      fetchUsersStatuses(userIds);
+    }
+  }, [chats, fetchUsersStatuses]);
 
   const formatTime = (date: Date | string) => {
     const now = new Date();
@@ -155,19 +154,9 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                     {chat.otherUserName}
                   </h3>
                   {/* Онлайн индикатор */}
-                  {(() => {
-                    const isOnline = onlineUserIds.has(
-                      Number(chat.otherUserId)
-                    );
-                    console.log(
-                      `User ${chat.otherUserName} (${chat.otherUserId}): online=${isOnline}`
-                    );
-                    return (
-                      isOnline && (
-                        <div className="shrink-0 w-2 h-2 mx-2 bg-emerald-500 rounded-full" />
-                      )
-                    );
-                  })()}
+                  {getUserStatus(chat.otherUserId)?.isOnline && (
+                    <div className="shrink-0 w-2 h-2 mx-2 bg-emerald-500 rounded-full" />
+                  )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   {/* Статус последнего сообщения (если исходящее) */}
