@@ -18,7 +18,7 @@ export default function MessageInput({
   onStopTyping,
 }: MessageInputProps) {
   const [message, setMessage] = useState('');
-  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -47,10 +47,10 @@ export default function MessageInput({
   }, [showEmojiPicker]);
 
   const handleSend = () => {
-    if ((message.trim() || attachment) && !disabled) {
-      onSendMessage(message.trim(), attachment ? [attachment] : undefined);
+    if ((message.trim() || attachments.length > 0) && !disabled) {
+      onSendMessage(message.trim(), attachments.length > 0 ? attachments : undefined);
       setMessage('');
-      setAttachment(null);
+      setAttachments([]);
       // Прекращаем индикацию печати при отправке сообщения
       onStopTyping?.();
     }
@@ -65,11 +65,15 @@ export default function MessageInput({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    // Берем только первое изображение
-    const imageFile = files.find((file) => file.type.startsWith('image/'));
+    // Берем только изображения
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
-    if (imageFile) {
-      setAttachment(imageFile);
+    if (imageFiles.length > 0) {
+      setAttachments((prev) => {
+        const combined = [...prev, ...imageFiles];
+        // Ограничиваем до 6 файлов
+        return combined.slice(0, 6);
+      });
     }
 
     // Очищаем input
@@ -78,8 +82,8 @@ export default function MessageInput({
     }
   };
 
-  const removeAttachment = () => {
-    setAttachment(null);
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const insertEmoji = (emoji: string) => {
@@ -124,22 +128,29 @@ export default function MessageInput({
 
   return (
     <div className=" border-gray-200 rounded-2xl bg-amber-500 p-2 min-[340px]:bg-white min-[340px]:p-4 mb-2 min-[340px]:m-4 mt-0">
-      {/* Предпросмотр вложения */}
-      {attachment && (
+      {/* Предпросмотр вложений */}
+      {attachments.length > 0 && (
         <div className="mb-3">
-          <div className="relative inline-block">
-            <img
-              src={URL.createObjectURL(attachment)}
-              alt={attachment.name}
-              className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-            />
-            <button
-              onClick={removeAttachment}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-            >
-              ×
-            </button>
+          <div className="flex flex-wrap gap-2 max-w-md">
+            {attachments.map((attachment, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(attachment)}
+                  alt={attachment.name}
+                  className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                />
+                <button
+                  onClick={() => removeAttachment(index)}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                >
+                  <span className='-translate-y-px'>×</span>
+                </button>
+              </div>
+            ))}
           </div>
+          {attachments.length >= 6 && (
+            <p className="text-xs text-gray-500 mt-1">Максимум 6 фото</p>
+          )}
         </div>
       )}
 
@@ -216,7 +227,7 @@ export default function MessageInput({
         {/* Кнопка отправки */}
         <button
           onClick={handleSend}
-          disabled={disabled || (!message.trim() && !attachment)}
+          disabled={disabled || (!message.trim() && attachments.length === 0)}
           className="bg-violet-500 hover:bg-violet-600 disabled:bg-gray-300 text-white p-3 rounded-lg transition-colors shrink-0 h-12 w-12 flex items-center justify-center"
         >
           <Send size={18} />

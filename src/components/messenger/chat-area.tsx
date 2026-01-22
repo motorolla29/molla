@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import MessageInput from './message-input';
 import ImageModal from './image-modal';
@@ -419,13 +419,13 @@ export default function ChatArea({
                       <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
                     )}
                     {message.status === 'sent' && (
-                      <div className="text-xs text-gray-500">✓</div>
+                      <Check className="w-3 h-3 text-gray-500" />
                     )}
                     {message.status === 'delivered' && (
-                      <div className="text-xs text-violet-500">✓</div>
+                      <Check className="w-3 h-3 text-violet-500" />
                     )}
                     {message.status === 'read' && (
-                      <div className="text-xs text-violet-500">✓✓</div>
+                      <CheckCheck className="w-3 h-3 text-violet-500" />
                     )}
                     {message.status === 'error' && (
                       <div className="text-xs text-red-500">⚠</div>
@@ -442,9 +442,9 @@ export default function ChatArea({
                 >
                   {/* Фото в сообщении */}
                   {message.attachments && message.attachments.length > 0 && (
-                    <div className="mb-2">
+                    <div className="mb-2 flex flex-col gap-2">
                       {message.attachments.map((attachment) => (
-                        <div key={attachment.id} className="relative inline-block">
+                        <div key={attachment.id} className="relative">
                           {/* Loading overlay for non-blob URLs */}
                           {!attachment.fileUrl.startsWith('blob:') && message.status === 'sending' && (
                             <div className="absolute inset-0 bg-white bg-opacity-75 rounded-lg flex items-center justify-center z-10">

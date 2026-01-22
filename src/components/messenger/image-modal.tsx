@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
@@ -17,6 +17,15 @@ export default function ImageModal({
   imageUrl,
   altText = 'Изображение',
 }: ImageModalProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Сбрасываем состояние загрузки при открытии
+  useEffect(() => {
+    if (isOpen) {
+      setImageLoaded(false);
+    }
+  }, [isOpen]);
+
   // Блокируем скролл страницы при открытом модальном окне
   useEffect(() => {
     if (!isOpen) return;
@@ -43,7 +52,7 @@ export default function ImageModal({
           onClick={onClose}
         >
           <motion.div
-            className="relative max-w-4xl max-h-[90vh] rounded-xl shadow-2xl select-none"
+            className="relative max-w-4xl max-h-[90vh] min-w-[200px] min-h-[200px] rounded-xl shadow-2xl select-none flex items-center justify-center"
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -79,12 +88,23 @@ export default function ImageModal({
               </svg>
             </motion.button>
 
+            {/* Спиннер загрузки */}
+            {!imageLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100/20 rounded-lg">
+                <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+
             {/* Изображение в большом размере */}
             <img
               src={imageUrl}
               alt={altText}
-              className="w-full h-auto max-h-[85vh] rounded-lg object-contain"
+              className={`w-full h-auto max-h-[85vh] rounded-lg object-contain transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
               onClick={(e) => e.stopPropagation()}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)} // Показываем изображение даже при ошибке
             />
           </motion.div>
         </motion.div>

@@ -58,10 +58,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Обрабатываем вложение (только одно фото)
+    // Обрабатываем вложения (до 6 фото)
     if (attachments.length > 0) {
-      const attachment = attachments[0]; // Берем только первое фото
-
       // Получаем ключи ImageKit
       const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
       const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
@@ -75,43 +73,52 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Загружаем в ImageKit
-      const uploadForm = new FormData();
-      uploadForm.append('file', attachment);
-      uploadForm.append('fileName', attachment.name);
-      uploadForm.append('folder', '/molla/chat-attachments');
-      uploadForm.append('useUniqueFileName', 'true');
+      // Загружаем все вложения в ImageKit параллельно
+      const uploadPromises = attachments.map(async (attachment) => {
+        const uploadForm = new FormData();
+        uploadForm.append('file', attachment);
+        uploadForm.append('fileName', attachment.name);
+        uploadForm.append('folder', '/molla/chat-attachments');
+        uploadForm.append('useUniqueFileName', 'true');
 
-      // ImageKit авторизация
-      const authHeader = 'Basic ' + Buffer.from(`${privateKey}:`).toString('base64');
+        // ImageKit авторизация
+        const authHeader = 'Basic ' + Buffer.from(`${privateKey}:`).toString('base64');
 
-      const imageKitRes = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          Authorization: authHeader,
-        },
-        body: uploadForm,
-      });
+        const imageKitRes = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            Authorization: authHeader,
+          },
+          body: uploadForm,
+        });
 
-      const imageKitData = await imageKitRes.json();
+        const imageKitData = await imageKitRes.json();
 
-      if (!imageKitRes.ok) {
-        console.error('ImageKit upload error:', imageKitData);
-        return NextResponse.json(
-          { error: 'Не удалось загрузить изображение' },
-          { status: 500 }
-        );
-      }
+        if (!imageKitRes.ok) {
+          console.error('ImageKit upload error for', attachment.name, ':', imageKitData);
+          throw new Error(`Failed to upload ${attachment.name}`);
+        }
 
-      // Создаем запись в базе данных с полным URL
-      await prisma.messageAttachment.create({
-        data: {
-          messageId: message.id,
+        return {
           fileUrl: imageKitData.url, // Полный URL из ImageKit
           fileName: attachment.name,
           fileSize: attachment.size,
           fileType: attachment.type,
-        },
+        };
+      });
+
+      // Ждем завершения всех загрузок
+      const uploadedFiles = await Promise.all(uploadPromises);
+
+      // Создаем записи в базе данных для всех вложений
+      await prisma.messageAttachment.createMany({
+        data: uploadedFiles.map(file => ({
+          messageId: message.id,
+          fileUrl: file.fileUrl,
+          fileName: file.fileName,
+          fileSize: file.fileSize,
+          fileType: file.fileType,
+        })),
       });
     }
 

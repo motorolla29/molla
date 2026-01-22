@@ -3,6 +3,7 @@
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 import { useOnlineUsersStore } from '@/store/useOnlineUsersStore';
 import { useEffect } from 'react';
+import { Check, CheckCheck } from 'lucide-react';
 
 interface Chat {
   id: string;
@@ -155,31 +156,31 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                   </h3>
                   {/* Онлайн индикатор */}
                   {getUserStatus(chat.otherUserId)?.isOnline && (
-                    <div className="shrink-0 w-2 h-2 mx-2 bg-emerald-500 rounded-full" />
+                    <div className="shrink-0 w-2 h-2 mx-1 sm:mx-2 bg-emerald-500 rounded-full" />
                   )}
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center shrink-0">
                   {/* Статус последнего сообщения (если исходящее) */}
                   {chat.lastMessageIsOutgoing && chat.lastMessageStatus && (
-                    <div className="flex items-center">
+                    <div className="flex items-center ml-2">
                       {chat.lastMessageStatus === 'sending' && (
                         <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
                       )}
                       {chat.lastMessageStatus === 'sent' && (
-                        <div className="text-xs text-gray-500">✓</div>
+                        <Check className="w-3 h-3 text-gray-500" />
                       )}
                       {chat.lastMessageStatus === 'delivered' && (
-                        <div className="text-xs text-violet-500">✓</div>
+                        <Check className="w-3 h-3 text-violet-500" />
                       )}
                       {chat.lastMessageStatus === 'read' && (
-                        <div className="text-xs text-violet-500">✓✓</div>
+                        <CheckCheck className="w-3 h-3 text-violet-500" />
                       )}
                       {chat.lastMessageStatus === 'error' && (
                         <div className="text-xs text-red-500">⚠</div>
                       )}
                     </div>
                   )}
-                  <span className="text-xs ml-2 text-gray-500">
+                  <span className="text-xs ml-1 text-gray-500">
                     {formatTime(chat.lastMessageTime)}
                   </span>
                 </div>
@@ -200,13 +201,22 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
               </p>
 
               <div
-                className={`mr-8 max-w-fit py-1 px-2 rounded-xl bg-stone-200/40 text-sm truncate ${
+                className={`mr-8 max-w-fit py-1 px-2 rounded-xl text-sm truncate ${
                   chat.unreadCount > 0
-                    ? 'text-gray-900 font-semibold'
-                    : 'text-gray-600'
-                }`}
+                    ? 'bg-stone-200 text-gray-700 font-semibold'
+                    : 'bg-stone-200/40 text-gray-600'
+                } ${isUserTyping(chat.id, chat.otherUserId) ? 'bg-transparent' : ''}`}
               >
-                {isUserTyping(chat.id, chat.otherUserId) ? 'Печатает...' : chat.lastMessage}
+                {isUserTyping(chat.id, chat.otherUserId) ? (
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
+                    <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.1s]" />
+                    <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" />
+                    <span className="ml-1 font-semibold text-violet-500">Печатает...</span>
+                  </span>
+                ) : (
+                  chat.lastMessage
+                )}
               </div>
             </div>
           </div>
