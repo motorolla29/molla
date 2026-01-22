@@ -1,16 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 
 interface Chat {
   id: string;
   adTitle: string;
   adPhoto: string;
   adPrice?: string;
+  otherUserId: number;
   otherUserName: string;
   otherUserAvatar?: string;
+  otherUserLastSeenAt?: string | null;
   lastMessage: string;
   lastMessageTime: Date | string;
+  lastMessageStatus?: string | null;
+  lastMessageIsOutgoing?: boolean;
   unreadCount: number;
 }
 
@@ -20,6 +24,18 @@ interface ChatListProps {
 }
 
 export default function ChatList({ chats, onChatSelect }: ChatListProps) {
+  const onlineUserIds = useChatPresenceStore((state) => state.onlineUserIds);
+
+  console.log('ChatList onlineUserIds:', Array.from(onlineUserIds));
+  console.log(
+    'ChatList chats:',
+    chats.map((c) => ({
+      id: c.id,
+      otherUserId: c.otherUserId,
+      name: c.otherUserName,
+    }))
+  );
+
   const formatTime = (date: Date | string) => {
     const now = new Date();
     const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -64,28 +80,28 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
+    <div className="flex-1 max-w-full overflow-y-auto custom-scrollbar">
       {chats.map((chat) => (
         <div
           key={chat.id}
           onClick={() => onChatSelect(chat.id)}
           className="p-4 rounded-2xl border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors"
         >
-          <div className="flex items-center space-x-4">
+          <div className="flex max-w-full items-center space-x-4">
             {/* Визуализация товара с аватаром */}
-            <div className="relative flex-shrink-0">
+            <div className="relative shrink-0">
               {/* Фото товара */}
-              <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100">
+              <div className="w-18 h-18 rounded-xl overflow-hidden bg-gray-100">
                 {chat.adPhoto ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}`}
+                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
                     alt={chat.adTitle}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                     <svg
-                      className="w-7 h-7 text-gray-400"
+                      className="w-8 h-8 text-gray-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -102,10 +118,10 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
               </div>
 
               {/* Аватар собеседника в левом верхнем углу */}
-              <div className="absolute -top-1 -left-1 w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-white">
+              <div className="absolute -top-1.5 -left-1.5 w-9 h-9 rounded-full border-2 border-white overflow-hidden bg-white">
                 {chat.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}`}
+                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}?tr=w-40`}
                     alt={chat.otherUserName}
                     className="w-full h-full object-cover"
                   />
@@ -117,19 +133,55 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                   </div>
                 )}
               </div>
-
-              {/* Индикатор непрочитанных сообщений - убрал из аватара */}
             </div>
 
             {/* Информация о чате */}
-            <div className="flex-1 min-w-0 flex flex-col justify-center">
+            <div className="flex-1 min-w-0 max-w-full flex flex-col justify-center">
               <div className="relative flex items-start justify-between">
-                <h3 className="text-sm font-semibold text-gray-900 truncate">
-                  {chat.otherUserName}
-                </h3>
-                <span className="text-xs text-gray-500 shrink-0">
-                  {formatTime(chat.lastMessageTime)}
-                </span>
+                <div className="flex items-center min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 truncate">
+                    {chat.otherUserName}
+                  </h3>
+                  {/* Онлайн индикатор */}
+                  {(() => {
+                    const isOnline = onlineUserIds.has(
+                      Number(chat.otherUserId)
+                    );
+                    console.log(
+                      `User ${chat.otherUserName} (${chat.otherUserId}): online=${isOnline}`
+                    );
+                    return (
+                      isOnline && (
+                        <div className="shrink-0 w-2 h-2 mx-2 bg-emerald-500 rounded-full" />
+                      )
+                    );
+                  })()}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Статус последнего сообщения (если исходящее) */}
+                  {chat.lastMessageIsOutgoing && chat.lastMessageStatus && (
+                    <div className="flex items-center">
+                      {chat.lastMessageStatus === 'sending' && (
+                        <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                      )}
+                      {chat.lastMessageStatus === 'sent' && (
+                        <div className="text-xs text-violet-500">✓</div>
+                      )}
+                      {chat.lastMessageStatus === 'delivered' && (
+                        <div className="text-xs text-violet-500">✓✓</div>
+                      )}
+                      {chat.lastMessageStatus === 'read' && (
+                        <div className="text-xs text-violet-500">✓✓</div>
+                      )}
+                      {chat.lastMessageStatus === 'error' && (
+                        <div className="text-xs text-red-500">⚠</div>
+                      )}
+                    </div>
+                  )}
+                  <span className="text-xs ml-2 text-gray-500">
+                    {formatTime(chat.lastMessageTime)}
+                  </span>
+                </div>
                 {/* Индикатор непрочитанных сообщений */}
                 {chat.unreadCount > 0 && (
                   <div className="absolute right-0 top-6 bg-amber-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center font-semibold">
@@ -138,7 +190,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                 )}
               </div>
 
-              <p className="text-xs text-gray-600 truncate mb-1">
+              <p className="mr-8 text-xs text-gray-600 truncate mb-1">
                 {chat.adTitle}
                 {chat.adPrice && <span className="mx-1">·</span>}
                 {chat.adPrice && (
@@ -146,15 +198,15 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                 )}
               </p>
 
-              <p
-                className={`text-sm truncate ${
+              <div
+                className={`mr-8 max-w-fit py-1 px-2 rounded-xl bg-stone-200/40 text-sm truncate ${
                   chat.unreadCount > 0
                     ? 'text-gray-900 font-semibold'
                     : 'text-gray-600'
                 }`}
               >
                 {chat.lastMessage}
-              </p>
+              </div>
             </div>
           </div>
         </div>

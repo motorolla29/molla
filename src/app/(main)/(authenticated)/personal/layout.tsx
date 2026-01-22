@@ -29,9 +29,9 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 max-w-full">
         {/* Боковая навигация - всегда рендерится, но скрыта на мобильных через CSS */}
-        <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)] lg:block hidden">
+        <aside className="min-w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)] lg:block hidden">
           <nav className="p-4">
             <div className="space-y-1">
               {navItems.map(({ href, Icon, label }) => {
@@ -65,7 +65,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
         </aside>
 
         {/* Основной контент */}
-        <main className="flex-1">
+        <main className="flex-1 max-w-full lg:max-w-[calc(100%-16rem)]">
           <div>{children}</div>
         </main>
       </div>

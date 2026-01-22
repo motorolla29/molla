@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { lockScrollSimple, unlockScrollSimple } from '@/utils/scroll-lock';
 import ChatArea from '@/components/messenger/chat-area';
+import { useChatSocket } from '@/hooks/useChatSocket';
+import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 
 interface Chat {
   id: string;
@@ -14,9 +16,13 @@ interface Chat {
   adTitle: string;
   adPhoto: string;
   adPrice?: string;
+  adCity: string;
+  adCityLabel: string;
+  adCategory: string;
   otherUserId: number;
   otherUserName: string;
   otherUserAvatar?: string;
+  otherUserLastSeenAt?: string | null;
   lastMessage: string;
   lastMessageTime: Date | string;
   unreadCount: number;
@@ -28,7 +34,7 @@ interface Message {
   senderId: number;
   senderName: string;
   senderAvatar?: string;
-  timestamp: Date;
+  timestamp: Date | string;
   type: 'text' | 'image';
   attachments?: Array<{
     id: string;
@@ -36,13 +42,19 @@ interface Message {
     fileName: string;
     fileType: string;
   }>;
+  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'error';
 }
 
 export default function ChatPage() {
   const { user } = useAuthStore();
-  const router = useRouter();
-  const params = useParams();
-  const chatId = params.chatId as string;
+  const params = useParams<{ chatId: string }>();
+  const chatId = (params?.chatId as string) || '';
+  const { socket } = useChatSocket();
+  const onlineUserIds = useChatPresenceStore((state) => state.onlineUserIds);
+  const updateLastSeen = useChatPresenceStore((state) => state.updateLastSeen);
+  const typingMap = useChatPresenceStore((state) => state.typing);
+  const markTyping = useChatPresenceStore((state) => state.markTyping);
+  const clearTyping = useChatPresenceStore((state) => state.clearTyping);
 
   // Блокировка скролла и прокрутка вверх при заходе на страницу (только для мобильных)
   useEffect(() => {
@@ -81,6 +93,9 @@ export default function ChatPage() {
       if (response.ok) {
         const chatData = await response.json();
         setChat(chatData);
+        if (chatData.otherUserLastSeenAt) {
+          updateLastSeen(chatData.otherUserId, chatData.otherUserLastSeenAt);
+        }
       } else if (response.status === 404) {
         setError('Чат не найден');
       } else {
@@ -107,12 +122,96 @@ export default function ChatPage() {
     }
   };
 
+  // Подключение к сокету и обработка событий
+  useEffect(() => {
+    if (!socket || !chatId || !user) return;
+
+    socket.emit('join_chat', { chatId });
+
+    const handleNewMessage = (payload: any) => {
+      if (payload.chatId !== chatId) return;
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === payload.id);
+        if (exists) return prev;
+        return [
+          ...prev,
+          {
+            id: payload.id || payload.tempId || `socket-${Date.now()}`,
+            content: payload.content,
+            senderId: payload.senderId,
+            senderName: '',
+            timestamp: payload.timestamp || new Date(),
+            type: payload.type === 'image' ? 'image' : 'text',
+            status: payload.status || 'sent',
+            attachments: payload.attachments || [],
+          },
+        ];
+      });
+    };
+
+    const handleMessageSaved = ({
+      tempId,
+      message,
+    }: {
+      tempId?: string;
+      message: any;
+    }) => {
+      if (message.chatId !== chatId) return;
+      if (tempId) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempId
+              ? {
+                  ...m,
+                  id: message.id,
+                  status: message.status || 'sent',
+                  timestamp: message.timestamp || m.timestamp,
+                }
+              : m
+          )
+        );
+      } else {
+        handleNewMessage(message);
+      }
+    };
+
+    const handleTyping = ({
+      chatId: incomingChatId,
+      fromUserId,
+      at,
+    }: {
+      chatId: string;
+      fromUserId: number;
+      at: number;
+    }) => {
+      if (incomingChatId !== chatId || fromUserId === Number(user.id)) return;
+      markTyping(chatId, fromUserId, at);
+    };
+
+    socket.on('new_message', handleNewMessage);
+    socket.on('message_saved', handleMessageSaved);
+    socket.on('typing', handleTyping);
+
+    return () => {
+      socket.emit('leave_chat', { chatId });
+      socket.off('new_message', handleNewMessage);
+      socket.off('message_saved', handleMessageSaved);
+      socket.off('typing', handleTyping);
+    };
+  }, [socket, chatId, user, markTyping]);
+
   const handleSendMessage = async (
     content: string,
     attachments?: File[],
     tempMessageId?: string
   ) => {
     if (!user) return;
+
+    // Без вложений — отправляем сразу через сокет (сервер сам сохранит)
+    if (!attachments || attachments.length === 0) {
+      socket?.emit('send_message', { chatId, content, tempId: tempMessageId });
+      return;
+    }
 
     const formData = new FormData();
     formData.append('chatId', chatId);
@@ -131,13 +230,78 @@ export default function ChatPage() {
 
     if (response.ok) {
       const data = await response.json();
-      // Возвращаем ID созданного сообщения
+      const persisted: Message | null = data.message
+        ? {
+            id: data.message.id,
+            chatId: data.message.chatId,
+            senderId: Number(user.id),
+            senderName: user.name,
+            content: data.message.content,
+            timestamp: data.message.createdAt,
+            type:
+              data.message.messageType === 'image'
+                ? 'image'
+                : ('text' as const),
+            status: data.message.status as Message['status'],
+            attachments: (data.message.attachments || []).map((att: any) => ({
+              id: att.id,
+              fileUrl: att.fileUrl,
+              fileName: att.fileName,
+              fileType: att.fileType,
+            })),
+          }
+        : null;
+
+      if (persisted) {
+        // Don't add locally - rely on real-time broadcast via socket
+        socket?.emit('send_message', {
+          chatId,
+          tempId: tempMessageId,
+          persistedMessage: persisted,
+        });
+      }
+
       return { messageId: data.messageId };
     } else {
       // При ошибке кидаем исключение
       throw new Error('Failed to send message');
     }
   };
+
+  const handleTyping = (() => {
+    let lastSent = 0;
+    return () => {
+      const now = Date.now();
+      if (now - lastSent > 500) {
+        socket?.emit('typing', { chatId });
+        lastSent = now;
+      }
+    };
+  })();
+
+  const otherUserId = chat?.otherUserId;
+  const isOtherUserOnline =
+    otherUserId !== undefined && onlineUserIds.has(Number(otherUserId));
+
+  console.log('Chat page onlineUserIds:', Array.from(onlineUserIds));
+  console.log('Chat page otherUserId:', otherUserId, 'isOtherUserOnline:', isOtherUserOnline);
+
+  const typingForChat = chatId
+    ? typingMap[chatId]?.[otherUserId ?? -1]
+    : undefined;
+  const isTyping =
+    !!typingForChat && Date.now() - typingForChat < 3000 && !!otherUserId;
+
+  // Автоматически очищаем typing состояние через 3 секунды
+  useEffect(() => {
+    if (!isTyping || !chatId || !otherUserId) return;
+
+    const timeout = setTimeout(() => {
+      clearTyping(chatId, otherUserId);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [isTyping, chatId, otherUserId, clearTyping]);
 
   if (!user) {
     return <div>Загрузка...</div>;
@@ -182,6 +346,10 @@ export default function ChatPage() {
         messages={messages}
         currentUserId={parseInt(user.id)}
         onSendMessage={handleSendMessage}
+        onTyping={handleTyping}
+        isOtherUserOnline={!!isOtherUserOnline}
+        otherUserLastSeen={chat?.otherUserLastSeenAt || null}
+        isTyping={isTyping}
         isLoading={isLoading}
         showBackButton={true}
       />

@@ -7,11 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface MessageInputProps {
   onSendMessage: (content: string, attachments?: File[]) => void;
   disabled?: boolean;
+  onTyping?: () => void;
 }
 
 export default function MessageInput({
   onSendMessage,
   disabled = false,
+  onTyping,
 }: MessageInputProps) {
   const [message, setMessage] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -22,10 +24,12 @@ export default function MessageInput({
   // Закрытие emoji picker при клике вне
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
       if (
         emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target as Node) &&
-        !event.target.closest('[data-emoji-button]')
+        !emojiPickerRef.current.contains(target) &&
+        !target.closest('[data-emoji-button]')
       ) {
         setShowEmojiPicker(false);
       }
@@ -55,6 +59,11 @@ export default function MessageInput({
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    onTyping?.(); // Вызываем typing при каждом изменении текста
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     // Берем только первое изображение
@@ -77,6 +86,12 @@ export default function MessageInput({
   const insertEmoji = (emoji: string) => {
     setMessage((prev) => prev + emoji);
     // Не закрываем picker, чтобы можно было выбрать несколько эмодзи
+    handleTyping(); // Вызываем typing при вставке эмодзи
+  };
+
+  const handleChange = (value: string) => {
+    setMessage(value);
+    onTyping?.();
   };
 
   // Простой набор эмодзи
@@ -129,7 +144,7 @@ export default function MessageInput({
         <div className="flex-1 relative">
           <textarea
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Напишите сообщение..."
             className="w-full flex px-4 py-3 pr-20 outline-1 outline-gray-300 rounded-lg resize-none focus:outline-violet-500 transition-colors duration-200"
@@ -197,7 +212,7 @@ export default function MessageInput({
         <button
           onClick={handleSend}
           disabled={disabled || (!message.trim() && !attachment)}
-          className="bg-violet-500 hover:bg-violet-600 disabled:bg-gray-300 text-white p-3 rounded-lg transition-colors flex-shrink-0 h-12 w-12 flex items-center justify-center"
+          className="bg-violet-500 hover:bg-violet-600 disabled:bg-gray-300 text-white p-3 rounded-lg transition-colors shrink-0 h-12 w-12 flex items-center justify-center"
         >
           <Send size={18} />
         </button>

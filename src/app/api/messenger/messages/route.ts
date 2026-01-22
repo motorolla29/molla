@@ -121,10 +121,34 @@ export async function POST(request: NextRequest) {
       data: { updatedAt: new Date() },
     });
 
+    const messageWithAttachments = await prisma.message.findUnique({
+      where: { id: message.id },
+      include: {
+        attachments: true,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Message sent successfully',
       messageId: message.id,
+      message: messageWithAttachments
+        ? {
+            id: messageWithAttachments.id,
+            chatId: messageWithAttachments.chatId,
+            senderId: messageWithAttachments.senderId,
+            content: messageWithAttachments.content || '',
+            messageType: messageWithAttachments.messageType,
+            status: messageWithAttachments.status,
+            createdAt: messageWithAttachments.createdAt,
+            attachments: messageWithAttachments.attachments.map((attachment) => ({
+              id: attachment.id,
+              fileUrl: attachment.fileUrl,
+              fileName: attachment.fileName,
+              fileType: attachment.fileType,
+            })),
+          }
+        : null,
     });
   } catch (error) {
     console.error('Error sending message:', error);

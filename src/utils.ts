@@ -283,3 +283,21 @@ export function getFavoritesWord(count: number): string {
   }
   return 'человек добавили в избранное';
 }
+
+export const formatLastSeen = (value?: string | null) => {
+  if (!value) return '';
+  const date = new Date(value);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  if (diffMinutes < 1) return 'онлайн';
+  if (diffMinutes < 60) return `${diffMinutes} мин назад`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} ч назад`;
+  return date.toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};

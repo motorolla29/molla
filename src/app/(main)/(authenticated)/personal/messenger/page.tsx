@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import ChatList from '@/components/messenger/chat-list';
+import { useChatSocket } from '@/hooks/useChatSocket';
+import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 
 interface Chat {
   id: string;
@@ -14,6 +16,7 @@ interface Chat {
   otherUserId: number;
   otherUserName: string;
   otherUserAvatar?: string;
+  otherUserLastSeenAt?: string | null;
   lastMessage: string;
   lastMessageTime: Date | string;
   unreadCount: number;
@@ -24,6 +27,8 @@ export default function MessengerPage() {
   const router = useRouter();
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  useChatSocket();
+  const updateLastSeen = useChatPresenceStore((state) => state.updateLastSeen);
 
   // Прокрутка вверх при заходе на страницу
   useEffect(() => {
@@ -44,6 +49,11 @@ export default function MessengerPage() {
       if (response.ok) {
         const data = await response.json();
         setChats(data);
+        data.forEach((chat: Chat) => {
+          if (chat.otherUserLastSeenAt) {
+            updateLastSeen(chat.otherUserId, chat.otherUserLastSeenAt);
+          }
+        });
       }
     } catch (error) {
       console.error('Error loading chats:', error);

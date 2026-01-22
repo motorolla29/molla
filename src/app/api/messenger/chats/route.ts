@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
             title: true,
             photos: true,
             city: true,
+            cityLabel: true,
             category: true,
           },
         },
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             avatar: true,
+            lastSeenAt: true,
           },
         },
         seller: {
@@ -47,6 +49,7 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             avatar: true,
+            lastSeenAt: true,
           },
         },
         messages: {
@@ -57,6 +60,8 @@ export async function GET(request: NextRequest) {
           select: {
             content: true,
             createdAt: true,
+            status: true,
+            senderId: true,
             attachments: {
               select: {
                 fileType: true,
@@ -87,12 +92,15 @@ export async function GET(request: NextRequest) {
         otherUserId: otherUser.id,
         otherUserName: otherUser.name,
         otherUserAvatar: otherUser.avatar,
+        otherUserLastSeenAt: otherUser.lastSeenAt,
         lastMessage: lastMessage
           ? lastMessage.attachments.length > 0
             ? '📎 Фото'
             : lastMessage.content || 'Сообщение'
           : 'Нет сообщений',
         lastMessageTime: lastMessage?.createdAt || chat.createdAt,
+        lastMessageStatus: lastMessage?.status || null,
+        lastMessageIsOutgoing: lastMessage ? lastMessage.senderId === userId : false,
         unreadCount: 0, // Пока без подсчета непрочитанных
       };
     });

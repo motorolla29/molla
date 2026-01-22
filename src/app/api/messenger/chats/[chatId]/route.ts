@@ -48,6 +48,7 @@ export async function GET(
             id: true,
             name: true,
             avatar: true,
+            lastSeenAt: true,
           },
         },
         seller: {
@@ -55,6 +56,7 @@ export async function GET(
             id: true,
             name: true,
             avatar: true,
+            lastSeenAt: true,
           },
         },
       },
@@ -80,6 +82,7 @@ export async function GET(
       otherUserId: otherUser.id,
       otherUserName: otherUser.name,
       otherUserAvatar: otherUser.avatar,
+      otherUserLastSeenAt: otherUser.lastSeenAt,
       lastMessage: '', // Не нужно для страницы чата
       lastMessageTime: chat.createdAt,
       unreadCount: 0,
