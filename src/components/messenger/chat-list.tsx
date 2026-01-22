@@ -17,6 +17,7 @@ interface Chat {
   lastMessageIsOutgoing?: boolean;
   unreadCount: number;
 }
+ 
 
 interface ChatListProps {
   chats: Chat[];
@@ -25,8 +26,10 @@ interface ChatListProps {
 
 export default function ChatList({ chats, onChatSelect }: ChatListProps) {
   const onlineUserIds = useChatPresenceStore((state) => state.onlineUserIds);
+  const typingMap = useChatPresenceStore((state) => state.typing);
 
   console.log('ChatList onlineUserIds:', Array.from(onlineUserIds));
+  console.log('ChatList typingMap:', typingMap);
   console.log(
     'ChatList chats:',
     chats.map((c) => ({
@@ -52,6 +55,15 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
       day: 'numeric',
       month: 'short',
     });
+  };
+
+  const isUserTyping = (chatId: string, otherUserId: number) => {
+    const typingForChat = typingMap[chatId]?.[otherUserId];
+    const isTyping = !!typingForChat && Date.now() - typingForChat < 3000;
+    if (isTyping) {
+      console.log(`[TYPING] isUserTyping: ${chatId}-${otherUserId}-${typingForChat} - TRUE`);
+    }
+    return isTyping;
   };
 
   if (chats.length === 0) {
@@ -205,7 +217,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                     : 'text-gray-600'
                 }`}
               >
-                {chat.lastMessage}
+                {isUserTyping(chat.id, chat.otherUserId) ? 'Печатает...' : chat.lastMessage}
               </div>
             </div>
           </div>

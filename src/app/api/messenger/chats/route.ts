@@ -75,11 +75,20 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Форматируем данные для фронтенда
-    const formattedChats = chats.map((chat) => {
+    // Форматируем данные для фронтенда и подсчитываем непрочитанные сообщения
+    const formattedChats = await Promise.all(chats.map(async (chat) => {
       const isBuyer = chat.buyerId === userId;
       const otherUser = isBuyer ? chat.seller : chat.buyer;
       const lastMessage = chat.messages[0];
+
+      // Подсчитываем непрочитанные сообщения параллельно
+      const unreadCount = await prisma.message.count({
+        where: {
+          chatId: chat.id,
+          senderId: { not: userId }, // Сообщения от другого пользователя
+          status: { not: 'read' }, // Не прочитанные
+        },
+      });
 
       return {
         id: chat.id,
@@ -94,16 +103,18 @@ export async function GET(request: NextRequest) {
         otherUserAvatar: otherUser.avatar,
         otherUserLastSeenAt: otherUser.lastSeenAt,
         lastMessage: lastMessage
-          ? lastMessage.attachments.length > 0
+          ? (lastMessage.attachments && lastMessage.attachments.length > 0 &&
+             lastMessage.attachments.some((att: any) => att.fileType?.startsWith('image/')) &&
+             !lastMessage.content?.trim())
             ? '📎 Фото'
             : lastMessage.content || 'Сообщение'
           : 'Нет сообщений',
         lastMessageTime: lastMessage?.createdAt || chat.createdAt,
         lastMessageStatus: lastMessage?.status || null,
         lastMessageIsOutgoing: lastMessage ? lastMessage.senderId === userId : false,
-        unreadCount: 0, // Пока без подсчета непрочитанных
+        unreadCount,
       };
-    });
+    }));
 
     return NextResponse.json(formattedChats);
   } catch (error) {

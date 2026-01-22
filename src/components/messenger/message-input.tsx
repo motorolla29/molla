@@ -8,12 +8,14 @@ interface MessageInputProps {
   onSendMessage: (content: string, attachments?: File[]) => void;
   disabled?: boolean;
   onTyping?: () => void;
+  onStopTyping?: () => void;
 }
 
 export default function MessageInput({
   onSendMessage,
   disabled = false,
   onTyping,
+  onStopTyping,
 }: MessageInputProps) {
   const [message, setMessage] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -49,6 +51,8 @@ export default function MessageInput({
       onSendMessage(message.trim(), attachment ? [attachment] : undefined);
       setMessage('');
       setAttachment(null);
+      // Прекращаем индикацию печати при отправке сообщения
+      onStopTyping?.();
     }
   };
 
@@ -57,11 +61,6 @@ export default function MessageInput({
       e.preventDefault();
       handleSend();
     }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    onTyping?.(); // Вызываем typing при каждом изменении текста
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,7 +90,12 @@ export default function MessageInput({
 
   const handleChange = (value: string) => {
     setMessage(value);
-    onTyping?.();
+    if (value.trim()) {
+      onTyping?.();
+    } else {
+      // Если текст удален полностью, прекращаем индикацию печати
+      onStopTyping?.();
+    }
   };
 
   // Простой набор эмодзи

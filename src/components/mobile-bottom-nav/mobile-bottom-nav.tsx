@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Home, Heart, List, MessageCircle, User } from 'lucide-react';
+import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 
 const navItems = [
   { href: '/', Icon: Home, label: 'Главная', id: 'home' },
@@ -23,6 +24,7 @@ const NAV_CONTEXT_KEY = 'mobile-nav-context';
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const [navContext, setNavContext] = useState<string | null>(null);
+  const totalUnreadCount = useUnreadMessagesStore((state) => state.totalUnreadCount);
 
   // Загружаем сохраненный контекст при монтировании
   useEffect(() => {
@@ -93,9 +95,16 @@ export default function MobileBottomNav() {
             <Link
               key={href}
               href={href}
-              className={`flex-1 min-w-0 flex flex-col items-center justify-center mt-1 ${colorClass}`}
+              className={`flex-1 min-w-0 flex flex-col items-center justify-center mt-1 ${colorClass} relative`}
             >
-              <Icon size={18} className={colorClass} />
+              <div className="relative">
+                <Icon size={18} className={colorClass} />
+                {id === 'chats' && totalUnreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold text-[10px]">
+                    {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
+                  </div>
+                )}
+              </div>
               {/* Показываем подпись только на ширине >=640px, иначе скрываем */}
               <span
                 className={`text-[10px] mb-1 mt-0.5 truncate ${colorClass} hidden min-[320px]:block`}

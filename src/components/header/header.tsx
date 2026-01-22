@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 
 export default function Header() {
   const { isLoggedIn, user, logout } = useAuthStore();
+  const totalUnreadCount = useUnreadMessagesStore((state) => state.totalUnreadCount);
 
   return (
     <div className="w-full hidden lg:block sticky top-0 z-10 bg-neutral-100 h-15">
@@ -36,7 +38,7 @@ export default function Header() {
               clipRule="evenodd"
             />
           </svg>
-          <Link href="/personal/messenger">
+          <Link href="/personal/messenger" className="relative">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -49,6 +51,11 @@ export default function Header() {
                 clipRule="evenodd"
               />
             </svg>
+            {totalUnreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+              </div>
+            )}
           </Link>
 
           {isLoggedIn && user ? (

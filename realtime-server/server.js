@@ -152,6 +152,18 @@ io.on('connection', async (socket) => {
   );
 
   socket.on(
+    'stop_typing',
+    ({ chatId }) => {
+      if (!chatId) return;
+      socket.to(`chat:${chatId}`).emit('stop_typing', {
+        chatId,
+        fromUserId: userId,
+        at: Date.now(),
+      });
+    }
+  );
+
+  socket.on(
     'send_message',
     async ({ chatId, content, tempId, persistedMessage }) => {
       if (!chatId) return;
@@ -199,6 +211,21 @@ io.on('connection', async (socket) => {
 
       io.to(`chat:${chatId}`).emit('new_message', { ...payload, tempId });
       socket.emit('message_saved', { tempId, message: payload });
+
+      // Notify the recipient about unread message update
+      const recipientId = chat.buyerId === userId ? chat.sellerId : chat.buyerId;
+      const unreadCount = await prisma.message.count({
+        where: {
+          chatId: chatId,
+          senderId: { not: recipientId }, // Messages NOT from the recipient (i.e., from the sender)
+          status: { not: 'read' }, // Not read by the recipient
+        },
+      });
+
+      io.to(`user:${recipientId}`).emit('unread_update', {
+        chatId,
+        unreadCount,
+      });
     }
   );
 

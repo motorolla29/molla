@@ -2,12 +2,11 @@
 
 import { create } from 'zustand';
 
-type TypingMap = Record<string, Record<number, number>>; // chatId -> userId -> timestamp
 
 interface ChatPresenceState {
   onlineUserIds: Set<number>;
   lastSeen: Record<number, string>;
-  typing: TypingMap;
+  typing: Record<string, Record<number, number>>; // chatId -> userId -> timestamp;
   setOnline: (userId: number) => void;
   setOffline: (userId: number, lastSeenAt?: string | Date) => void;
   setSnapshot: (userIds: number[]) => void;
@@ -60,6 +59,7 @@ export const useChatPresenceStore = create<ChatPresenceState>((set) => ({
   markTyping: (chatId, userId, at) =>
     set((state) => {
       const typingForChat = state.typing[chatId] || {};
+      console.log(`[TYPING] markTyping: ${chatId}-${userId}-${at}`);
       return {
         ...state,
         typing: {
@@ -73,6 +73,7 @@ export const useChatPresenceStore = create<ChatPresenceState>((set) => ({
       const typingForChat = state.typing[chatId];
       if (!typingForChat) return state;
       const { [userId]: _, ...rest } = typingForChat;
+      console.log(`[TYPING] clearTyping: ${chatId}-${userId}`);
       return {
         ...state,
         typing: { ...state.typing, [chatId]: rest },

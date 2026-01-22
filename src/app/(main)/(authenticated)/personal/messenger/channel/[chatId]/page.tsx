@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -9,6 +9,7 @@ import { lockScrollSimple, unlockScrollSimple } from '@/utils/scroll-lock';
 import ChatArea from '@/components/messenger/chat-area';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
+import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 
 interface Chat {
   id: string;
@@ -79,13 +80,34 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref для управления таймером typing
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Загрузка информации о чате
   useEffect(() => {
     if (user && chatId) {
       loadChatInfo();
       loadMessages();
+      markMessagesAsRead();
     }
   }, [user, chatId]);
+
+  // Автоматическая отметка сообщений как прочитанные при входе в чат
+  const markMessagesAsRead = async () => {
+    try {
+      const response = await fetch(`/api/messenger/chats/${chatId}/read`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Обновляем глобальный store с непрочитанными сообщениями
+        const { markChatAsRead } = useUnreadMessagesStore.getState();
+        markChatAsRead(chatId);
+      }
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  };
 
   const loadChatInfo = async () => {
     try {
@@ -129,8 +151,11 @@ export default function ChatPage() {
 
     socket.emit('join_chat', { chatId });
 
-    const handleNewMessage = (payload: any) => {
+    const handleNewMessage = async (payload: any) => {
       if (payload.chatId !== chatId) return;
+
+      const isFromOtherUser = payload.senderId !== Number(user.id);
+
       setMessages((prev) => {
         const exists = prev.some((m) => m.id === payload.id);
         if (exists) return prev;
@@ -143,11 +168,22 @@ export default function ChatPage() {
             senderName: '',
             timestamp: payload.timestamp || new Date(),
             type: payload.type === 'image' ? 'image' : 'text',
-            status: payload.status || 'sent',
+            status: isFromOtherUser ? 'read' : (payload.status || 'sent'), // Сообщения от других пользователей сразу отмечаются как прочитанные
             attachments: payload.attachments || [],
           },
         ];
       });
+
+      // Если сообщение от другого пользователя, автоматически отмечаем его как прочитанное
+      if (isFromOtherUser) {
+        try {
+          await fetch(`/api/messenger/chats/${chatId}/read`, {
+            method: 'POST',
+          });
+        } catch (error) {
+          console.error('Error auto-marking message as read:', error);
+        }
+      }
 
       // Smart scroll: only scroll if user is near bottom
       setTimeout(() => {
@@ -198,18 +234,50 @@ export default function ChatPage() {
       at: number;
     }) => {
       if (incomingChatId !== chatId || fromUserId === Number(user.id)) return;
+
+      // Очищаем предыдущий таймер
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Устанавливаем typing состояние
       markTyping(chatId, fromUserId, at);
+
+      // Запускаем новый таймер на 3 секунды
+      typingTimeoutRef.current = setTimeout(() => {
+        clearTyping(chatId, fromUserId);
+        typingTimeoutRef.current = null;
+      }, 3000);
+    };
+
+    const handleStopTyping = ({
+      chatId: incomingChatId,
+      fromUserId,
+    }: {
+      chatId: string;
+      fromUserId: number;
+    }) => {
+      if (incomingChatId !== chatId || fromUserId === Number(user.id)) return;
+
+      // Очищаем таймер и состояние
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      clearTyping(chatId, fromUserId);
     };
 
     socket.on('new_message', handleNewMessage);
     socket.on('message_saved', handleMessageSaved);
     socket.on('typing', handleTyping);
+    socket.on('stop_typing', handleStopTyping);
 
     return () => {
       socket.emit('leave_chat', { chatId });
       socket.off('new_message', handleNewMessage);
       socket.off('message_saved', handleMessageSaved);
       socket.off('typing', handleTyping);
+      socket.off('stop_typing', handleStopTyping);
     };
   }, [socket, chatId, user, markTyping]);
 
@@ -219,6 +287,9 @@ export default function ChatPage() {
     tempMessageId?: string
   ) => {
     if (!user) return;
+
+    // Прекращаем индикацию печати при отправке сообщения
+    socket?.emit('stop_typing', { chatId });
 
     // Без вложений — отправляем сразу через сокет (сервер сам сохранит)
     if (!attachments || attachments.length === 0) {
@@ -292,6 +363,10 @@ export default function ChatPage() {
     };
   })();
 
+  const handleStopTyping = () => {
+    socket?.emit('stop_typing', { chatId });
+  };
+
   const otherUserId = chat?.otherUserId;
   const isOtherUserOnline =
     otherUserId !== undefined && onlineUserIds.has(Number(otherUserId));
@@ -305,16 +380,14 @@ export default function ChatPage() {
   const isTyping =
     !!typingForChat && Date.now() - typingForChat < 3000 && !!otherUserId;
 
-  // Автоматически очищаем typing состояние через 3 секунды
+  // Очищаем таймер при размонтировании компонента
   useEffect(() => {
-    if (!isTyping || !chatId || !otherUserId) return;
-
-    const timeout = setTimeout(() => {
-      clearTyping(chatId, otherUserId);
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-  }, [isTyping, chatId, otherUserId, clearTyping]);
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (!user) {
     return <div>Загрузка...</div>;
@@ -360,6 +433,7 @@ export default function ChatPage() {
         currentUserId={parseInt(user.id)}
         onSendMessage={handleSendMessage}
         onTyping={handleTyping}
+        onStopTyping={handleStopTyping}
         isOtherUserOnline={!!isOtherUserOnline}
         otherUserLastSeen={chat?.otherUserLastSeenAt || null}
         isTyping={isTyping}

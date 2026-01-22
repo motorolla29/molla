@@ -48,6 +48,7 @@ interface ChatAreaProps {
     tempMessageId?: string
   ) => Promise<{ messageId?: string } | void>;
   onTyping?: () => void;
+  onStopTyping?: () => void;
   isOtherUserOnline?: boolean;
   otherUserLastSeen?: string | null;
   isTyping?: boolean;
@@ -61,6 +62,7 @@ export default function ChatArea({
   currentUserId,
   onSendMessage,
   onTyping,
+  onStopTyping,
   isOtherUserOnline = false,
   otherUserLastSeen,
   isTyping = false,
@@ -554,6 +556,7 @@ export default function ChatArea({
           onSendMessage={handleSendMessage}
           disabled={isLoading}
           onTyping={onTyping}
+          onStopTyping={onStopTyping}
         />
       </div>
 
