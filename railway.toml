@@ -2,5 +2,6 @@
 builder = "NIXPACKS"
 
 [deploy]
+rootDirectory = "realtime-server"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
