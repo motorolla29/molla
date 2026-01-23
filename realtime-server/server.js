@@ -178,16 +178,10 @@ async function ensureChatAccess(chatId, userId) {
 }
 
 io.on('connection', async (socket) => {
-  console.log('New socket connection attempt:', socket.id);
-
   const token = parseTokenFromHandshake(socket.handshake);
-  console.log('Token from handshake:', token ? 'present' : 'missing');
-
   const payload = verifyAuth(token);
-  console.log('Auth payload:', payload ? { userId: payload.userId } : 'null');
 
   if (!payload) {
-    console.log('Authentication failed, disconnecting socket');
     socket.emit('auth_error', { reason: 'unauthorized' });
     socket.disconnect(true);
     return;
@@ -195,7 +189,6 @@ io.on('connection', async (socket) => {
 
   const userId = Number(payload.userId);
   socket.data.userId = userId;
-  console.log(`User ${userId} authenticated successfully`);
 
   // Presence: mark online
   const state = onlineUsers.get(userId) || { sockets: new Set(), lastSeenAt: null };

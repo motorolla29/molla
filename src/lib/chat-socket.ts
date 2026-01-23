@@ -27,13 +27,10 @@ export function getSocket(): Socket {
   const url =
     process.env.NEXT_PUBLIC_SOCKET_URL?.trim() || 'http://localhost:4001';
 
-  const tokenFromCookie = parseCookie('token');
-
   socket = io(url, {
     transports: ['websocket'],
     autoConnect: true,
-    withCredentials: true,
-    auth: tokenFromCookie ? { token: tokenFromCookie } : undefined,
+    withCredentials: true, // Это должно передавать куки автоматически
   });
 
   status = 'connecting';
