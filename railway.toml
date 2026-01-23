@@ -5,3 +5,7 @@ builder = "NIXPACKS"
 rootDirectory = "realtime-server"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
+
+[environments]
+[environments.production]
+NIXPACKS_NODE_VERSION = "20"
