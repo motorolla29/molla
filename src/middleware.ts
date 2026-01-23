@@ -18,6 +18,7 @@ export function middleware(request: NextRequest) {
   const protectedRoutes = [
     '/personal/my-adds',
     '/personal/profile',
+    '/personal/messenger',
     '/ad/create',
     '/ad/edit',
   ];

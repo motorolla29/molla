@@ -246,15 +246,33 @@ export default function ChatArea({
           <div className="relative shrink-0">
             {/* Фото товара */}
             <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
-              {chat?.adPhoto ? (
+              {chat ? (
                 <Link
                   href={`/${chat.adCityLabel}/${chat.adCategory}/${chat.adId}`}
                 >
+                {chat.adPhoto ? (
                   <img
                     src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-80`}
                     alt={chat.adTitle}
                     className="w-full h-full object-cover cursor-pointer transition-opacity"
                   />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                )}
                 </Link>
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -280,14 +298,14 @@ export default function ChatArea({
               <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
                 {chat?.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}`}
-                    alt={chat.otherUserName}
+                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}`}
+                    alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-violet-500 flex items-center justify-center">
                     <span className="text-white font-semibold text-xs">
-                      {chat?.otherUserName.charAt(0).toUpperCase()}
+                      {chat?.otherUserName?.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
@@ -335,7 +353,7 @@ export default function ChatArea({
               {chat?.adTitle || 'Загрузка товара...'}
               {chat?.adPrice && <span className="mx-1">·</span>}
               {chat?.adPrice && (
-                <span className="text-xs text-gray-900">{chat.adPrice}</span>
+                <span className="text-xs text-gray-900">{chat?.adPrice}</span>
               )}
             </p>
           </div>
@@ -400,8 +418,8 @@ export default function ChatArea({
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-violet-500 flex items-center justify-center">
                       {chat?.otherUserAvatar ? (
                         <img
-                          src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}?tr=w-32,h-32`}
-                          alt={chat.otherUserName}
+                          src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-32,h-32`}
+                          alt={chat?.otherUserName}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -523,8 +541,8 @@ export default function ChatArea({
               <div className="w-8 h-8 rounded-full overflow-hidden bg-violet-500 flex items-center justify-center">
                 {chat?.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}?tr=w-32,h-32`}
-                    alt={chat.otherUserName}
+                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-32,h-32`}
+                    alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
