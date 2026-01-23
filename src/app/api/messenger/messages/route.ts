@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Message sent successfully',
+      statusMessage: 'Message sent successfully',
       messageId: message.id,
       message: messageWithAttachments
         ? {
