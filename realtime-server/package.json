@@ -4,7 +4,6 @@
   "description": "Socket.IO server for Molla real-time chat",
   "main": "server.js",
   "scripts": {
-    "build": "cp -r ../node_modules/.prisma . && cp -r ../node_modules/@prisma .",
     "start": "node server.js"
   },
   "dependencies": {
