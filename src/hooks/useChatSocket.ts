@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Socket } from 'socket.io-client';
 import {
   getConnectionStatus,
   getSocket,
