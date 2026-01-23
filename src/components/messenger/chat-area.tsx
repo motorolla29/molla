@@ -249,6 +249,7 @@ export default function ChatArea({
               {chat ? (
                 <Link
                   href={`/${chat.adCityLabel}/${chat.adCategory}/${chat.adId}`}
+                  target="blank"
                 >
                 {chat.adPhoto ? (
                   <img
@@ -294,7 +295,7 @@ export default function ChatArea({
             </div>
 
             {/* Аватар собеседника в левом верхнем углу */}
-            <Link href={`/user/${chat?.otherUserId}/active`}>
+            <Link href={`/user/${chat?.otherUserId}/active`} target="blank">
               <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
                 {chat?.otherUserAvatar ? (
                   <img
