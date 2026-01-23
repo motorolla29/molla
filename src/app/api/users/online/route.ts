@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Получить статусы онлайн для списка пользователей
-// Пользователь считается онлайн, если lastSeenAt обновлялся в последние 30 секунд
+// Пользователь считается онлайн, если lastSeenAt обновлялся в последние 60 секунд
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Получаем статусы пользователей
-    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+    const minuteAgo = new Date(Date.now() - 60 * 1000);
 
     const users = await prisma.seller.findMany({
       where: {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     const statusMap: Record<number, { isOnline: boolean; lastSeenAt: string | null }> = {};
 
     users.forEach(user => {
-      const isOnline = user.lastSeenAt && user.lastSeenAt >= thirtySecondsAgo;
+      const isOnline = !!(user.lastSeenAt && user.lastSeenAt >= minuteAgo);
       statusMap[user.id] = {
         isOnline,
         lastSeenAt: user.lastSeenAt?.toISOString() || null,

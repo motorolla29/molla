@@ -31,12 +31,21 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
   const { fetchUsersStatuses, getUserStatus } = useOnlineUsersStore();
   const typingMap = useChatPresenceStore((state) => state.typing);
 
-  // Загружаем статусы пользователей при монтировании
+  // Загружаем статусы пользователей при монтировании и обновляем каждые 5 минут
   useEffect(() => {
     const userIds = chats.map(chat => chat.otherUserId);
     if (userIds.length > 0) {
       fetchUsersStatuses(userIds);
     }
+
+    // Обновляем статусы каждые 30 сек
+    const interval = setInterval(() => {
+      if (userIds.length > 0) {
+        fetchUsersStatuses(userIds);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [chats, fetchUsersStatuses]);
 
   const formatTime = (date: Date | string) => {
@@ -208,12 +217,14 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                 } ${isUserTyping(chat.id, chat.otherUserId) ? 'bg-transparent' : ''}`}
               >
                 {isUserTyping(chat.id, chat.otherUserId) ? (
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
-                    <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.1s]" />
-                    <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" />
-                    <span className="ml-1 font-semibold text-violet-500">Печатает...</span>
-                  </span>
+                  <div className="">
+                    <div className='inline-block align-baseline'>
+                      <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
+                      <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.1s] ml-0.5" />
+                      <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce ml-0.5" />
+                    </div>
+                    <span className="inline-block ml-1 align-baseline font-semibold text-violet-500">Печатает...</span>
+                  </div>
                 ) : (
                   chat.lastMessage
                 )}

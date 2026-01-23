@@ -11,8 +11,8 @@ export default function GlobalActivityTracker() {
     if (!user) return;
 
     const now = Date.now();
-    // Обновляем не чаще чем раз в 30 секунд
-    if (now - lastUpdateRef.current < 30000) return;
+    // Обновляем не чаще чем раз в 45 секунд
+    if (now - lastUpdateRef.current < 45000) return;
 
     try {
       lastUpdateRef.current = now;
