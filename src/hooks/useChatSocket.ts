@@ -10,12 +10,19 @@ import {
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 
 export function useChatSocket() {
-  const [socket] = useState(() => getSocket());
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState<SocketConnectionStatus>(
     getConnectionStatus().status
   );
 
   const { setOnline, setOffline, setSnapshot } = useChatPresenceStore();
+
+  useEffect(() => {
+    // Инициализируем сокет асинхронно
+    getSocket().then(setSocket).catch((error) => {
+      console.error('Failed to get socket:', error);
+    });
+  }, []);
 
   useEffect(() => {
     const off = useSocketConnection((state) => {

@@ -15,25 +15,40 @@ function notify() {
   listeners.forEach((cb) => cb(status, lastError));
 }
 
-function parseCookie(name: string) {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : null;
+async function getSocketToken(): Promise<string | null> {
+  try {
+    const response = await fetch('/api/auth/socket-token', {
+      method: 'GET',
+      credentials: 'include', // Важно для отправки cookies
+    });
+
+    if (!response.ok) {
+      console.error('Failed to get socket token:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.token || null;
+  } catch (error) {
+    console.error('Error fetching socket token:', error);
+    return null;
+  }
 }
 
-export function getSocket(): Socket {
+export async function getSocket(): Promise<Socket> {
   if (socket) return socket;
 
   const url =
     process.env.NEXT_PUBLIC_SOCKET_URL?.trim() || 'http://localhost:4001';
 
-  const tokenFromCookie = parseCookie('token');
+  // Получаем токен через API
+  const token = await getSocketToken();
 
   socket = io(url, {
     transports: ['websocket'],
     autoConnect: true,
     withCredentials: true,
-    auth: tokenFromCookie ? { token: tokenFromCookie } : undefined,
+    auth: token ? { token } : undefined,
   });
 
   status = 'connecting';
@@ -66,7 +81,9 @@ export function useSocketConnection(
   onStatusChange?: (state: ConnectionStatus, error?: Error | null) => void
 ) {
   if (!socket) {
-    getSocket();
+    getSocket().catch((error) => {
+      console.error('Failed to initialize socket:', error);
+    });
   }
   if (onStatusChange) {
     listeners.push(onStatusChange);

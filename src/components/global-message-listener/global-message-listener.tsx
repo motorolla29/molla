@@ -2,17 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { getSocket, getConnectionStatus, SocketConnectionStatus } from '@/lib/chat-socket';
+import { Socket } from 'socket.io-client';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function GlobalMessageListener() {
   const { user } = useAuthStore();
-  const [socket] = useState(() => getSocket());
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState<SocketConnectionStatus>(
     getConnectionStatus().status
   );
 
   const { setChatUnreadCount } = useUnreadMessagesStore();
+
+  useEffect(() => {
+    // Инициализируем сокет асинхронно
+    getSocket().then(setSocket).catch((error) => {
+      console.error('Failed to get socket:', error);
+    });
+  }, []);
 
   useEffect(() => {
     if (!socket || !user) return;
