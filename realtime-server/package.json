@@ -4,9 +4,9 @@
   "description": "Socket.IO server for Molla real-time chat",
   "main": "server.js",
   "scripts": {
-    "build": "npx prisma generate --schema=../prisma/schema.prisma",
+    "build": "echo 'Prisma client will be generated in Railway build command'",
     "start": "node server.js",
-    "postinstall": "npx prisma generate --schema=../prisma/schema.prisma"
+    "postinstall": "echo 'Postinstall skipped - using Railway build command instead'"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
