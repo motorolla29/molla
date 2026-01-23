@@ -4,7 +4,7 @@
   "description": "Socket.IO server for Molla real-time chat",
   "main": "server.js",
   "scripts": {
-    "build": "prisma generate",
+    "build": "npx prisma generate",
     "start": "node server.js"
   },
   "dependencies": {
@@ -12,6 +12,9 @@
     "cookie": "^0.7.1",
     "jsonwebtoken": "^9.0.3",
     "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
   },
   "engines": {
     "node": ">=20.9.0"
