@@ -457,10 +457,11 @@ export default function ChatArea({
               typeof message.timestamp === 'string'
                 ? new Date(message.timestamp)
                 : message.timestamp;
-            const prevDate =
-              prevMessage && typeof prevMessage.timestamp === 'string'
+            const prevDate: Date | null = prevMessage
+              ? typeof prevMessage.timestamp === 'string'
                 ? new Date(prevMessage.timestamp)
-                : prevMessage?.timestamp ?? null;
+                : prevMessage.timestamp
+              : null;
 
             const showDateDivider =
               !prevDate || !isSameDay(currentDate, prevDate);
