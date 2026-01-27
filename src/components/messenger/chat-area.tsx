@@ -5,6 +5,7 @@ import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import MessageInput from './message-input';
 import ImageModal from './image-modal';
+import { getAvatarColor } from '@/utils';
 
 interface Message {
   id: string;
@@ -53,6 +54,7 @@ interface ChatAreaProps {
   otherUserLastSeen?: string | null;
   isTyping?: boolean;
   isLoading?: boolean;
+  isScrollLocked?: boolean;
   showBackButton?: boolean;
 }
 
@@ -67,12 +69,14 @@ export default function ChatArea({
   otherUserLastSeen,
   isTyping = false,
   isLoading = false,
+  isScrollLocked = false,
   showBackButton = false,
 }: ChatAreaProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] =
     useState<Message[]>(initialMessages);
+  const prevMessagesLengthRef = useRef(initialMessages.length);
 
   // Состояние для модального окна просмотра изображений
   const [selectedImage, setSelectedImage] = useState<{
@@ -107,9 +111,18 @@ export default function ChatArea({
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Умная автопрокрутка - только если пользователь в конце чата
+  // Умная автопрокрутка - только при появлении новых сообщений.
+  // Для входящих сообщений - только если пользователь уже внизу.
+  // Для исходящих (от текущего пользователя) - всегда прокручиваем вниз.
   useEffect(() => {
-    if (isNearBottom) {
+    const hasNewMessages =
+      localMessages.length > prevMessagesLengthRef.current;
+
+    const lastMessage = localMessages[localMessages.length - 1];
+    const isLastFromCurrentUser =
+      lastMessage && lastMessage.senderId === currentUserId;
+
+    if (hasNewMessages && (isNearBottom || isLastFromCurrentUser)) {
       const container = messagesContainerRef.current;
       if (container) {
         // Небольшая задержка для учета изменений высоты при загрузке изображений
@@ -118,6 +131,9 @@ export default function ChatArea({
         }, 50);
       }
     }
+
+    // Обновляем реф для следующего сравнения
+    prevMessagesLengthRef.current = localMessages.length;
   }, [localMessages, isNearBottom]);
 
   // Прокрутка при появлении индикатора печати
@@ -229,7 +245,12 @@ export default function ChatArea({
   };
 
   return (
-    <div className="h-[calc(100vh-95px)] lg:h-[calc(100vh-105px)] flex flex-col">
+    <div
+      className="h-[calc(100vh-95px)] lg:h-[calc(100vh-105px)] flex flex-col"
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
       <div className=" bg-white p-4 border-b border-gray-200 shrink-0 sticky top-12 z-1 sm:static">
         <div className="flex items-center space-x-4">
           {/* Кнопка назад */}
@@ -253,7 +274,7 @@ export default function ChatArea({
                 >
                 {chat.adPhoto ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-80`}
+                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-60`}
                     alt={chat.adTitle}
                     className="w-full h-full object-cover cursor-pointer transition-opacity"
                   />
@@ -299,12 +320,15 @@ export default function ChatArea({
               <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
                 {chat?.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}`}
+                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
                     alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-violet-500 flex items-center justify-center">
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ backgroundColor: chat?.otherUserId ? getAvatarColor(chat.otherUserId) : 'rgba(209, 213, 219, 0.2)' }}
+                  >
                     <span className="text-white font-semibold text-xs">
                       {chat?.otherUserName?.charAt(0).toUpperCase()}
                     </span>
@@ -319,7 +343,7 @@ export default function ChatArea({
             <div className="flex items-center gap-2 min-w-0">
               <Link
                 href={`/user/${chat?.otherUserId}/active`}
-                className="flex-1 min-w-0"
+                className="flex-1 min-w-0 max-w-fit"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <h3 className="text-sm font-semibold text-gray-900 truncate cursor-pointer hover:opacity-90 transition-colors">
@@ -377,7 +401,7 @@ export default function ChatArea({
               <p className="text-sm text-gray-600">Загрузка сообщений...</p>
             </div>
           </div>
-        ) : localMessages.length === 0 ? (
+        ) : !isLoading && localMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -416,10 +440,13 @@ export default function ChatArea({
                 {/* Аватарка собеседника для входящих сообщений */}
                 {message.senderId !== currentUserId && (
                   <div className="shrink-0 mr-2 self-start">
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-violet-500 flex items-center justify-center">
+                    <div
+                      className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
+                      style={{ backgroundColor: chat?.otherUserAvatar ? 'transparent' : (chat?.otherUserId ? getAvatarColor(chat.otherUserId) : 'rgba(209, 213, 219, 0.2)') }}
+                    >
                       {chat?.otherUserAvatar ? (
                         <img
-                          src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-32,h-32`}
+                          src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
                           alt={chat?.otherUserName}
                           className="w-full h-full object-cover"
                         />
@@ -463,10 +490,10 @@ export default function ChatArea({
                   {message.attachments && message.attachments.length > 0 && (
                     <div className="mb-2 flex flex-col gap-2">
                       {message.attachments.map((attachment) => (
-                        <div key={attachment.id} className="relative">
+                        <div key={attachment.id} className="relative min-w-[120px] min-h-[90px] bg-gray-300/25 rounded-lg">
                           {/* Loading overlay for non-blob URLs */}
                           {!attachment.fileUrl.startsWith('blob:') && message.status === 'sending' && (
-                            <div className="absolute inset-0 bg-white bg-opacity-75 rounded-lg flex items-center justify-center z-10">
+                            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
                               <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
                             </div>
                           )}
@@ -539,10 +566,13 @@ export default function ChatArea({
             <div className={`flex justify-start ${marginTop}`}>
             {/* Аватарка собеседника для индикатора печати */}
             <div className="shrink-0 mr-2 self-start">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-violet-500 flex items-center justify-center">
+              <div
+                className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
+                style={{ backgroundColor: chat?.otherUserAvatar ? 'transparent' : (chat?.otherUserId ? getAvatarColor(chat.otherUserId) : 'rgba(209, 213, 219, 0.2)') }}
+              >
                 {chat?.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-32,h-32`}
+                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
                     alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />
@@ -585,6 +615,7 @@ export default function ChatArea({
         onClose={closeImageModal}
         imageUrl={selectedImage?.url || ''}
         altText={selectedImage?.alt || ''}
+        scrollAlreadyLocked={isScrollLocked}
       />
     </div>
   );

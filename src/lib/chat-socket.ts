@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
 let socket: Socket | null = null;
+let socketPromise: Promise<Socket> | null = null;
 let status: ConnectionStatus = 'disconnected';
 let lastError: Error | null = null;
 const listeners: Array<(state: ConnectionStatus, error?: Error | null) => void> =
@@ -36,55 +37,71 @@ async function getSocketToken(): Promise<string | null> {
 }
 
 export async function getSocket(): Promise<Socket> {
-  if (socket) return socket;
+  // Если уже есть промис инициализации, возвращаем его
+  if (socketPromise) {
+    return socketPromise;
+  }
 
-  const url =
-    process.env.NEXT_PUBLIC_SOCKET_URL?.trim() || 'http://localhost:4001';
+  // Если сокет уже существует и не отключен, возвращаем его
+  if (socket && !socket.disconnected) {
+    return socket;
+  }
 
-  // Получаем токен через API
-  const token = await getSocketToken();
+  // Создаем новый промис инициализации
+  socketPromise = (async () => {
 
-  socket = io(url, {
-    transports: ['websocket'],
-    autoConnect: true,
-    withCredentials: true,
-    auth: token ? { token } : undefined,
-  });
+    const url =
+      process.env.NEXT_PUBLIC_SOCKET_URL?.trim() || 'http://localhost:4001';
 
-  status = 'connecting';
-  notify();
+    // Получаем токен через API
+    const token = await getSocketToken();
 
-  socket.on('connect', () => {
-    console.log('Socket connected');
-    status = 'connected';
-    lastError = null;
+    socket = io(url, {
+      transports: ['websocket'],
+      autoConnect: false, // Отключаем авто-подключение
+      withCredentials: true,
+      auth: token ? { token } : undefined,
+    });
+
+    status = 'connecting';
     notify();
-  });
 
-  socket.on('disconnect', () => {
-    console.log('Socket disconnected');
-    status = 'disconnected';
-    notify();
-  });
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      status = 'connected';
+      lastError = null;
+      notify();
+    });
 
-  socket.on('connect_error', (err) => {
-    console.log('Socket connect error:', err);
-    status = 'error';
-    lastError = err;
-    notify();
-  });
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+      status = 'disconnected';
+      notify();
+    });
 
-  return socket;
+    socket.on('connect_error', (err) => {
+      console.log('Socket connect error:', err);
+      status = 'error';
+      lastError = err;
+      notify();
+    });
+
+    // Подключаемся вручную после установки всех обработчиков
+    socket.connect();
+
+    // Очищаем промис после успешной инициализации
+    socketPromise = null;
+
+    return socket;
+  })();
+
+  return socketPromise;
 }
 
 export function useSocketConnection(
   onStatusChange?: (state: ConnectionStatus, error?: Error | null) => void
 ) {
-  if (!socket) {
-    getSocket().catch((error) => {
-      console.error('Failed to initialize socket:', error);
-    });
-  }
+  // Инициализация сокета теперь происходит только в useChatSocket
   if (onStatusChange) {
     listeners.push(onStatusChange);
     onStatusChange(status, lastError);

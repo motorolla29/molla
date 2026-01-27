@@ -24,7 +24,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
         <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'
-          }`}
+          }?tr=w-250`}
           alt={ad.title}
           className="w-full h-full object-cover"
         />
@@ -84,7 +84,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             className="w-full h-full object-cover"
             src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
               ad.seller.avatar || '765-default-avatar.png'
-            }`}
+            }?tr=w-100`}
             alt="avatar"
           />
         </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
+import { getAvatarColor } from '@/utils';
 
 export default function Header() {
   const { isLoggedIn, user, logout } = useAuthStore();
@@ -63,12 +64,15 @@ export default function Header() {
             >
               {user.avatar ? (
                 <img
-                  src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${user.avatar}?tr=w-80`}
+                  src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${user.avatar}?tr=w-45`}
                   alt={user.name}
                   className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm overflow-hidden"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-violet-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm"
+                  style={{ backgroundColor: getAvatarColor(user.id) }}
+                >
                   {user.name.charAt(0).toUpperCase()}
                 </div>
               )}

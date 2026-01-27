@@ -76,7 +76,7 @@ export default function AdCategorySelector({
           {selectedCategory ? (
             <>
               <img
-                src={`https://ik.imagekit.io/motorolla29/molla/icons/${selectedCategory.key}.png`}
+                src={`https://ik.imagekit.io/motorolla29/molla/icons/${selectedCategory.key}.png?tr=w-48`}
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
               />
@@ -137,7 +137,7 @@ export default function AdCategorySelector({
                 }}
               >
                 <img
-                  src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
+                  src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
                   alt="cat-icon"
                   className="w-5 h-5 mr-2"
                 />

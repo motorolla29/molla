@@ -253,7 +253,7 @@ export default function FiltersMobile({
                         }`}
                       >
                         <img
-                          src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
+                          src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
                           alt={opt.label}
                           className="w-5 h-5 mr-2"
                         />

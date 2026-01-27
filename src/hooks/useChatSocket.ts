@@ -36,12 +36,10 @@ export function useChatSocket() {
     if (!socket) return;
 
     const handleSnapshot = (payload: { onlineUserIds: number[] }) => {
-      console.log('Presence snapshot received:', payload.onlineUserIds);
       setSnapshot(payload.onlineUserIds || []);
     };
 
     const handleOnline = ({ userId }: { userId: number }) => {
-      console.log('User online:', userId);
       setOnline(userId);
     };
 
@@ -52,7 +50,6 @@ export function useChatSocket() {
       userId: number;
       lastSeenAt?: string;
     }) => {
-      console.log('User offline:', userId, lastSeenAt);
       setOffline(userId, lastSeenAt);
     };
 

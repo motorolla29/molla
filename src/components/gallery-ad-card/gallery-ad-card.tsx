@@ -19,7 +19,7 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
         <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'
-          }`}
+          }?tr=w-350`}
           alt={ad.title}
           className={`w-full h-full object-cover ${
             isArchived ? 'opacity-50' : ''

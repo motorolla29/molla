@@ -32,8 +32,6 @@ export default function MessengerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { socket } = useChatSocket();
 
-  console.log('MessengerPage socket:', socket);
-
   // Ref для управления таймерами typing
   const typingTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const updateLastSeen = useChatPresenceStore((state) => state.updateLastSeen);
@@ -54,13 +52,11 @@ export default function MessengerPage() {
   useEffect(() => {
     if (!socket || !chats.length) return;
 
-    console.log('MessengerPage joining all chats:', chats.map(c => c.id));
     chats.forEach(chat => {
       socket.emit('join_chat', { chatId: chat.id });
     });
 
     return () => {
-      console.log('MessengerPage leaving all chats');
       chats.forEach(chat => {
         socket.emit('leave_chat', { chatId: chat.id });
       });
@@ -69,20 +65,9 @@ export default function MessengerPage() {
 
   // Обработка typing событий для всех чатов в списке
   useEffect(() => {
-    console.log('MessengerPage typing useEffect triggered, socket:', socket, 'connected:', socket?.connected);
     if (!socket) {
-      console.log('MessengerPage typing useEffect early return: no socket');
       return;
     }
-
-    // Лог при подключении socket
-    socket.on('connect', () => {
-      console.log('MessengerPage socket connected');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('MessengerPage socket disconnected');
-    });
 
     const markTyping = useChatPresenceStore.getState().markTyping;
     const clearTyping = useChatPresenceStore.getState().clearTyping;
@@ -96,7 +81,6 @@ export default function MessengerPage() {
       fromUserId: number;
       at: number;
     }) => {
-      console.log(`[TYPING] ChatList typing event: ${chatId}-${fromUserId}-${at}`);
 
       // Очищаем предыдущий таймер для этого пользователя в этом чате
       const timeoutKey = `${chatId}-${fromUserId}`;
@@ -123,7 +107,6 @@ export default function MessengerPage() {
       chatId: string;
       fromUserId: number;
     }) => {
-      console.log(`[TYPING] ChatList stop_typing event: ${chatId}-${fromUserId}`);
 
       // Очищаем таймер
       const timeoutKey = `${chatId}-${fromUserId}`;
@@ -136,7 +119,6 @@ export default function MessengerPage() {
     };
 
     const handleNewMessage = (payload: any) => {
-      console.log('MessengerPage new message received:', payload);
 
       // Определяем отображаемый текст для lastMessage
       let displayMessage = payload.content || '';
@@ -148,38 +130,87 @@ export default function MessengerPage() {
         }
       }
 
-      // Обновляем lastMessage для соответствующего чата
-      setChats(prevChats => prevChats.map(chat => {
-        if (chat.id === payload.chatId) {
-          const isFromOtherUser = payload.senderId !== Number(user?.id);
-          const newUnreadCount = isFromOtherUser ? chat.unreadCount + 1 : chat.unreadCount;
+      // Обновляем lastMessage для соответствующего чата и перемещаем его в начало списка
+      setChats(prevChats => {
+        let updatedChats = prevChats.map(chat => {
+          if (chat.id === payload.chatId) {
+            const isFromOtherUser = payload.senderId !== Number(user?.id);
+            const newUnreadCount = isFromOtherUser ? chat.unreadCount + 1 : chat.unreadCount;
 
-          return {
-            ...chat,
-            lastMessage: displayMessage,
-            lastMessageTime: payload.timestamp || new Date(),
-            lastMessageStatus: payload.status || 'sent',
-            lastMessageIsOutgoing: payload.senderId === Number(user?.id),
-            unreadCount: newUnreadCount
-          };
-        }
-        return chat;
-      }));
+            return {
+              ...chat,
+              lastMessage: displayMessage,
+              lastMessageTime: payload.timestamp || new Date(),
+              lastMessageStatus: payload.status || 'sent',
+              lastMessageIsOutgoing: payload.senderId === Number(user?.id),
+              unreadCount: newUnreadCount
+            };
+          }
+          return chat;
+        });
+
+        // Если чат не найден в списке, не добавляем его здесь
+        // (это должен делать handleUnreadUpdate)
+
+        // Сортируем по времени последнего сообщения (новые сверху)
+        return updatedChats.sort((a, b) =>
+          new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
+        );
+      });
     };
 
-    console.log('MessengerPage registering event handlers');
     socket.on('typing', handleTyping);
     socket.on('stop_typing', handleStopTyping);
     socket.on('new_message', handleNewMessage);
 
     // Обработка обновлений непрочитанных сообщений
-    const handleUnreadUpdate = ({ chatId, unreadCount }: { chatId: string; unreadCount: number }) => {
-      console.log('MessengerPage unread_update:', { chatId, unreadCount });
+    const handleUnreadUpdate = async ({ chatId, unreadCount }: { chatId: string; unreadCount: number }) => {
+      const existingChat = chats.find(chat => chat.id === chatId);
 
-      // Обновляем локальное состояние чатов
-      setChats(prevChats => prevChats.map(chat =>
-        chat.id === chatId ? { ...chat, unreadCount } : chat
-      ));
+      if (existingChat) {
+        // Обновляем счетчик для существующего чата
+        setChats(prevChats => prevChats.map(chat =>
+          chat.id === chatId ? { ...chat, unreadCount } : chat
+        ));
+      } else {
+        // Загружаем информацию о новом чате
+        try {
+          const response = await fetch(`/api/messenger/chats/${chatId}`);
+          if (response.ok) {
+            const newChatData = await response.json();
+
+            // Используем актуальный счетчик из события unread_update вместо данных из API
+            const chatWithCorrectUnreadCount = { ...newChatData, unreadCount };
+
+            // Добавляем новый чат в начало списка или обновляем существующий
+            setChats(prevChats => {
+              const existingChatIndex = prevChats.findIndex(chat => chat.id === chatId);
+
+              if (existingChatIndex >= 0) {
+                // Чат уже есть, обновляем его счетчик
+                const updatedChats = [...prevChats];
+                updatedChats[existingChatIndex] = {
+                  ...updatedChats[existingChatIndex],
+                  unreadCount
+                };
+                return updatedChats;
+              } else {
+                // Добавляем новый чат в начало списка
+                return [chatWithCorrectUnreadCount, ...prevChats];
+              }
+            });
+
+            // Обновляем информацию о последнем просмотре пользователя
+            if (chatWithCorrectUnreadCount.otherUserLastSeenAt) {
+              updateLastSeen(chatWithCorrectUnreadCount.otherUserId, chatWithCorrectUnreadCount.otherUserLastSeenAt);
+            }
+          } else {
+            console.error('Failed to load new chat data:', response.status, await response.text());
+          }
+        } catch (error) {
+          console.error('Error loading new chat info:', error);
+        }
+      }
 
       // Обновляем глобальный store
       const { setChatUnreadCount } = useUnreadMessagesStore.getState();
@@ -200,7 +231,6 @@ export default function MessengerPage() {
       status: string;
       updatedBy: number;
     }) => {
-      console.log('MessengerPage message_status_update:', { chatId, messageIds, status, updatedBy });
 
       // Обновляем статус последнего сообщения в списке чатов
       setChats(prevChats => prevChats.map(chat => {
@@ -221,7 +251,6 @@ export default function MessengerPage() {
     socket.on('message_status_update', handleMessageStatusUpdate);
 
     return () => {
-      console.log('MessengerPage cleanup event handlers');
       socket.off('typing', handleTyping);
       socket.off('stop_typing', handleStopTyping);
       socket.off('new_message', handleNewMessage);
@@ -248,7 +277,6 @@ export default function MessengerPage() {
       const response = await fetch('/api/messenger/chats');
       if (response.ok) {
         const data = await response.json();
-        console.log('MessengerPage loaded chats:', data.length);
 
         // Обрабатываем lastMessage для сообщений с изображениями
         const processedData = data.map((chat: Chat) => {
@@ -261,7 +289,12 @@ export default function MessengerPage() {
           };
         });
 
-        setChats(processedData);
+        // Сортируем по времени последнего сообщения (новые сверху), как в handleNewMessage
+        const sortedData = processedData.sort((a, b) =>
+          new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
+        );
+
+        setChats(sortedData);
 
         // Обновляем store с непрочитанными сообщениями
         const { refreshUnreadCounts } = useUnreadMessagesStore.getState();
@@ -280,52 +313,50 @@ export default function MessengerPage() {
     }
   };
 
-  const handleChatSelect = async (chatId: string) => {
-    try {
-      // Отмечаем сообщения в чате как прочитанные через API
-      const response = await fetch(`/api/messenger/chats/${chatId}/read`, {
-        method: 'POST',
-      });
+  const handleChatSelect = (chatId: string) => {
+    // Оптимистичное обновление UI - сразу показываем что сообщения прочитаны
+    setChats(prevChats => prevChats.map(chat =>
+      chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+    ));
 
-      if (response.ok) {
-        // Обновляем локальное состояние чатов
-        setChats(prevChats => prevChats.map(chat =>
-          chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
-        ));
+    // Обновляем store с непрочитанными сообщениями
+    const { markChatAsRead } = useUnreadMessagesStore.getState();
+    markChatAsRead(chatId);
 
-        // Обновляем store с непрочитанными сообщениями
-        const { markChatAsRead } = useUnreadMessagesStore.getState();
-        markChatAsRead(chatId);
-      }
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
-    }
-
+    // Мгновенный переход в чат
     router.push(`/personal/messenger/channel/${chatId}`);
+
+    // Параллельно синхронизируем с сервером (без блокировки UI)
+    fetch(`/api/messenger/chats/${chatId}/read`, {
+      method: 'POST',
+    }).catch(error => {
+      console.error('Error marking messages as read:', error);
+      // В случае ошибки можно откатить оптимистичное обновление
+      // Но для простоты оставим как есть
+    });
   };
 
   if (!user) {
     return <div>Загрузка...</div>;
   }
 
-  if (isLoading) {
-    return (
-      <div className="my-16 text-center">
-        <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600">Загрузка чатов...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="m-4 lg:m-6 h-full">
-      {/* Заголовок */}
-      <div className="mb-4 pb-4 border-b border-gray-200">
+
+      <div className="mb-2 min-[500px]:mb-4 pb-4 border-b border-gray-200">
         <h1 className="text-lg font-semibold text-gray-900">Сообщения</h1>
       </div>
 
-      {/* Список чатов */}
-      <ChatList chats={chats} onChatSelect={handleChatSelect} />
+      { isLoading ? ( 
+        <div className="my-16 text-center">
+          <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка чатов...</p>
+        </div> 
+        ) : (
+          <ChatList chats={chats} onChatSelect={handleChatSelect} />
+        )
+      }
     </div>
   );
 }

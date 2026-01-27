@@ -37,7 +37,7 @@ export default function AdCard({
             <img
               src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
                 ad.photos[0] || 'default.jpg'
-              }`}
+              }?tr=w-200`}
               alt={ad.title}
               className="w-full h-full object-cover"
             />

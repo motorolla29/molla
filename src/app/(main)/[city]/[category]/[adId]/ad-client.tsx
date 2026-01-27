@@ -364,7 +364,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   <img
                     src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
                       ad.seller.avatar || '765-default-avatar.png'
-                    }`}
+                    }?tr=w-60`}
                     alt="Аватар продавца"
                     className="w-full h-full object-cover"
                   />

@@ -43,7 +43,7 @@ export default function UserProfileSidebar({
           <img
             src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
               user.avatar ? user.avatar : '765-default-avatar.png'
-            }`}
+            }?tr=w-100`}
             alt={`Аватар ${user.name}`}
             className="w-full h-full object-cover"
           />

@@ -9,6 +9,7 @@ interface ImageModalProps {
   onClose: () => void;
   imageUrl: string;
   altText?: string;
+  scrollAlreadyLocked?: boolean;
 }
 
 export default function ImageModal({
@@ -16,6 +17,7 @@ export default function ImageModal({
   onClose,
   imageUrl,
   altText = 'Изображение',
+  scrollAlreadyLocked = false,
 }: ImageModalProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -27,8 +29,9 @@ export default function ImageModal({
   }, [isOpen]);
 
   // Блокируем скролл страницы при открытом модальном окне
+  // Только если скролл не заблокирован на уровне выше (например, в чате на мобильном)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || scrollAlreadyLocked) return;
 
     lockScroll();
 
@@ -38,13 +41,16 @@ export default function ImageModal({
         unlockScroll();
       }, 200);
     };
-  }, [isOpen]);
+  }, [isOpen, scrollAlreadyLocked]);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 px-6 pt-4 pb-12"
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 px-6 pt-4"
+          style={{
+            paddingBottom: 'calc(3rem + env(safe-area-inset-bottom))',
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

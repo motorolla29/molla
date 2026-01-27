@@ -1,5 +1,6 @@
 import { Currency, AdBase } from './types/ad';
 import { CityRaw } from './types/city-raw';
+import { AVATAR_DEFAULT_COLORS } from './const';
 
 /**
  * Получить или создать userToken для неавторизованного пользователя
@@ -301,3 +302,16 @@ export const formatLastSeen = (value?: string | null) => {
     minute: '2-digit',
   });
 };
+
+/**
+ * Получает цвет аватара на основе ID
+ * @param id - ID пользователя или объекта
+ * @returns hex цвет из массива AVATAR_DEFAULT_COLORS
+ */
+export function getAvatarColor(id: number | string): string {
+  // Преобразуем id в число, если это строка
+  const numericId = typeof id === 'string' ? parseInt(id, 10) || 0 : id;
+  // Получаем индекс и возвращаем соответствующий цвет
+  const index = Math.abs(numericId) % AVATAR_DEFAULT_COLORS.length;
+  return AVATAR_DEFAULT_COLORS[index];
+}

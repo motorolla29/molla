@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
+import { getAvatarColor } from '@/utils';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-modal';
@@ -100,13 +101,16 @@ export default function Profile() {
             <img
               src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
                 user.avatar || '765-default-avatar.png'
-              }`}
+              }?tr=w-100`}
               alt={user.name}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg cursor-pointer"
               onClick={() => setShowAvatarModal(true)}
             />
           ) : (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg cursor-pointer select-none">
+            <div
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg select-none"
+              style={{ backgroundColor: getAvatarColor(user.id) }}
+            >
               {user.name.charAt(0).toUpperCase()}
             </div>
           )}

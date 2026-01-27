@@ -1,9 +1,8 @@
 'use client';
 
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
-import { useOnlineUsersStore } from '@/store/useOnlineUsersStore';
-import { useEffect } from 'react';
 import { Check, CheckCheck } from 'lucide-react';
+import { getAvatarColor } from '@/utils';
 
 interface Chat {
   id: string;
@@ -28,25 +27,32 @@ interface ChatListProps {
 }
 
 export default function ChatList({ chats, onChatSelect }: ChatListProps) {
-  const { fetchUsersStatuses, getUserStatus } = useOnlineUsersStore();
+  // Real-time presence from Socket.IO
+  const { onlineUserIds } = useChatPresenceStore();
   const typingMap = useChatPresenceStore((state) => state.typing);
 
+  // API-based presence (commented out for now)
+  // const { fetchUsersStatuses, getUserStatus } = useOnlineUsersStore();
+
+  // Real-time presence from Socket.IO - no need for API polling
+
+  // API-based presence polling (commented out for now)
   // Загружаем статусы пользователей при монтировании и обновляем каждые 5 минут
-  useEffect(() => {
-    const userIds = chats.map(chat => chat.otherUserId);
-    if (userIds.length > 0) {
-      fetchUsersStatuses(userIds);
-    }
-
-    // Обновляем статусы каждые 30 сек
-    const interval = setInterval(() => {
-      if (userIds.length > 0) {
-        fetchUsersStatuses(userIds);
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [chats, fetchUsersStatuses]);
+  // useEffect(() => {
+  //   const userIds = chats.map(chat => chat.otherUserId);
+  //   if (userIds.length > 0) {
+  //     fetchUsersStatuses(userIds);
+  //   }
+  //
+  //   // Обновляем статусы каждые 30 сек
+  //   const interval = setInterval(() => {
+  //     if (userIds.length > 0) {
+  //       fetchUsersStatuses(userIds);
+  //     }
+  //   }, 30000);
+  //
+  //   return () => clearInterval(interval);
+  // }, [chats, fetchUsersStatuses]);
 
   const formatTime = (date: Date | string) => {
     const now = new Date();
@@ -106,7 +112,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
         <div
           key={chat.id}
           onClick={() => onChatSelect(chat.id)}
-          className="p-4 rounded-2xl border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors"
+          className="px-1 py-2 min-[500px]:p-4 rounded-2xl border-gray-100 cursor-pointer min-[500px]:hover:bg-gray-100 transition-colors"
         >
           <div className="flex max-w-full items-center space-x-4">
             {/* Визуализация товара с аватаром */}
@@ -115,7 +121,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
               <div className="w-18 h-18 rounded-xl overflow-hidden bg-gray-100">
                 {chat.adPhoto ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
+                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-100`}
                     alt={chat.adTitle}
                     className="w-full h-full object-cover"
                   />
@@ -147,7 +153,10 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-violet-500 flex items-center justify-center">
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ backgroundColor: getAvatarColor(chat.otherUserId) }}
+                  >
                     <span className="text-white font-semibold text-xs">
                       {chat.otherUserName.charAt(0).toUpperCase()}
                     </span>
@@ -163,10 +172,15 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                   <h3 className="text-sm font-semibold text-gray-900 truncate">
                     {chat.otherUserName}
                   </h3>
-                  {/* Онлайн индикатор */}
-                  {getUserStatus(chat.otherUserId)?.isOnline && (
+                  {/* Онлайн индикатор - real-time from Socket.IO */}
+                  {onlineUserIds.has(chat.otherUserId) && (
                     <div className="shrink-0 w-2 h-2 mx-1 sm:mx-2 bg-emerald-500 rounded-full" />
                   )}
+
+                  {/* Онлайн индикатор - API-based (commented out) */}
+                  {/* {getUserStatus(chat.otherUserId)?.isOnline && (
+                    <div className="shrink-0 w-2 h-2 mx-1 sm:mx-2 bg-emerald-500 rounded-full" />
+                  )} */}
                 </div>
                 <div className="flex items-center shrink-0">
                   {/* Статус последнего сообщения (если исходящее) */}

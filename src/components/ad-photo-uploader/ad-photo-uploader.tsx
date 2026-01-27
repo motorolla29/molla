@@ -165,7 +165,7 @@ export default function AdPhotoUploader({
                 <img
                   src={
                     p.previewUrl ||
-                    `https://ik.imagekit.io/motorolla29/molla/mock-photos/${p.url}`
+                    `https://ik.imagekit.io/motorolla29/molla/mock-photos/${p.url}?tr=w-200`
                   }
                   alt={p.file.name}
                   className="w-full h-24 object-cover"

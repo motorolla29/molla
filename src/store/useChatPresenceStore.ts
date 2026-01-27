@@ -23,7 +23,6 @@ export const useChatPresenceStore = create<ChatPresenceState>((set) => ({
     set((state) => {
       const next = new Set(state.onlineUserIds);
       next.add(userId);
-      console.log('User set online:', userId, 'onlineUserIds now:', Array.from(next));
       return { ...state, onlineUserIds: next };
     }),
   setOffline: (userId, lastSeenAt) =>
@@ -42,7 +41,6 @@ export const useChatPresenceStore = create<ChatPresenceState>((set) => ({
   setSnapshot: (userIds) =>
     set((state) => {
       const next = new Set<number>(userIds);
-      console.log('Presence snapshot set:', userIds, 'onlineUserIds now:', Array.from(next));
       return { ...state, onlineUserIds: next };
     }),
   updateLastSeen: (userId, lastSeenAt) =>
@@ -59,7 +57,6 @@ export const useChatPresenceStore = create<ChatPresenceState>((set) => ({
   markTyping: (chatId, userId, at) =>
     set((state) => {
       const typingForChat = state.typing[chatId] || {};
-      console.log(`[TYPING] markTyping: ${chatId}-${userId}-${at}`);
       return {
         ...state,
         typing: {
@@ -73,7 +70,6 @@ export const useChatPresenceStore = create<ChatPresenceState>((set) => ({
       const typingForChat = state.typing[chatId];
       if (!typingForChat) return state;
       const { [userId]: _, ...rest } = typingForChat;
-      console.log(`[TYPING] clearTyping: ${chatId}-${userId}`);
       return {
         ...state,
         typing: { ...state.typing, [chatId]: rest },

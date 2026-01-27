@@ -62,6 +62,7 @@ export default function ChatPage() {
   useEffect(() => {
     // Проверяем ширину экрана - блокируем скролл только для экранов менее 640px
     const isMobile = window.innerWidth < 640;
+    setIsScrollLocked(isMobile);
 
     if (isMobile) {
       lockScrollSimple();
@@ -78,6 +79,7 @@ export default function ChatPage() {
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isScrollLocked, setIsScrollLocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Ref для управления таймером typing
@@ -147,7 +149,7 @@ export default function ChatPage() {
 
   // Подключение к сокету и обработка событий
   useEffect(() => {
-    if (!socket || !chatId || !user) return;
+    if (!socket || !chatId || !user || !chat) return;
 
     socket.emit('join_chat', { chatId });
 
@@ -305,8 +307,6 @@ export default function ChatPage() {
           messageIds.includes(msg.id) ? { ...msg, status: status as Message['status'] } : msg
         )
       );
-
-      console.log(`Updated ${messageIds.length} messages to status '${status}' in chat ${chatId}`);
     };
 
     socket.on('new_message', handleNewMessage);
@@ -323,7 +323,7 @@ export default function ChatPage() {
       socket.off('typing', handleTyping);
       socket.off('stop_typing', handleStopTyping);
     };
-  }, [socket, chatId, user, markTyping]);
+  }, [socket, chatId, user, chat, markTyping]);
 
   const handleSendMessage = async (
     content: string,
@@ -415,9 +415,6 @@ export default function ChatPage() {
   const isOtherUserOnline =
     otherUserId !== undefined && onlineUserIds.has(Number(otherUserId));
 
-  console.log('Chat page onlineUserIds:', Array.from(onlineUserIds));
-  console.log('Chat page otherUserId:', otherUserId, 'isOtherUserOnline:', isOtherUserOnline);
-
   const typingForChat = chatId
     ? typingMap[chatId]?.[otherUserId ?? -1]
     : undefined;
@@ -482,6 +479,7 @@ export default function ChatPage() {
         otherUserLastSeen={chat?.otherUserLastSeenAt || null}
         isTyping={isTyping}
         isLoading={isLoading}
+        isScrollLocked={isScrollLocked}
         showBackButton={true}
       />
     </div>

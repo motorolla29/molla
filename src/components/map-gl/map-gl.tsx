@@ -349,7 +349,7 @@ export default function MapGl({
                   }}
                   options={{
                     iconLayout: 'default#image',
-                    iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${marker.category}-map-marker.png`,
+                    iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${marker.category}-map-marker.png?tr=w-150`,
                     iconImageSize: [iconWidth, iconHeight],
                     iconImageOffset: [iconOffsetX, iconOffsetY],
                   }}

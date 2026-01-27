@@ -24,7 +24,7 @@ export async function GET(
     const userId = Number((decoded as any).userId);
     const { chatId } = await params;
 
-    // Получаем информацию о чате
+    // Получаем информацию о чате с последним сообщением
     const chat = await prisma.chat.findFirst({
       where: {
         id: chatId,
@@ -59,6 +59,23 @@ export async function GET(
             lastSeenAt: true,
           },
         },
+        messages: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            content: true,
+            createdAt: true,
+            status: true,
+            senderId: true,
+            attachments: {
+              select: {
+                fileType: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -69,6 +86,16 @@ export async function GET(
     // Форматируем данные для фронтенда
     const isBuyer = chat.buyerId === userId;
     const otherUser = isBuyer ? chat.seller : chat.buyer;
+    const lastMessage = chat.messages[0];
+
+    // Подсчитываем непрочитанные сообщения параллельно
+    const unreadCount = await prisma.message.count({
+      where: {
+        chatId: chat.id,
+        senderId: { not: userId }, // Сообщения от другого пользователя
+        status: { not: 'read' }, // Не прочитанные
+      },
+    });
 
     const formattedChat = {
       id: chat.id,
@@ -83,9 +110,17 @@ export async function GET(
       otherUserName: otherUser.name,
       otherUserAvatar: otherUser.avatar,
       otherUserLastSeenAt: otherUser.lastSeenAt,
-      lastMessage: '', // Не нужно для страницы чата
-      lastMessageTime: chat.createdAt,
-      unreadCount: 0,
+      lastMessage: lastMessage
+        ? (lastMessage.attachments && lastMessage.attachments.length > 0 &&
+           lastMessage.attachments.some((att: any) => att.fileType?.startsWith('image/')) &&
+           !lastMessage.content?.trim())
+          ? '📎 Фото'
+          : lastMessage.content || 'Сообщение'
+        : 'Нет сообщений',
+      lastMessageTime: lastMessage?.createdAt || chat.createdAt,
+      lastMessageStatus: lastMessage?.status || null,
+      lastMessageIsOutgoing: lastMessage ? lastMessage.senderId === userId : false,
+      unreadCount,
     };
 
     return NextResponse.json(formattedChat);

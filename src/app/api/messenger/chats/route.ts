@@ -20,60 +20,121 @@ export async function GET(request: NextRequest) {
 
     const userId = Number((decoded as any).userId);
 
-    // Получаем все чаты пользователя (как покупателя или продавца)
-    const chats = await prisma.chat.findMany({
-      where: {
-        OR: [{ buyerId: userId }, { sellerId: userId }],
-      },
-      include: {
-        ad: {
-          select: {
-            id: true,
-            title: true,
-            photos: true,
-            city: true,
-            cityLabel: true,
-            category: true,
-          },
+    // Получаем чаты пользователя:
+    // - Все чаты где пользователь является покупателем (даже пустые)
+    // - Только чаты где пользователь является продавцом И есть сообщения
+    const [buyerChats, sellerChats] = await Promise.all([
+      // Чаты где пользователь - покупатель
+      prisma.chat.findMany({
+        where: {
+          buyerId: userId,
         },
-        buyer: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            lastSeenAt: true,
+        include: {
+          ad: {
+            select: {
+              id: true,
+              title: true,
+              photos: true,
+              city: true,
+              cityLabel: true,
+              category: true,
+            },
           },
-        },
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            lastSeenAt: true,
+          buyer: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              lastSeenAt: true,
+            },
           },
-        },
-        messages: {
-          orderBy: {
-            createdAt: 'desc',
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              lastSeenAt: true,
+            },
           },
-          take: 1,
-          select: {
-            content: true,
-            createdAt: true,
-            status: true,
-            senderId: true,
-            attachments: {
-              select: {
-                fileType: true,
+          messages: {
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 1,
+            select: {
+              content: true,
+              createdAt: true,
+              status: true,
+              senderId: true,
+              attachments: {
+                select: {
+                  fileType: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
+      }),
+      // Чаты где пользователь - продавец, но только с сообщениями
+      prisma.chat.findMany({
+        where: {
+          sellerId: userId,
+          messages: {
+            some: {}, // Есть хотя бы одно сообщение
+          },
+        },
+        include: {
+          ad: {
+            select: {
+              id: true,
+              title: true,
+              photos: true,
+              city: true,
+              cityLabel: true,
+              category: true,
+            },
+          },
+          buyer: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              lastSeenAt: true,
+            },
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              lastSeenAt: true,
+            },
+          },
+          messages: {
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 1,
+            select: {
+              content: true,
+              createdAt: true,
+              status: true,
+              senderId: true,
+              attachments: {
+                select: {
+                  fileType: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    // Сортируем чаты по времени последнего обновления
+    const chats = [...buyerChats, ...sellerChats].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
 
     // Форматируем данные для фронтенда и подсчитываем непрочитанные сообщения
     const formattedChats = await Promise.all(chats.map(async (chat) => {

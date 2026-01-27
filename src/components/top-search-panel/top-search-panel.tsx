@@ -125,7 +125,7 @@ export default function TopSearchPanel({
                         href={`/${cityLabel}/${opt.key}`}
                       >
                         <img
-                          src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png`}
+                          src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
                           alt="cat-icon"
                           className="w-6 h-6 aspect-auto mr-1"
                         />
