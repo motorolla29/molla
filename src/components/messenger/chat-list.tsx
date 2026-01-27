@@ -112,7 +112,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
         <div
           key={chat.id}
           onClick={() => onChatSelect(chat.id)}
-          className="px-1 py-2 min-[500px]:p-4 rounded-2xl border-gray-100 cursor-pointer min-[500px]:hover:bg-gray-100 transition-colors"
+          className="px-1 py-2.5 min-[500px]:p-4 rounded-2xl border-gray-100 cursor-pointer min-[500px]:hover:bg-gray-100 transition-colors"
         >
           <div className="flex max-w-full items-center space-x-4">
             {/* Визуализация товара с аватаром */}
@@ -121,7 +121,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
               <div className="w-18 h-18 rounded-xl overflow-hidden bg-gray-100">
                 {chat.adPhoto ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-100`}
+                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
                     alt={chat.adTitle}
                     className="w-full h-full object-cover"
                   />

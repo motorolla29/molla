@@ -274,7 +274,7 @@ export default function ChatArea({
 
   return (
     <div
-      className="h-[calc(100vh-95px)] lg:h-[calc(100vh-105px)] flex flex-col"
+      className="h-[calc(100dvh-95px)] lg:h-[calc(100dvh-105px)] flex flex-col"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
