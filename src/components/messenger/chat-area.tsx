@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Fragment } from 'react';
 import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import MessageInput from './message-input';
@@ -173,6 +173,34 @@ export default function ChatArea({
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const isSameDay = (d1: Date, d2: Date) => {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  };
+
+  const formatDateDivider = (date: Date) => {
+    const now = new Date();
+    const isToday = isSameDay(date, now);
+
+    if (isToday) return 'Сегодня';
+
+    const base = date.toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+    });
+
+    if (date.getFullYear() === now.getFullYear()) {
+      // Например: "22 января"
+      return base;
+    }
+
+    // Например: "22 января 2022 г."
+    return `${base} ${date.getFullYear()} г.`;
   };
 
   const addLocalMessage = (content: string, attachments?: File[]) => {
@@ -425,18 +453,39 @@ export default function ChatArea({
         ) : (
           localMessages.map((message, index) => {
             const prevMessage = localMessages[index - 1];
+            const currentDate =
+              typeof message.timestamp === 'string'
+                ? new Date(message.timestamp)
+                : message.timestamp;
+            const prevDate =
+              prevMessage && typeof prevMessage.timestamp === 'string'
+                ? new Date(prevMessage.timestamp)
+                : prevMessage?.timestamp ?? null;
+
+            const showDateDivider =
+              !prevDate || !isSameDay(currentDate, prevDate);
+
             const isFirstInGroup =
-              !prevMessage || prevMessage.senderId !== message.senderId;
+              prevMessage && prevMessage.senderId !== message.senderId;
             const marginTop = isFirstInGroup ? 'mt-4' : 'mt-1';
+
             return (
-              <div
-                key={message.id}
-                className={`flex ${marginTop} ${
-                  message.senderId === currentUserId
-                    ? 'justify-end'
-                    : 'justify-start'
-                }`}
-              >
+              <Fragment key={message.id}>
+                {showDateDivider && (
+                  <div className="flex justify-center my-2">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-200 text-xs text-gray-700">
+                      {formatDateDivider(currentDate)}
+                    </div>
+                  </div>
+                )}
+
+                <div
+                  className={`flex ${marginTop} ${
+                    message.senderId === currentUserId
+                      ? 'justify-end'
+                      : 'justify-start'
+                  }`}
+                >
                 {/* Аватарка собеседника для входящих сообщений */}
                 {message.senderId !== currentUserId && (
                   <div className="shrink-0 mr-2 self-start">
@@ -550,7 +599,8 @@ export default function ChatArea({
                     </p>
                   </div>
                 </div>
-              </div>
+                </div>
+              </Fragment>
             );
           })
         )}
