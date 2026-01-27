@@ -127,8 +127,8 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
             >
               {/* Заголовок */}
               <div className="flex items-center justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-gray-100">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
                     {ad.title}
                   </h3>
                   <p className="text-xs sm:text-sm text-gray-500 mt-1">

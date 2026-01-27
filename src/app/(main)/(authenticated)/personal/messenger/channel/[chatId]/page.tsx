@@ -437,9 +437,9 @@ export default function ChatPage() {
   if (error) {
     return (
       <div className="my-10 text-center">
-        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg
-            className="w-6 h-6 text-red-600"
+            className="w-5 h-5 sm:w-6 sm:h-6 text-red-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -452,13 +452,13 @@ export default function ChatPage() {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">Ошибка</h2>
-        <p className="text-gray-600 mb-4">{error}</p>
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Ошибка</h2>
+        <p className="text-sm sm:text-base text-gray-600 mb-4">{error}</p>
         <Link
           href="/personal/messenger"
-          className="inline-flex items-center px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-violet-500 text-white text-sm sm:text-base rounded-lg hover:bg-violet-600 transition-colors"
         >
-          <ArrowLeft size={16} className="mr-2" />
+          <ArrowLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5 mr-2" />
           Вернуться к чатам
         </Link>
       </div>

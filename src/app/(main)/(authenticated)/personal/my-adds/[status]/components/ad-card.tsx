@@ -64,11 +64,11 @@ export default function AdCard({
 
                 {/* Десктоп версия - заголовок в одной строке с ценой и кнопкой */}
                 <div className="hidden sm:flex items-center justify-between gap-4 my-1">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-neutral-700 truncate flex-1 min-w-0">
                     {ad.title}
                   </h3>
                   <div className="text-right px-1 shrink-0">
-                    <div className="text-lg font-semibold text-gray-900">
+                    <div className="text-lg font-semibold text-neutral-900">
                       {formatPrice(ad.price, ad.currency)}
                     </div>
                   </div>

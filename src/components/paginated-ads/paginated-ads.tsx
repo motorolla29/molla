@@ -96,7 +96,7 @@ export default function PaginatedAds({
     const statusText = status === 'active' ? 'активных' : 'завершенных';
     return (
       <div className="text-center py-12">
-        <div className="text-gray-500 text-sm sm:text-base mb-2">
+        <div className="text-gray-500 text-sm sm:text-base mb-2 mx-6">
           У пользователя нет {statusText} объявлений
         </div>
       </div>

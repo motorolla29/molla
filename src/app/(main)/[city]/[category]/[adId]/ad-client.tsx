@@ -236,7 +236,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </a>
             </li>
             <li className="text-gray-400">›</li>
-            <li className="text-gray-500 truncate min-w-0 max-w-[200px] sm:max-w-none flex-1">
+            <li className="text-gray-500 truncate min-w-0 sm:max-w-none flex-1">
               {ad.title}
             </li>
           </ol>
@@ -345,7 +345,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           <aside className="w-full lg:w-1/3 lg:px-8 shrink-0 space-y-4">
             {ad.price !== undefined && (
               <div className="p-4 border border-violet-400 rounded-md">
-                <div className="text-2xl sm:text-3xl font-bold break-all max-w-full">
+                <div className="text-2xl sm:text-3xl text-neutral-900 font-bold break-all max-w-full">
                   {ad.price.toLocaleString('ru-RU')}{' '}
                   {getCurrencySymbol(ad.currency)}
                 </div>
