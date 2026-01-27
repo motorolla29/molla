@@ -126,7 +126,7 @@ export default function TopSearchPanel({
                       >
                         <img
                           src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
-                          alt="cat-icon"
+                          //alt="cat-icon"
                           className="w-6 h-6 aspect-auto mr-1"
                         />
                         <span className="flex grow items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
