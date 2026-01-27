@@ -276,7 +276,7 @@ export default function MessengerPage() {
       setIsLoading(true);
       const response = await fetch('/api/messenger/chats');
       if (response.ok) {
-        const data = await response.json();
+        const data: Chat[] = await response.json();
 
         // Обрабатываем lastMessage для сообщений с изображениями
         const processedData = data.map((chat: Chat) => {
