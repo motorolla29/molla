@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getSocket, getConnectionStatus, SocketConnectionStatus } from '@/lib/chat-socket';
+import {
+  getSocket,
+  getConnectionStatus,
+  SocketConnectionStatus,
+} from '@/lib/chat-socket';
 import { Socket } from 'socket.io-client';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -11,7 +15,7 @@ export default function GlobalMessageListener() {
   const { user } = useAuthStore();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState<SocketConnectionStatus>(
-    getConnectionStatus().status
+    getConnectionStatus().status,
   );
 
   const { setChatUnreadCount, refreshUnreadCounts } = useUnreadMessagesStore();
@@ -19,9 +23,11 @@ export default function GlobalMessageListener() {
 
   useEffect(() => {
     // Инициализируем сокет асинхронно
-    getSocket().then(setSocket).catch((error) => {
-      console.error('Failed to get socket:', error);
-    });
+    getSocket()
+      .then(setSocket)
+      .catch((error) => {
+        console.error('Failed to get socket:', error);
+      });
   }, []);
 
   // Начальная инициализация счетчиков непрочитанных при загрузке приложения / смене пользователя
@@ -47,13 +53,22 @@ export default function GlobalMessageListener() {
     if (!socket || !user) return;
 
     // Обработка обновлений счетчика непрочитанных сообщений
-    const handleUnreadUpdate = ({ chatId, unreadCount }: { chatId: string; unreadCount: number }) => {
-      console.log('GlobalMessageListener: Unread update received:', { chatId, unreadCount });
+    const handleUnreadUpdate = ({
+      chatId,
+      unreadCount,
+    }: {
+      chatId: string;
+      unreadCount: number;
+    }) => {
       setChatUnreadCount(chatId, unreadCount);
     };
 
     // Обработка presence (онлайн-статусы собеседников)
-    const handlePresenceSnapshot = ({ onlineUserIds }: { onlineUserIds: number[] }) => {
+    const handlePresenceSnapshot = ({
+      onlineUserIds,
+    }: {
+      onlineUserIds: number[];
+    }) => {
       setSnapshot(onlineUserIds || []);
     };
 
@@ -61,7 +76,13 @@ export default function GlobalMessageListener() {
       setOnline(userId);
     };
 
-    const handleUserOffline = ({ userId, lastSeenAt }: { userId: number; lastSeenAt?: string }) => {
+    const handleUserOffline = ({
+      userId,
+      lastSeenAt,
+    }: {
+      userId: number;
+      lastSeenAt?: string;
+    }) => {
       setOffline(userId, lastSeenAt);
     };
 
