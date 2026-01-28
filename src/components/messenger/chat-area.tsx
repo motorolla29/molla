@@ -591,13 +591,13 @@ export default function ChatArea({
                                 }, 100);
                               }}
                             />
-
-                            {(!loadedImages[attachment.id] ||
-                              attachment.fileUrl.startsWith('blob:')) && (
-                              <div className="absolute inset-0 bg-white/25 rounded-lg flex items-center justify-center">
-                                <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-                              </div>
-                            )}
+                            {message.senderId === currentUserId &&
+                              (!loadedImages[attachment.id] ||
+                                attachment.fileUrl.startsWith('blob:')) && (
+                                <div className="absolute inset-0 bg-white/25 rounded-lg flex items-center justify-center">
+                                  <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
                           </div>
                         ))}
                       </div>
