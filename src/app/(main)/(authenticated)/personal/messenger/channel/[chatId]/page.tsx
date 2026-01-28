@@ -31,6 +31,7 @@ interface Chat {
 
 interface Message {
   id: string;
+  stableId: string;
   chatId?: string;
   content: string;
   senderId: number;
@@ -43,6 +44,7 @@ interface Message {
     fileUrl: string;
     fileName: string;
     fileType: string;
+    blobUrl: string;
   }>;
   status?: 'sending' | 'sent' | 'delivered' | 'read' | 'error';
 }
@@ -161,17 +163,59 @@ export default function ChatPage() {
       setMessages((prev) => {
         const exists = prev.some((m) => m.id === payload.id);
         if (exists) return prev;
+
+        // Для отправителя может быть temp сообщение, которое нужно обновить
+        const existingTempMessage = prev.find(
+          (m) => m.senderId === Number(user.id) && m.status === 'sending',
+        );
+        if (
+          existingTempMessage &&
+          existingTempMessage.senderId === payload.senderId
+        ) {
+          // Сохраняем blobUrl из локального сообщения
+          const updatedAttachments = payload.attachments?.map(
+            (attachment: any) => {
+              const localAttachment = existingTempMessage.attachments?.find(
+                (local) => local.fileName === attachment.fileName,
+              );
+              return {
+                ...attachment,
+                blobUrl: localAttachment?.blobUrl || '', // Сохраняем blobUrl из локального сообщения
+              };
+            },
+          );
+
+          return prev.map((m) =>
+            m.id === existingTempMessage.id
+              ? {
+                  ...m,
+                  id: payload.id,
+                  content: payload.content,
+                  timestamp: payload.timestamp || m.timestamp,
+                  status: payload.status || 'sent',
+                  attachments: updatedAttachments || m.attachments,
+                }
+              : m,
+          );
+        }
+
+        // Новое сообщение от другого пользователя
         return [
           ...prev,
           {
             id: payload.id || payload.tempId || `socket-${Date.now()}`,
+            stableId:
+              payload.stableId || `stable-${Date.now()}-${Math.random()}`,
             content: payload.content,
             senderId: payload.senderId,
             senderName: '',
             timestamp: payload.timestamp || new Date(),
             type: payload.type === 'image' ? 'image' : 'text',
-            status: isFromOtherUser ? 'read' : (payload.status || 'sent'), // Сообщения от других пользователей сразу отмечаются как прочитанные
-            attachments: payload.attachments || [],
+            status: isFromOtherUser ? 'read' : payload.status || 'sent', // Сообщения от других пользователей сразу отмечаются как прочитанные
+            attachments: (payload.attachments || []).map((att: any) => ({
+              ...att,
+              blobUrl: att.blobUrl || '',
+            })),
           },
         ];
       });
@@ -192,9 +236,12 @@ export default function ChatPage() {
           });
 
           // Автоматически отмечаем как прочитанное, поскольку пользователь в чате
-          const readResponse = await fetch(`/api/messenger/chats/${chatId}/read`, {
-            method: 'POST',
-          });
+          const readResponse = await fetch(
+            `/api/messenger/chats/${chatId}/read`,
+            {
+              method: 'POST',
+            },
+          );
 
           if (readResponse.ok) {
             // Обновляем глобальный store с непрочитанными сообщениями
@@ -207,16 +254,21 @@ export default function ChatPage() {
       }
 
       // Smart scroll: only scroll if user is near bottom
-      setTimeout(() => {
-        const container = document.querySelector('[data-messages-container]') as HTMLElement;
-        if (container) {
-          const { scrollTop, scrollHeight, clientHeight } = container;
-          const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-          if (distanceFromBottom < 100) {
-            container.scrollTop = container.scrollHeight;
+      setTimeout(
+        () => {
+          const container = document.querySelector(
+            '[data-messages-container]',
+          ) as HTMLElement;
+          if (container) {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+            if (distanceFromBottom < 100) {
+              container.scrollTop = container.scrollHeight;
+            }
           }
-        }
-      }, payload.attachments && payload.attachments.length > 0 ? 200 : 50);
+        },
+        payload.attachments && payload.attachments.length > 0 ? 200 : 50,
+      );
     };
 
     const handleMessageSaved = ({
@@ -236,9 +288,24 @@ export default function ChatPage() {
                   id: message.id,
                   status: message.status || 'sent',
                   timestamp: message.timestamp || m.timestamp,
+                  attachments: message.attachments
+                    ? message.attachments.map(
+                        (serverAtt: any, index: number) => {
+                          const result = {
+                            ...serverAtt,
+                            // Сохраняем blobUrl из локального сообщения, если он есть
+                            blobUrl:
+                              m.attachments?.[index]?.blobUrl ||
+                              serverAtt.blobUrl ||
+                              '',
+                          };
+                          return result;
+                        },
+                      )
+                    : m.attachments,
                 }
-              : m
-          )
+              : m,
+          ),
         );
       } else {
         handleNewMessage(message);
@@ -292,7 +359,7 @@ export default function ChatPage() {
       chatId: incomingChatId,
       messageIds,
       status,
-      updatedBy
+      updatedBy,
     }: {
       chatId: string;
       messageIds: string[];
@@ -304,8 +371,10 @@ export default function ChatPage() {
       // Обновляем статус сообщений в локальном состоянии
       setMessages((prev) =>
         prev.map((msg) =>
-          messageIds.includes(msg.id) ? { ...msg, status: status as Message['status'] } : msg
-        )
+          messageIds.includes(msg.id)
+            ? { ...msg, status: status as Message['status'] }
+            : msg,
+        ),
       );
     };
 
@@ -328,7 +397,8 @@ export default function ChatPage() {
   const handleSendMessage = async (
     content: string,
     attachments?: File[],
-    tempMessageId?: string
+    tempMessageId?: string,
+    localAttachments?: any[],
   ) => {
     if (!user) return;
 
@@ -361,6 +431,7 @@ export default function ChatPage() {
       const persisted: Message | null = data.message
         ? {
             id: data.message.id,
+            stableId: `stable-${Date.now()}-${Math.random()}`,
             chatId: data.message.chatId,
             senderId: Number(user.id),
             senderName: user.name,
@@ -371,25 +442,39 @@ export default function ChatPage() {
                 ? 'image'
                 : ('text' as const),
             status: 'delivered' as Message['status'],
-            attachments: (data.message.attachments || []).map((att: any) => ({
-              id: att.id,
-              fileUrl: att.fileUrl,
-              fileName: att.fileName,
-              fileType: att.fileType,
-            })),
+            attachments: (data.message.attachments || []).map(
+              (att: any, index: number) => ({
+                id: att.id,
+                fileUrl: att.fileUrl,
+                fileName: att.fileName,
+                fileType: att.fileType,
+                // Сохраняем blobUrl из локального сообщения, если он есть
+                blobUrl: localAttachments?.[index]?.blobUrl || '',
+              }),
+            ),
           }
         : null;
 
       if (persisted) {
-        // Don't add locally - rely on real-time broadcast via socket
+        // Отправляем persisted сообщение через socket для доставки всем участникам
         socket?.emit('send_message', {
           chatId,
-          tempId: tempMessageId,
           persistedMessage: persisted,
         });
       }
 
-      return { messageId: data.messageId };
+      return {
+        messageId: data.messageId,
+        message: persisted
+          ? {
+              id: persisted.id,
+              attachments: persisted.attachments?.map((att) => ({
+                ...att,
+                isLoading: false,
+              })),
+            }
+          : undefined,
+      };
     } else {
       // При ошибке кидаем исключение
       throw new Error('Failed to send message');
@@ -452,7 +537,9 @@ export default function ChatPage() {
             />
           </svg>
         </div>
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Ошибка</h2>
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+          Ошибка
+        </h2>
         <p className="text-sm sm:text-base text-gray-600 mb-4">{error}</p>
         <Link
           href="/personal/messenger"

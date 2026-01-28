@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ chatId: string }> }
+  { params }: { params: Promise<{ chatId: string }> },
 ) {
   try {
     // Получаем токен из cookies
@@ -12,7 +12,7 @@ export async function GET(
     if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -66,6 +66,7 @@ export async function GET(
     // Форматируем сообщения для фронтенда
     const formattedMessages = messages.map((message) => ({
       id: message.id,
+      stableId: `stable-existing-${message.id}`, // Стабильный ID для существующих сообщений
       content: message.content || '',
       senderId: message.senderId,
       senderName: message.sender.name,
@@ -86,7 +87,7 @@ export async function GET(
     console.error('Error fetching messages:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

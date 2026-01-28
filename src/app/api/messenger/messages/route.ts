@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!chatId) {
       return NextResponse.json(
         { error: 'Chat ID is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -63,13 +63,15 @@ export async function POST(request: NextRequest) {
       // Получаем ключи ImageKit
       const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
       const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
-      const endpoint = process.env.IMAGEKIT_UPLOAD_ENDPOINT || 'https://upload.imagekit.io/api/v1/files/upload';
+      const endpoint =
+        process.env.IMAGEKIT_UPLOAD_ENDPOINT ||
+        'https://upload.imagekit.io/api/v1/files/upload';
 
       if (!privateKey || !publicKey) {
         console.error('IMAGEKIT keys are not configured');
         return NextResponse.json(
           { error: 'Image upload is not configured' },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -82,7 +84,8 @@ export async function POST(request: NextRequest) {
         uploadForm.append('useUniqueFileName', 'true');
 
         // ImageKit авторизация
-        const authHeader = 'Basic ' + Buffer.from(`${privateKey}:`).toString('base64');
+        const authHeader =
+          'Basic ' + Buffer.from(`${privateKey}:`).toString('base64');
 
         const imageKitRes = await fetch(endpoint, {
           method: 'POST',
@@ -95,7 +98,12 @@ export async function POST(request: NextRequest) {
         const imageKitData = await imageKitRes.json();
 
         if (!imageKitRes.ok) {
-          console.error('ImageKit upload error for', attachment.name, ':', imageKitData);
+          console.error(
+            'ImageKit upload error for',
+            attachment.name,
+            ':',
+            imageKitData,
+          );
           throw new Error(`Failed to upload ${attachment.name}`);
         }
 
@@ -112,7 +120,7 @@ export async function POST(request: NextRequest) {
 
       // Создаем записи в базе данных для всех вложений
       await prisma.messageAttachment.createMany({
-        data: uploadedFiles.map(file => ({
+        data: uploadedFiles.map((file) => ({
           messageId: message.id,
           fileUrl: file.fileUrl,
           fileName: file.fileName,
@@ -134,41 +142,25 @@ export async function POST(request: NextRequest) {
       data: { updatedAt: new Date() },
     });
 
-    // Отправляем WebSocket событие для доставки сообщения в реальном времени
-    try {
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
-      const response = await fetch(`${socketUrl}/emit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          event: 'message_delivered',
-          data: {
-            messageIds: [message.id],
-            userId: userId,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        console.error('Error sending socket event via HTTP:', response.status, await response.text());
-      }
-    } catch (socketError) {
-      console.error('Error sending socket event:', socketError);
-    }
-
     const messageWithAttachments = await prisma.message.findUnique({
       where: { id: message.id },
       include: {
         attachments: true,
+        sender: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
+
+    // Socket события отправляются через обычный socket в page.tsx
 
     return NextResponse.json({
       success: true,
       statusMessage: 'Message sent successfully',
-      messageId: message.id,
+      messageId: messageWithAttachments!.id,
       message: messageWithAttachments
         ? {
             id: messageWithAttachments.id,
@@ -178,12 +170,14 @@ export async function POST(request: NextRequest) {
             messageType: messageWithAttachments.messageType,
             status: 'delivered',
             createdAt: messageWithAttachments.createdAt,
-            attachments: messageWithAttachments.attachments.map((attachment) => ({
-              id: attachment.id,
-              fileUrl: attachment.fileUrl,
-              fileName: attachment.fileName,
-              fileType: attachment.fileType,
-            })),
+            attachments: messageWithAttachments.attachments.map(
+              (attachment) => ({
+                id: attachment.id,
+                fileUrl: attachment.fileUrl,
+                fileName: attachment.fileName,
+                fileType: attachment.fileType,
+              }),
+            ),
           }
         : null,
     });
@@ -191,7 +185,7 @@ export async function POST(request: NextRequest) {
     console.error('Error sending message:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

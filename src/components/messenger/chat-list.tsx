@@ -19,7 +19,6 @@ interface Chat {
   lastMessageIsOutgoing?: boolean;
   unreadCount: number;
 }
- 
 
 interface ChatListProps {
   chats: Chat[];
@@ -75,9 +74,6 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
   const isUserTyping = (chatId: string, otherUserId: number) => {
     const typingForChat = typingMap[chatId]?.[otherUserId];
     const isTyping = !!typingForChat && Date.now() - typingForChat < 3000;
-    if (isTyping) {
-      console.log(`[TYPING] isUserTyping: ${chatId}-${otherUserId}-${typingForChat} - TRUE`);
-    }
     return isTyping;
   };
 
@@ -155,7 +151,9 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
                 ) : (
                   <div
                     className="w-full h-full flex items-center justify-center"
-                    style={{ backgroundColor: getAvatarColor(chat.otherUserId) }}
+                    style={{
+                      backgroundColor: getAvatarColor(chat.otherUserId),
+                    }}
                   >
                     <span className="text-white font-semibold text-xs">
                       {chat.otherUserName.charAt(0).toUpperCase()}
@@ -232,12 +230,14 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
               >
                 {isUserTyping(chat.id, chat.otherUserId) ? (
                   <div className="">
-                    <div className='inline-block align-baseline'>
+                    <div className="inline-block align-baseline">
                       <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
                       <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.1s] ml-0.5" />
                       <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce ml-0.5" />
                     </div>
-                    <span className="inline-block ml-1 align-baseline font-semibold text-violet-500">Печатает...</span>
+                    <span className="inline-block ml-1 align-baseline font-semibold text-violet-500">
+                      Печатает...
+                    </span>
                   </div>
                 ) : (
                   chat.lastMessage

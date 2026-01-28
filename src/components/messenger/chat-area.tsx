@@ -9,6 +9,7 @@ import { getAvatarColor } from '@/utils';
 
 interface Message {
   id: string;
+  stableId: string; // Стабильный ID для предотвращения перерисовки
   content: string;
   senderId: number;
   senderName: string;
@@ -19,8 +20,10 @@ interface Message {
   attachments?: Array<{
     id: string;
     fileUrl: string;
+    blobUrl: string;
     fileName: string;
     fileType: string;
+    isLoading?: boolean; // Для отслеживания загрузки серверного изображения
   }>;
 }
 
@@ -46,8 +49,9 @@ interface ChatAreaProps {
   onSendMessage: (
     content: string,
     attachments?: File[],
-    tempMessageId?: string
-  ) => Promise<{ messageId?: string } | void>;
+    tempMessageId?: string,
+    localAttachments?: any[],
+  ) => Promise<{ messageId?: string; message?: any } | void>;
   onTyping?: () => void;
   onStopTyping?: () => void;
   isOtherUserOnline?: boolean;
@@ -76,6 +80,8 @@ export default function ChatArea({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] =
     useState<Message[]>(initialMessages);
+  // Локальное состояние для отслеживания загрузки изображений по ID вложения
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const prevMessagesLengthRef = useRef(initialMessages.length);
 
   // Состояние для модального окна просмотра изображений
@@ -115,8 +121,7 @@ export default function ChatArea({
   // Для входящих сообщений - только если пользователь уже внизу.
   // Для исходящих (от текущего пользователя) - всегда прокручиваем вниз.
   useEffect(() => {
-    const hasNewMessages =
-      localMessages.length > prevMessagesLengthRef.current;
+    const hasNewMessages = localMessages.length > prevMessagesLengthRef.current;
 
     const lastMessage = localMessages[localMessages.length - 1];
     const isLastFromCurrentUser =
@@ -204,8 +209,10 @@ export default function ChatArea({
   };
 
   const addLocalMessage = (content: string, attachments?: File[]) => {
+    const stableId = `stable-${Date.now()}-${Math.random()}`;
     const tempMessage: Message = {
       id: `temp-${Date.now()}`,
+      stableId: stableId,
       content: content,
       senderId: currentUserId,
       senderName: 'Вы',
@@ -215,21 +222,22 @@ export default function ChatArea({
       attachments: attachments?.map((file, index) => ({
         id: `temp-attachment-${index}`,
         fileUrl: URL.createObjectURL(file),
+        blobUrl: URL.createObjectURL(file),
         fileName: file.name,
         fileType: file.type,
       })),
     };
 
     setLocalMessages((prev) => [...prev, tempMessage]);
-    return tempMessage.id;
+    return { id: tempMessage.id, attachments: tempMessage.attachments };
   };
 
   const updateMessageStatus = (
     messageId: string,
-    status: Message['status']
+    status: Message['status'],
   ) => {
     setLocalMessages((prev) =>
-      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg))
+      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg)),
     );
   };
 
@@ -246,25 +254,21 @@ export default function ChatArea({
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     // Добавляем сообщение локально
-    const tempMessageId = addLocalMessage(content, attachments);
+    const { id: tempMessageId, attachments: localAttachments } =
+      addLocalMessage(content, attachments);
 
     try {
       // Отправляем на сервер
-      const result = await onSendMessage(content, attachments, tempMessageId);
+      const result = await onSendMessage(
+        content,
+        attachments,
+        tempMessageId,
+        localAttachments,
+      );
 
-      // Если сервер вернул реальный ID сообщения, обновляем локальное сообщение
-      if (result && result.messageId) {
-        setLocalMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === tempMessageId
-              ? { ...msg, id: result.messageId!, status: 'sent' as const }
-              : msg
-          )
-        );
-      } else {
-        // Если ID не вернулся, просто обновляем статус
-        updateMessageStatus(tempMessageId, 'sent');
-      }
+      // Все обновления происходят через socket события (message_saved, message_delivered)
+      // Не делаем локальных обновлений, чтобы избежать конфликтов
+      // Для текстовых сообщений обновление происходит через socket message_saved
     } catch (error) {
       // При ошибке показываем ошибку
       updateMessageStatus(tempMessageId, 'error');
@@ -300,29 +304,29 @@ export default function ChatArea({
                   href={`/${chat.adCityLabel}/${chat.adCategory}/${chat.adId}`}
                   target="blank"
                 >
-                {chat.adPhoto ? (
-                  <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-60`}
-                    alt={chat.adTitle}
-                    className="w-full h-full object-cover cursor-pointer transition-opacity"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                )}
+                  {chat.adPhoto ? (
+                    <img
+                      src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-60`}
+                      alt={chat.adTitle}
+                      className="w-full h-full object-cover cursor-pointer transition-opacity"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <svg
+                        className="w-6 h-6 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  )}
                 </Link>
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -355,7 +359,11 @@ export default function ChatArea({
                 ) : (
                   <div
                     className="w-full h-full flex items-center justify-center"
-                    style={{ backgroundColor: chat?.otherUserId ? getAvatarColor(chat.otherUserId) : 'rgba(209, 213, 219, 0.2)' }}
+                    style={{
+                      backgroundColor: chat?.otherUserId
+                        ? getAvatarColor(chat.otherUserId)
+                        : 'rgba(209, 213, 219, 0.2)',
+                    }}
                   >
                     <span className="text-white font-semibold text-xs">
                       {chat?.otherUserName?.charAt(0).toUpperCase()}
@@ -387,19 +395,6 @@ export default function ChatArea({
                   )}
                 </div>
               </Link>
-              {/* <div className="flex items-center gap-2 text-xs text-gray-500 shrink-0">
-                <span
-                  className={`inline-block w-2.5 h-2.5 rounded-full ${
-                    isOtherUserOnline ? 'bg-emerald-500' : 'bg-gray-300'
-                  }`}
-                  aria-label={isOtherUserOnline ? 'online' : 'offline'}
-                />
-                <span>
-                  {isOtherUserOnline
-                    ? 'В сети'
-                    : formatLastSeen(otherUserLastSeen)}
-                </span>
-              </div> */}
             </div>
 
             <p className="text-xs text-gray-600 truncate">
@@ -470,8 +465,9 @@ export default function ChatArea({
               prevMessage && prevMessage.senderId !== message.senderId;
             const marginTop = isFirstInGroup ? 'mt-4' : 'mt-1';
 
+            // Используем стабильный ID для предотвращения перерисовки
             return (
-              <Fragment key={message.id}>
+              <Fragment key={`message-${message.stableId}`}>
                 {showDateDivider && (
                   <div className="flex justify-center my-2">
                     <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-200 text-xs text-gray-700">
@@ -487,119 +483,146 @@ export default function ChatArea({
                       : 'justify-start'
                   }`}
                 >
-                {/* Аватарка собеседника для входящих сообщений */}
-                {message.senderId !== currentUserId && (
-                  <div className="shrink-0 mr-2 self-start">
-                    <div
-                      className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
-                      style={{ backgroundColor: chat?.otherUserAvatar ? 'transparent' : (chat?.otherUserId ? getAvatarColor(chat.otherUserId) : 'rgba(209, 213, 219, 0.2)') }}
-                    >
-                      {chat?.otherUserAvatar ? (
-                        <img
-                          src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
-                          alt={chat?.otherUserName}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-white font-semibold text-sm">
-                          {chat?.otherUserName?.charAt(0).toUpperCase()}
-                        </span>
+                  {/* Аватарка собеседника для входящих сообщений */}
+                  {message.senderId !== currentUserId && (
+                    <div className="shrink-0 mr-2 self-start">
+                      <div
+                        className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
+                        style={{
+                          backgroundColor: chat?.otherUserAvatar
+                            ? 'transparent'
+                            : chat?.otherUserId
+                              ? getAvatarColor(chat.otherUserId)
+                              : 'rgba(209, 213, 219, 0.2)',
+                        }}
+                      >
+                        {chat?.otherUserAvatar ? (
+                          <img
+                            src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
+                            alt={chat?.otherUserName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-white font-semibold text-sm">
+                            {chat?.otherUserName?.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {/* Индикатор статуса для исходящих сообщений - слева от блока */}
+                  {message.senderId === currentUserId && (
+                    <div className="flex items-end justify-start mr-1 mb-1 self-end">
+                      {message.status === 'sending' && (
+                        <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                      )}
+                      {message.status === 'sent' && (
+                        <Check className="w-3 h-3 text-gray-500" />
+                      )}
+                      {message.status === 'delivered' && (
+                        <Check className="w-3 h-3 text-violet-500" />
+                      )}
+                      {message.status === 'read' && (
+                        <CheckCheck className="w-3 h-3 text-violet-500" />
+                      )}
+                      {message.status === 'error' && (
+                        <div className="text-xs text-red-500">⚠</div>
                       )}
                     </div>
-                  </div>
-                )}
-                {/* Индикатор статуса для исходящих сообщений - слева от блока */}
-                {message.senderId === currentUserId && (
-                  <div className="flex items-end justify-start mr-1 mb-1 self-end">
-                    {message.status === 'sending' && (
-                      <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-                    )}
-                    {message.status === 'sent' && (
-                      <Check className="w-3 h-3 text-gray-500" />
-                    )}
-                    {message.status === 'delivered' && (
-                      <Check className="w-3 h-3 text-violet-500" />
-                    )}
-                    {message.status === 'read' && (
-                      <CheckCheck className="w-3 h-3 text-violet-500" />
-                    )}
-                    {message.status === 'error' && (
-                      <div className="text-xs text-red-500">⚠</div>
-                    )}
-                  </div>
-                )}
+                  )}
 
-                <div
-                  className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 sm:max-w-100 px-3 py-1 rounded-lg relative ${
-                    message.senderId === currentUserId
-                      ? 'bg-violet-500 text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
-                >
-                  {/* Фото в сообщении */}
-                  {message.attachments && message.attachments.length > 0 && (
-                    <div className="mb-2 flex flex-col gap-2">
-                      {message.attachments.map((attachment) => (
-                        <div key={attachment.id} className="relative min-w-[120px] min-h-[90px] bg-gray-300/25 rounded-lg">
-                          {/* Loading overlay for non-blob URLs */}
-                          {!attachment.fileUrl.startsWith('blob:') && message.status === 'sending' && (
-                            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-                              <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                          )}
-                          <img
-                            src={
-                              attachment.fileUrl.startsWith('blob:')
-                                ? attachment.fileUrl
-                                : `${attachment.fileUrl}?tr=w-300` // Миниатюра для чата
-                            }
-                            alt={attachment.fileName}
-                            className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() =>
-                              openImageModal(
-                                attachment.fileUrl.startsWith('blob:')
-                                  ? attachment.fileUrl
-                                  : attachment.fileUrl, // Полный размер для модала
-                                attachment.fileName
-                              )
-                            }
-                            onLoad={() => {
-                              // Smart scroll: only scroll if user is near bottom
-                              setTimeout(() => {
-                                if (isNearBottom) {
-                                  const container = messagesContainerRef.current;
-                                  if (container) {
-                                    container.scrollTop = container.scrollHeight;
+                  <div
+                    className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 sm:max-w-100 px-3 py-1 rounded-lg relative ${
+                      message.senderId === currentUserId
+                        ? 'bg-violet-500 text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    }`}
+                  >
+                    {/* Фото в сообщении */}
+                    {message.attachments && message.attachments.length > 0 && (
+                      <div className="mb-2 flex flex-col gap-2">
+                        {message.attachments.map((attachment) => (
+                          <div
+                            key={attachment.id}
+                            className="relative min-w-[120px] min-h-[90px] bg-gray-300/25 rounded-lg"
+                          >
+                            <img
+                              src={
+                                message.senderId === currentUserId
+                                  ? // Логика для отправителя с blobUrl
+                                    !loadedImages[attachment.id] &&
+                                    attachment.blobUrl
+                                    ? attachment.blobUrl
+                                    : attachment.fileUrl.startsWith('blob:')
+                                      ? attachment.fileUrl
+                                      : `${attachment.fileUrl}?tr=w-300`
+                                  : // Для получателя просто HTTP URL
+                                    `${attachment.fileUrl}?tr=w-300`
+                              }
+                              alt={attachment.fileName}
+                              className={`rounded-lg w-[300px] max-w-full h-auto cursor-pointer transition-opacity duration-150 ${
+                                loadedImages[attachment.id]
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
+                              }`}
+                              onClick={() =>
+                                openImageModal(
+                                  attachment.fileUrl, // Полный размер для модала
+                                  attachment.fileName,
+                                )
+                              }
+                              onLoad={() => {
+                                // Помечаем изображение как загруженное для плавного появления
+                                setLoadedImages((prev) => ({
+                                  ...prev,
+                                  [attachment.id]: true,
+                                }));
+
+                                // Smart scroll: only scroll if user is near bottom
+                                setTimeout(() => {
+                                  if (isNearBottom) {
+                                    const container =
+                                      messagesContainerRef.current;
+                                    if (container) {
+                                      container.scrollTop =
+                                        container.scrollHeight;
+                                    }
                                   }
-                                }
-                              }, 100);
-                            }}
-                          />
-                        </div>
-                      ))}
+                                }, 100);
+                              }}
+                            />
+
+                            {(!loadedImages[attachment.id] ||
+                              attachment.fileUrl.startsWith('blob:')) && (
+                              <div className="absolute inset-0 bg-white/25 rounded-lg flex items-center justify-center">
+                                <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Текст сообщения */}
+                    {message.content && (
+                      <p className="text-sm whitespace-pre-wrap wrap-break-word">
+                        {message.content}
+                      </p>
+                    )}
+
+                    {/* Время отправки - прижато справа */}
+                    <div className="flex justify-end mt-1">
+                      <p
+                        className={`text-xs ${
+                          message.senderId === currentUserId
+                            ? 'text-violet-200'
+                            : 'text-gray-500'
+                        }`}
+                      >
+                        {formatTime(message.timestamp)}
+                      </p>
                     </div>
-                  )}
-
-                  {/* Текст сообщения */}
-                  {message.content && (
-                    <p className="text-sm whitespace-pre-wrap wrap-break-word">
-                      {message.content}
-                    </p>
-                  )}
-
-                  {/* Время отправки - прижато справа */}
-                  <div className="flex justify-end mt-1">
-                    <p
-                      className={`text-xs ${
-                        message.senderId === currentUserId
-                          ? 'text-violet-200'
-                          : 'text-gray-500'
-                      }`}
-                    >
-                      {formatTime(message.timestamp)}
-                    </p>
                   </div>
-                </div>
                 </div>
               </Fragment>
             );
@@ -607,44 +630,53 @@ export default function ChatArea({
         )}
 
         {/* Typing indicator - показывается только если пользователь в конце чата */}
-        {isTyping && isNearBottom && (() => {
-          // Определяем отступ как для сообщений
-          const lastMessage = localMessages[localMessages.length - 1];
-          const isFirstInGroup = !lastMessage || lastMessage.senderId !== currentUserId;
-          const marginTop = isFirstInGroup ? 'mt-1' : 'mt-4';
+        {isTyping &&
+          isNearBottom &&
+          (() => {
+            // Определяем отступ как для сообщений
+            const lastMessage = localMessages[localMessages.length - 1];
+            const isFirstInGroup =
+              !lastMessage || lastMessage.senderId !== currentUserId;
+            const marginTop = isFirstInGroup ? 'mt-1' : 'mt-4';
 
-          return (
-            <div className={`flex justify-start ${marginTop}`}>
-            {/* Аватарка собеседника для индикатора печати */}
-            <div className="shrink-0 mr-2 self-start">
-              <div
-                className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
-                style={{ backgroundColor: chat?.otherUserAvatar ? 'transparent' : (chat?.otherUserId ? getAvatarColor(chat.otherUserId) : 'rgba(209, 213, 219, 0.2)') }}
-              >
-                {chat?.otherUserAvatar ? (
-                  <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
-                    alt={chat?.otherUserName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-white font-semibold text-sm">
-                    {chat?.otherUserName?.charAt(0).toUpperCase()}
+            return (
+              <div className={`flex justify-start ${marginTop}`}>
+                {/* Аватарка собеседника для индикатора печати */}
+                <div className="shrink-0 mr-2 self-start">
+                  <div
+                    className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
+                    style={{
+                      backgroundColor: chat?.otherUserAvatar
+                        ? 'transparent'
+                        : chat?.otherUserId
+                          ? getAvatarColor(chat.otherUserId)
+                          : 'rgba(209, 213, 219, 0.2)',
+                    }}
+                  >
+                    {chat?.otherUserAvatar ? (
+                      <img
+                        src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
+                        alt={chat?.otherUserName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-white font-semibold text-sm">
+                        {chat?.otherUserName?.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-2xl">
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
+                    <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.1s]" />
+                    <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
                   </span>
-                )}
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-2xl">
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
-                <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.1s]" />
-                <span className="inline-block w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
-              </span>
-            </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
 
         {/* Реф для прокрутки */}
         <div ref={messagesEndRef} />
