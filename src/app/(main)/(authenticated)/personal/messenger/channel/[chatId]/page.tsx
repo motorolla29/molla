@@ -81,6 +81,8 @@ export default function ChatPage() {
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [isScrollLocked, setIsScrollLocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -137,15 +139,46 @@ export default function ChatPage() {
   const loadMessages = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/messenger/chats/${chatId}/messages`);
+      const response = await fetch(
+        `/api/messenger/chats/${chatId}/messages?limit=20`,
+      );
       if (response.ok) {
-        const data = await response.json();
-        setMessages(data);
+        const data: { messages: Message[]; hasMore: boolean } =
+          await response.json();
+        setMessages(data.messages);
+        setHasMore(data.hasMore);
       }
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadMoreMessages = async () => {
+    if (isLoadingMore || !hasMore || messages.length === 0) return;
+
+    try {
+      setIsLoadingMore(true);
+      const oldestMessageId = messages[0]?.id;
+      const response = await fetch(
+        `/api/messenger/chats/${chatId}/messages?limit=20&beforeId=${encodeURIComponent(
+          oldestMessageId,
+        )}`,
+      );
+
+      if (response.ok) {
+        const data: { messages: Message[]; hasMore: boolean } =
+          await response.json();
+
+        // Добавляем более старые сообщения в начало списка
+        setMessages((prev) => [...data.messages, ...prev]);
+        setHasMore(data.hasMore);
+      }
+    } catch (error) {
+      console.error('Error loading more messages:', error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -567,6 +600,9 @@ export default function ChatPage() {
         isTyping={isTyping}
         isLoading={isLoading}
         isScrollLocked={isScrollLocked}
+        hasMoreMessages={hasMore}
+        isLoadingMoreMessages={isLoadingMore}
+        onLoadMoreMessages={loadMoreMessages}
         showBackButton={true}
       />
     </div>

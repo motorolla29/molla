@@ -27,6 +27,9 @@ interface ChatAreaProps {
   isTyping?: boolean;
   isLoading?: boolean;
   isScrollLocked?: boolean;
+  hasMoreMessages?: boolean;
+  isLoadingMoreMessages?: boolean;
+  onLoadMoreMessages?: () => Promise<void> | void;
   showBackButton?: boolean;
 }
 
@@ -42,6 +45,9 @@ export default function ChatArea({
   isTyping = false,
   isLoading = false,
   isScrollLocked = false,
+  hasMoreMessages = false,
+  isLoadingMoreMessages = false,
+  onLoadMoreMessages,
   showBackButton = false,
 }: ChatAreaProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -71,15 +77,23 @@ export default function ChatArea({
           : prevMessage.timestamp
         : null;
 
+      // Не показываем divider для первого сообщения, если есть еще сообщения для подгрузки
+      const shouldShowDateDivider =
+        (!prevDate || !isSameDay(currentDate, prevDate)) &&
+        !(index === 0 && hasMoreMessages);
+
       return {
         message,
-        showDateDivider: !prevDate || !isSameDay(currentDate, prevDate),
+        showDateDivider: shouldShowDateDivider,
         isFirstInGroup:
           prevMessage && prevMessage.senderId !== message.senderId,
       };
     });
-  }, [localMessages]);
+  }, [localMessages, hasMoreMessages]);
   const prevMessagesLengthRef = useRef(initialMessages.length);
+  const prevLastMessageIdRef = useRef<string | null>(
+    initialMessages[initialMessages.length - 1]?.id ?? null,
+  );
 
   // Состояние для модального окна просмотра изображений
   const [selectedImage, setSelectedImage] = useState<{
@@ -90,6 +104,11 @@ export default function ChatArea({
   // Состояние для отслеживания положения скролла
   const [isNearBottom, setIsNearBottom] = useState(true);
   const isNearBottomRef = useRef(isNearBottom);
+  const isLoadingMoreLocalRef = useRef(false);
+
+  // Защита от множественных загрузок с помощью RAF и debounce
+  const scrollRafRef = useRef<number | null>(null);
+  const loadMoreTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Синхронизируем ref с состоянием
   useEffect(() => {
@@ -112,24 +131,113 @@ export default function ChatArea({
     setLocalMessages(initialMessages);
   }, [initialMessages]);
 
-  // Оптимизированный обработчик скролла с throttling
+  // Оптимизированный обработчик скролла с debounce для предотвращения множественных загрузок
   const handleScroll = useCallback(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
+    // Отменяем предыдущий RAF если он был
+    if (scrollRafRef.current) {
+      cancelAnimationFrame(scrollRafRef.current);
+    }
 
-    const { scrollTop, scrollHeight, clientHeight } = container;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    const newIsNearBottom = distanceFromBottom < 100;
+    // Используем RAF для оптимизации производительности
+    scrollRafRef.current = requestAnimationFrame(() => {
+      const container = messagesContainerRef.current;
+      if (!container) return;
 
-    // Обновляем только если состояние изменилось
-    setIsNearBottom((prev) => {
-      if (prev !== newIsNearBottom) {
-        console.log('📜 Изменение isNearBottom:', prev, '->', newIsNearBottom);
-        return newIsNearBottom;
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      const newIsNearBottom = distanceFromBottom < 100;
+
+      // Обновляем только если состояние изменилось
+      setIsNearBottom((prev) => {
+        if (prev !== newIsNearBottom) {
+          console.log(
+            '📜 Изменение isNearBottom:',
+            prev,
+            '->',
+            newIsNearBottom,
+          );
+          return newIsNearBottom;
+        }
+        return prev;
+      });
+
+      // Проверяем условия для подгрузки с debounce
+      const shouldLoadMore =
+        scrollTop <= 50 &&
+        !isLoading &&
+        hasMoreMessages &&
+        !isLoadingMoreMessages &&
+        onLoadMoreMessages &&
+        !isLoadingMoreLocalRef.current;
+
+      if (shouldLoadMore) {
+        // Очищаем предыдущий таймаут если был
+        if (loadMoreTimeoutRef.current) {
+          clearTimeout(loadMoreTimeoutRef.current);
+        }
+
+        // Debounce: ждем 300мс пока скролл остановится
+        loadMoreTimeoutRef.current = setTimeout(() => {
+          // Повторная проверка условий после debounce
+          const currentContainer = messagesContainerRef.current;
+          if (!currentContainer || isLoadingMoreLocalRef.current) return;
+
+          const currentScrollTop = currentContainer.scrollTop;
+          if (currentScrollTop > 50) return; // Проверяем что все еще у верха
+
+          // Очищаем таймаут так как начинаем загрузку
+          if (loadMoreTimeoutRef.current) {
+            clearTimeout(loadMoreTimeoutRef.current);
+            loadMoreTimeoutRef.current = null;
+          }
+
+          isLoadingMoreLocalRef.current = true;
+          console.log(
+            '📥 Начинаем подгрузку сообщений при scrollTop:',
+            currentScrollTop,
+          );
+
+          // Сохраняем текущую позицию скролла и высоту перед подгрузкой
+          const prevScrollTop = currentScrollTop;
+          const prevScrollHeight = currentContainer.scrollHeight;
+
+          Promise.resolve(onLoadMoreMessages()).finally(() => {
+            // После подгрузки восстанавливаем позицию скролла относительно нижнего края
+            const restoreScrollPosition = () => {
+              const updatedContainer = messagesContainerRef.current;
+              if (!updatedContainer) {
+                isLoadingMoreLocalRef.current = false;
+                return;
+              }
+
+              const newScrollHeight = updatedContainer.scrollHeight;
+              const heightIncrease = newScrollHeight - prevScrollHeight;
+
+              // Новая позиция скролла: старая позиция + прирост высоты
+              const newScrollTop = prevScrollTop + heightIncrease;
+
+              // Проверяем разумность позиции
+              if (
+                newScrollTop >= 0 &&
+                newScrollTop <= newScrollHeight - updatedContainer.clientHeight
+              ) {
+                updatedContainer.scrollTop = newScrollTop;
+              }
+
+              isLoadingMoreLocalRef.current = false;
+              console.log('✅ Подгрузка завершена');
+            };
+
+            // Даем время на обновление DOM
+            requestAnimationFrame(() => {
+              restoreScrollPosition();
+              setTimeout(restoreScrollPosition, 100);
+            });
+          });
+        }, 150); // 150ms debounce
       }
-      return prev;
     });
-  }, []);
+  }, [hasMoreMessages, isLoadingMoreMessages, onLoadMoreMessages, isLoading]);
 
   // Обработчик скролла для определения положения пользователя
   useEffect(() => {
@@ -138,29 +246,36 @@ export default function ChatArea({
 
     // Используем passive listener для лучшей производительности
     container.addEventListener('scroll', handleScroll, { passive: true });
-    // Инициализируем состояние
-    handleScroll();
 
-    return () => container.removeEventListener('scroll', handleScroll);
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      // Очищаем таймауты и RAF при размонтировании
+      if (scrollRafRef.current) {
+        cancelAnimationFrame(scrollRafRef.current);
+      }
+      if (loadMoreTimeoutRef.current) {
+        clearTimeout(loadMoreTimeoutRef.current);
+      }
+    };
   }, [handleScroll]);
 
-  // Умная автопрокрутка - только при появлении новых сообщений.
-  // Для входящих сообщений - только если пользователь уже внизу.
-  // Для исходящих (от текущего пользователя) - всегда прокручиваем вниз.
+  // Умная автопрокрутка:
+  // - при добавлении новых сообщений ВНИЗ (append) скроллим вниз,
+  //   но только если пользователь уже внизу или сообщение от текущего пользователя;
+  // - при подгрузке старых сообщений ВВЕРХ (prepend) позицию НЕ меняем.
   useEffect(() => {
-    console.log(
-      '🔄 ChatArea: проверка автопрокрутки, localMessages.length:',
-      localMessages.length,
-      'prev:',
-      prevMessagesLengthRef.current,
-    );
-    const hasNewMessages = localMessages.length > prevMessagesLengthRef.current;
+    const currentLength = localMessages.length;
+    const currentLastId = localMessages[localMessages.length - 1]?.id ?? null;
 
     const lastMessage = localMessages[localMessages.length - 1];
     const isLastFromCurrentUser =
       lastMessage && lastMessage.senderId === currentUserId;
 
-    if (hasNewMessages && (isNearBottom || isLastFromCurrentUser)) {
+    const prevLength = prevMessagesLengthRef.current;
+    const prevLastId = prevLastMessageIdRef.current;
+
+    // 1) Инициализация: с 0 до N сообщений — всегда скроллим вниз
+    if (prevLength === 0 && currentLength > 0) {
       const container = messagesContainerRef.current;
       if (container) {
         // Небольшая задержка для учета изменений высоты при загрузке изображений
@@ -169,9 +284,25 @@ export default function ChatArea({
         }, 50);
       }
     }
+    // 2) Добавление новых сообщений в конец (append):
+    // длина увеличилась и изменился id последнего сообщения
+    else if (
+      currentLength > prevLength &&
+      currentLastId &&
+      currentLastId !== prevLastId &&
+      (isNearBottom || isLastFromCurrentUser)
+    ) {
+      const container = messagesContainerRef.current;
+      if (container) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 50);
+      }
+    }
 
-    // Обновляем реф для следующего сравнения
-    prevMessagesLengthRef.current = localMessages.length;
+    // Обновляем данные для следующего сравнения
+    prevMessagesLengthRef.current = currentLength;
+    prevLastMessageIdRef.current = currentLastId;
   }, [localMessages, isNearBottom]);
 
   // Прокрутка при появлении индикатора печати
@@ -419,6 +550,17 @@ export default function ChatArea({
         data-messages-container
         className="flex-1 overflow-y-auto p-4 pb-6 min-h-0 custom-scrollbar-chat flex flex-col"
       >
+        {/* Индикатор подгрузки более старых сообщений */}
+        {hasMoreMessages && (
+          <div className="flex justify-center mb-8 mt-2">
+            {isLoadingMoreMessages ? (
+              <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <div className="w-4 h-4" /> // Плейсхолдер для сохранения высоты
+            )}
+          </div>
+        )}
+
         {/* Пустой блок для прижимания сообщений к низу */}
         <div className="flex-1"></div>
 

@@ -127,7 +127,7 @@ const MessageItem = memo(
     return (
       <Fragment key={`message-${message.stableId}`}>
         {showDateDivider && (
-          <div className="flex justify-center mb-2 my-4">
+          <div className="flex justify-center mb-4 my-8">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-200 text-xs text-gray-700">
               {formatDateDivider(currentDate)}
             </div>
@@ -135,6 +135,7 @@ const MessageItem = memo(
         )}
 
         <div
+          data-message-id={message.id}
           className={`flex ${marginTop} ${
             message.senderId === currentUserId ? 'justify-end' : 'justify-start'
           }`}

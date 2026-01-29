@@ -36,35 +36,122 @@ export async function GET(
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
     }
 
-    // Получаем сообщения чата
-    const messages = await prisma.message.findMany({
-      where: {
-        chatId: chatId,
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
+    const { searchParams } = new URL(request.url);
+    const limitParam = searchParams.get('limit');
+    const beforeId = searchParams.get('beforeId');
+
+    const limit = Math.min(
+      100,
+      Math.max(1, Number.isNaN(Number(limitParam)) ? 50 : Number(limitParam)),
+    );
+
+    // Базовый where для сообщений текущего чата
+    const baseWhere = {
+      chatId: chatId,
+    };
+
+    let messages;
+    let hasMore = false;
+
+    if (beforeId) {
+      // Загрузка более старых сообщений (пачка "выше")
+      const beforeMessage = await prisma.message.findUnique({
+        where: { id: beforeId },
+        select: { createdAt: true },
+      });
+
+      if (!beforeMessage) {
+        return NextResponse.json(
+          { error: 'Message cursor not found' },
+          { status: 400 },
+        );
+      }
+
+      messages = await prisma.message.findMany({
+        where: {
+          ...baseWhere,
+          createdAt: {
+            lt: beforeMessage.createdAt,
           },
         },
-        attachments: {
-          select: {
-            id: true,
-            fileUrl: true,
-            fileName: true,
-            fileType: true,
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          attachments: {
+            select: {
+              id: true,
+              fileUrl: true,
+              fileName: true,
+              fileType: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: limit,
+      });
+
+      // Проверяем, есть ли еще более старые сообщения
+      if (messages.length > 0) {
+        const oldestInBatch = messages[messages.length - 1];
+        const olderCount = await prisma.message.count({
+          where: {
+            ...baseWhere,
+            createdAt: {
+              lt: oldestInBatch.createdAt,
+            },
+          },
+        });
+        hasMore = olderCount > 0;
+      } else {
+        hasMore = false;
+      }
+    } else {
+      // Первоначальная загрузка: последние N сообщений
+      messages = await prisma.message.findMany({
+        where: baseWhere,
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          attachments: {
+            select: {
+              id: true,
+              fileUrl: true,
+              fileName: true,
+              fileType: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: limit,
+      });
+
+      const totalCount = await prisma.message.count({
+        where: baseWhere,
+      });
+
+      hasMore = totalCount > messages.length;
+    }
+
+    // Мы запрашивали сообщения в порядке `desc`, поэтому разворачиваем,
+    // чтобы на фронте они были в привычном `asc`
+    const orderedMessages = [...messages].reverse();
 
     // Форматируем сообщения для фронтенда
-    const formattedMessages = messages.map((message) => ({
+    const formattedMessages = orderedMessages.map((message) => ({
       id: message.id,
       stableId: `stable-existing-${message.id}`, // Стабильный ID для существующих сообщений
       content: message.content || '',
@@ -82,7 +169,10 @@ export async function GET(
       })),
     }));
 
-    return NextResponse.json(formattedMessages);
+    return NextResponse.json({
+      messages: formattedMessages,
+      hasMore,
+    });
   } catch (error) {
     console.error('Error fetching messages:', error);
     return NextResponse.json(
