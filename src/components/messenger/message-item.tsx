@@ -127,7 +127,7 @@ const MessageItem = memo(
     return (
       <Fragment key={`message-${message.stableId}`}>
         {showDateDivider && (
-          <div className="flex justify-center my-2">
+          <div className="flex justify-center mb-2 my-4">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-200 text-xs text-gray-700">
               {formatDateDivider(currentDate)}
             </div>
@@ -188,7 +188,7 @@ const MessageItem = memo(
           )}
 
           <div
-            className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 sm:max-w-100 px-3 py-1 rounded-lg relative ${
+            className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 ${message.attachments && message.attachments.length > 0 ? 'sm:max-w-[300px]' : 'sm:max-w-100'} px-3 py-1 rounded-lg relative ${
               message.senderId === currentUserId
                 ? 'bg-violet-500 text-white'
                 : 'bg-gray-100 text-gray-900'
