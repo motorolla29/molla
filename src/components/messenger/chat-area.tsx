@@ -1,46 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect, Fragment } from 'react';
-import { ArrowLeft, Check, CheckCheck } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import MessageInput from './message-input';
 import ImageModal from './image-modal';
+import MessageItem from './message-item';
+import type { Message, Chat } from './message-item';
 import { getAvatarColor } from '@/utils';
-
-interface Message {
-  id: string;
-  stableId: string; // Стабильный ID для предотвращения перерисовки
-  content: string;
-  senderId: number;
-  senderName: string;
-  senderAvatar?: string;
-  timestamp: Date | string;
-  type: 'text' | 'image';
-  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'error';
-  attachments?: Array<{
-    id: string;
-    fileUrl: string;
-    blobUrl: string;
-    fileName: string;
-    fileType: string;
-    isLoading?: boolean; // Для отслеживания загрузки серверного изображения
-  }>;
-}
-
-interface Chat {
-  id: string;
-  adId: string;
-  adTitle: string;
-  adPhoto: string;
-  adPrice?: string;
-  adCity: string;
-  adCityLabel: string;
-  adCategory: string;
-  otherUserName: string;
-  otherUserAvatar?: string;
-  otherUserId: number;
-  lastMessageTime?: Date | string;
-}
 
 interface ChatAreaProps {
   chat: Chat | null;
@@ -80,8 +48,37 @@ export default function ChatArea({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] =
     useState<Message[]>(initialMessages);
-  // Локальное состояние для отслеживания загрузки изображений по ID вложения
-  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+
+  const isSameDay = (d1: Date, d2: Date) => {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  };
+
+  // Мемоизируем обработанные сообщения для предотвращения лишних вычислений
+  const processedMessages = useMemo(() => {
+    return localMessages.map((message, index) => {
+      const prevMessage = localMessages[index - 1];
+      const currentDate =
+        typeof message.timestamp === 'string'
+          ? new Date(message.timestamp)
+          : message.timestamp;
+      const prevDate: Date | null = prevMessage
+        ? typeof prevMessage.timestamp === 'string'
+          ? new Date(prevMessage.timestamp)
+          : prevMessage.timestamp
+        : null;
+
+      return {
+        message,
+        showDateDivider: !prevDate || !isSameDay(currentDate, prevDate),
+        isFirstInGroup:
+          prevMessage && prevMessage.senderId !== message.senderId,
+      };
+    });
+  }, [localMessages]);
   const prevMessagesLengthRef = useRef(initialMessages.length);
 
   // Состояние для модального окна просмотра изображений
@@ -92,35 +89,71 @@ export default function ChatArea({
 
   // Состояние для отслеживания положения скролла
   const [isNearBottom, setIsNearBottom] = useState(true);
+  const isNearBottomRef = useRef(isNearBottom);
+
+  // Синхронизируем ref с состоянием
+  useEffect(() => {
+    isNearBottomRef.current = isNearBottom;
+  }, [isNearBottom]);
+
+  console.log(
+    '🔄 ChatArea рендер, messages:',
+    initialMessages.length,
+    'isNearBottom:',
+    isNearBottom,
+  );
 
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
+    console.log(
+      '🔄 ChatArea: обновление initialMessages, длина:',
+      initialMessages.length,
+    );
     setLocalMessages(initialMessages);
   }, [initialMessages]);
+
+  // Оптимизированный обработчик скролла с throttling
+  const handleScroll = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const newIsNearBottom = distanceFromBottom < 100;
+
+    // Обновляем только если состояние изменилось
+    setIsNearBottom((prev) => {
+      if (prev !== newIsNearBottom) {
+        console.log('📜 Изменение isNearBottom:', prev, '->', newIsNearBottom);
+        return newIsNearBottom;
+      }
+      return prev;
+    });
+  }, []);
 
   // Обработчик скролла для определения положения пользователя
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      // Считаем пользователя "в конце" если он в пределах 100px от конца
-      setIsNearBottom(distanceFromBottom < 100);
-    };
-
-    container.addEventListener('scroll', handleScroll);
+    // Используем passive listener для лучшей производительности
+    container.addEventListener('scroll', handleScroll, { passive: true });
     // Инициализируем состояние
     handleScroll();
 
     return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [handleScroll]);
 
   // Умная автопрокрутка - только при появлении новых сообщений.
   // Для входящих сообщений - только если пользователь уже внизу.
   // Для исходящих (от текущего пользователя) - всегда прокручиваем вниз.
   useEffect(() => {
+    console.log(
+      '🔄 ChatArea: проверка автопрокрутки, localMessages.length:',
+      localMessages.length,
+      'prev:',
+      prevMessagesLengthRef.current,
+    );
     const hasNewMessages = localMessages.length > prevMessagesLengthRef.current;
 
     const lastMessage = localMessages[localMessages.length - 1];
@@ -180,34 +213,6 @@ export default function ChatArea({
     });
   };
 
-  const isSameDay = (d1: Date, d2: Date) => {
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  };
-
-  const formatDateDivider = (date: Date) => {
-    const now = new Date();
-    const isToday = isSameDay(date, now);
-
-    if (isToday) return 'Сегодня';
-
-    const base = date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-    });
-
-    if (date.getFullYear() === now.getFullYear()) {
-      // Например: "22 января"
-      return base;
-    }
-
-    // Например: "22 января 2022 г."
-    return `${base} ${date.getFullYear()} г.`;
-  };
-
   const addLocalMessage = (content: string, attachments?: File[]) => {
     const stableId = `stable-${Date.now()}-${Math.random()}`;
     const tempMessage: Message = {
@@ -242,9 +247,9 @@ export default function ChatArea({
   };
 
   // Обработчики для модального окна изображений
-  const openImageModal = (imageUrl: string, altText: string) => {
+  const openImageModal = useCallback((imageUrl: string, altText: string) => {
     setSelectedImage({ url: imageUrl, alt: altText });
-  };
+  }, []);
 
   const closeImageModal = () => {
     setSelectedImage(null);
@@ -446,187 +451,21 @@ export default function ChatArea({
             </div>
           </div>
         ) : (
-          localMessages.map((message, index) => {
-            const prevMessage = localMessages[index - 1];
-            const currentDate =
-              typeof message.timestamp === 'string'
-                ? new Date(message.timestamp)
-                : message.timestamp;
-            const prevDate: Date | null = prevMessage
-              ? typeof prevMessage.timestamp === 'string'
-                ? new Date(prevMessage.timestamp)
-                : prevMessage.timestamp
-              : null;
-
-            const showDateDivider =
-              !prevDate || !isSameDay(currentDate, prevDate);
-
-            const isFirstInGroup =
-              prevMessage && prevMessage.senderId !== message.senderId;
-            const marginTop = isFirstInGroup ? 'mt-4' : 'mt-1';
-
-            // Используем стабильный ID для предотвращения перерисовки
-            return (
-              <Fragment key={`message-${message.stableId}`}>
-                {showDateDivider && (
-                  <div className="flex justify-center my-2">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-200 text-xs text-gray-700">
-                      {formatDateDivider(currentDate)}
-                    </div>
-                  </div>
-                )}
-
-                <div
-                  className={`flex ${marginTop} ${
-                    message.senderId === currentUserId
-                      ? 'justify-end'
-                      : 'justify-start'
-                  }`}
-                >
-                  {/* Аватарка собеседника для входящих сообщений */}
-                  {message.senderId !== currentUserId && (
-                    <div className="shrink-0 mr-2 self-start">
-                      <div
-                        className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
-                        style={{
-                          backgroundColor: chat?.otherUserAvatar
-                            ? 'transparent'
-                            : chat?.otherUserId
-                              ? getAvatarColor(chat.otherUserId)
-                              : 'rgba(209, 213, 219, 0.2)',
-                        }}
-                      >
-                        {chat?.otherUserAvatar ? (
-                          <img
-                            src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
-                            alt={chat?.otherUserName}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-white font-semibold text-sm">
-                            {chat?.otherUserName?.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {/* Индикатор статуса для исходящих сообщений - слева от блока */}
-                  {message.senderId === currentUserId && (
-                    <div className="flex items-end justify-start mr-1 mb-1 self-end">
-                      {message.status === 'sending' && (
-                        <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-                      )}
-                      {message.status === 'sent' && (
-                        <Check className="w-3 h-3 text-gray-500" />
-                      )}
-                      {message.status === 'delivered' && (
-                        <Check className="w-3 h-3 text-violet-500" />
-                      )}
-                      {message.status === 'read' && (
-                        <CheckCheck className="w-3 h-3 text-violet-500" />
-                      )}
-                      {message.status === 'error' && (
-                        <div className="text-xs text-red-500">⚠</div>
-                      )}
-                    </div>
-                  )}
-
-                  <div
-                    className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 sm:max-w-100 px-3 py-1 rounded-lg relative ${
-                      message.senderId === currentUserId
-                        ? 'bg-violet-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    {/* Фото в сообщении */}
-                    {message.attachments && message.attachments.length > 0 && (
-                      <div className="mb-2 flex flex-col gap-2">
-                        {message.attachments.map((attachment) => (
-                          <div
-                            key={attachment.id}
-                            className="relative min-w-[120px] min-h-[90px] bg-gray-300/25 rounded-lg"
-                          >
-                            <img
-                              src={
-                                message.senderId === currentUserId
-                                  ? // Логика для отправителя с blobUrl
-                                    !loadedImages[attachment.id] &&
-                                    attachment.blobUrl
-                                    ? attachment.blobUrl
-                                    : attachment.fileUrl.startsWith('blob:')
-                                      ? attachment.fileUrl
-                                      : `${attachment.fileUrl}?tr=w-300`
-                                  : // Для получателя просто HTTP URL
-                                    `${attachment.fileUrl}?tr=w-300`
-                              }
-                              alt={attachment.fileName}
-                              className={`rounded-lg w-[300px] max-w-full h-auto cursor-pointer transition-opacity duration-150 ${
-                                loadedImages[attachment.id]
-                                  ? 'opacity-100'
-                                  : 'opacity-0'
-                              }`}
-                              onClick={() =>
-                                openImageModal(
-                                  attachment.fileUrl, // Полный размер для модала
-                                  attachment.fileName,
-                                )
-                              }
-                              onLoad={() => {
-                                // Помечаем изображение как загруженное для плавного появления
-                                setLoadedImages((prev) => ({
-                                  ...prev,
-                                  [attachment.id]: true,
-                                }));
-
-                                // Smart scroll: only scroll if user is near bottom
-                                setTimeout(() => {
-                                  if (isNearBottom) {
-                                    const container =
-                                      messagesContainerRef.current;
-                                    if (container) {
-                                      container.scrollTop =
-                                        container.scrollHeight;
-                                    }
-                                  }
-                                }, 100);
-                              }}
-                            />
-                            {message.senderId === currentUserId &&
-                              (!loadedImages[attachment.id] ||
-                                attachment.fileUrl.startsWith('blob:')) && (
-                                <div className="absolute inset-0 bg-white/25 rounded-lg flex items-center justify-center">
-                                  <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                              )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Текст сообщения */}
-                    {message.content && (
-                      <p className="text-sm whitespace-pre-wrap wrap-break-word">
-                        {message.content}
-                      </p>
-                    )}
-
-                    {/* Время отправки - прижато справа */}
-                    <div className="flex justify-end mt-1">
-                      <p
-                        className={`text-xs ${
-                          message.senderId === currentUserId
-                            ? 'text-violet-200'
-                            : 'text-gray-500'
-                        }`}
-                      >
-                        {formatTime(message.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Fragment>
-            );
-          })
+          processedMessages.map(
+            ({ message, showDateDivider, isFirstInGroup }) => (
+              <MessageItem
+                key={`message-${message.stableId}`}
+                message={message}
+                showDateDivider={showDateDivider}
+                isFirstInGroup={isFirstInGroup}
+                chat={chat}
+                currentUserId={currentUserId}
+                messagesContainerRef={messagesContainerRef}
+                openImageModal={openImageModal}
+                isNearBottomRef={isNearBottomRef}
+              />
+            ),
+          )
         )}
 
         {/* Typing indicator - показывается только если пользователь в конце чата */}
