@@ -207,11 +207,13 @@ const MessageItem = memo(
                       src={
                         message.senderId === currentUserId
                           ? // Логика для отправителя с blobUrl
-                            !loadedImages[attachment.id] && attachment.blobUrl
-                            ? attachment.blobUrl
-                            : attachment.fileUrl.startsWith('blob:')
-                              ? attachment.fileUrl
-                              : `${attachment.fileUrl}?tr=w-300`
+                            loadedImages[attachment.id] && attachment.blobUrl
+                            ? attachment.blobUrl // Оставить blobUrl если он загружен
+                            : !loadedImages[attachment.id] && attachment.blobUrl
+                              ? attachment.blobUrl
+                              : attachment.fileUrl.startsWith('blob:')
+                                ? attachment.fileUrl
+                                : `${attachment.fileUrl}?tr=w-300`
                           : // Для получателя просто HTTP URL
                             `${attachment.fileUrl}?tr=w-300`
                       }
@@ -223,7 +225,9 @@ const MessageItem = memo(
                       }`}
                       onClick={() =>
                         openImageModal(
-                          attachment.fileUrl, // Полный размер для модала
+                          attachment.blobUrl && loadedImages[attachment.id]
+                            ? attachment.blobUrl // Быстрый просмотр из blob
+                            : attachment.fileUrl, // HTTP с сервера
                           attachment.fileName,
                         )
                       }
@@ -243,6 +247,7 @@ const MessageItem = memo(
                       }}
                     />
                     {message.senderId === currentUserId &&
+                      attachment.blobUrl &&
                       (!loadedImages[attachment.id] ||
                         attachment.fileUrl.startsWith('blob:')) && (
                         <div className="absolute inset-0 bg-white/25 rounded-lg flex items-center justify-center">
