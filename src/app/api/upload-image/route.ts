@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       console.error('IMAGEKIT keys are not configured');
       return NextResponse.json(
         { error: 'Image upload is not configured' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     if (!(file instanceof Blob)) {
       return NextResponse.json(
         { error: 'Файл не найден в запросе' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -67,20 +67,21 @@ export async function POST(request: NextRequest) {
       console.error('ImageKit upload error:', data);
       return NextResponse.json(
         { error: 'Не удалось загрузить изображение' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    // Возвращаем только имя файла (без полного URL)
+    // Возвращаем полный URL файла
     return NextResponse.json({
       fileId: data.fileId as string,
       name: data.name as string,
+      url: data.url as string,
     });
   } catch (error) {
     console.error('Unexpected upload-image error:', error);
     return NextResponse.json(
       { error: 'Внутренняя ошибка при загрузке изображения' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

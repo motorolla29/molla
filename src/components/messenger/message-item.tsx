@@ -151,7 +151,7 @@ const MessageItem = memo(
               >
                 {chat?.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
+                    src={`${chat.otherUserAvatar}?tr=w-40`}
                     alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />

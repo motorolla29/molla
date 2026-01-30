@@ -7,7 +7,9 @@ import { getAvatarColor } from '@/utils';
 
 export default function Header() {
   const { isLoggedIn, user, logout } = useAuthStore();
-  const totalUnreadCount = useUnreadMessagesStore((state) => state.totalUnreadCount);
+  const totalUnreadCount = useUnreadMessagesStore(
+    (state) => state.totalUnreadCount,
+  );
 
   return (
     <div className="w-full hidden lg:block sticky top-0 z-10 bg-neutral-100 h-15">
@@ -53,7 +55,7 @@ export default function Header() {
               />
             </svg>
             {totalUnreadCount > 0 && (
-              <div className="absolute top-0 right-3 bg-red-500 outline-2 outline-neutral-100 rounded-full w-2 h-2 flex items-center justify-center font-semibold"/>
+              <div className="absolute top-0 right-3 bg-red-500 outline-2 outline-neutral-100 rounded-full w-2 h-2 flex items-center justify-center font-semibold" />
             )}
           </Link>
 
@@ -64,7 +66,7 @@ export default function Header() {
             >
               {user.avatar ? (
                 <img
-                  src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${user.avatar}?tr=w-45`}
+                  src={`${user.avatar}?tr=w-45`}
                   alt={user.name}
                   className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm overflow-hidden"
                 />

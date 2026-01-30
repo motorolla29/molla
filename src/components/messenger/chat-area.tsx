@@ -118,6 +118,17 @@ export default function ChatArea({
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
     setLocalMessages(initialMessages);
+
+    // Скроллим вниз после загрузки сообщений для компенсации загрузки изображений
+    const scrollToBottom = () => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop =
+          messagesContainerRef.current.scrollHeight;
+      }
+    };
+
+    setTimeout(scrollToBottom, 200);
+    setTimeout(scrollToBottom, 400);
   }, [initialMessages]);
 
   // Оптимизированный обработчик скролла с debounce для предотвращения множественных загрузок
@@ -466,8 +477,8 @@ export default function ChatArea({
               <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
                 {chat?.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
-                    alt={chat?.otherUserName}
+                    src={`${chat.otherUserAvatar}?tr=w-40`}
+                    alt={chat.otherUserName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -549,7 +560,7 @@ export default function ChatArea({
               <p className="text-sm text-gray-600">Загрузка сообщений...</p>
             </div>
           </div>
-        ) : !isLoading && localMessages.length === 0 ? (
+        ) : !isLoading && initialMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -614,7 +625,7 @@ export default function ChatArea({
                   >
                     {chat?.otherUserAvatar ? (
                       <img
-                        src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat?.otherUserAvatar}?tr=w-40`}
+                        src={`${chat.otherUserAvatar}?tr=w-40`}
                         alt={chat?.otherUserName}
                         className="w-full h-full object-cover"
                       />

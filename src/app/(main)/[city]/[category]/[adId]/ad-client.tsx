@@ -111,7 +111,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
             const url = new URL(window.location.href);
             url.searchParams.set(
               'toast',
-              newStatus === 'archived' ? 'archived' : 'published'
+              newStatus === 'archived' ? 'archived' : 'published',
             );
             window.location.href = url.toString();
           } else {
@@ -129,7 +129,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           setIsUpdatingStatus(false);
         }
       },
-      { title: actionText }
+      { title: actionText },
     );
   };
 
@@ -164,7 +164,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           setIsUpdatingStatus(false);
         }
       },
-      { title: 'Удалить объявление' }
+      { title: 'Удалить объявление' },
     );
   };
 
@@ -318,7 +318,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   (src) =>
                     `https://ik.imagekit.io/motorolla29/molla/mock-photos/${
                       src || 'default.jpg'
-                    }`
+                    }`,
                 )}
               />
             </div>
@@ -362,9 +362,11 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   className="w-12 h-12 rounded-lg overflow-hidden shrink-0 hover:opacity-90 transition-opacity"
                 >
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
-                      ad.seller.avatar || '765-default-avatar.png'
-                    }?tr=w-60`}
+                    src={
+                      ad.seller.avatar
+                        ? `${ad.seller.avatar}?tr=w-60`
+                        : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-60'
+                    }
                     alt="Аватар продавца"
                     className="w-full h-full object-cover"
                   />
@@ -381,7 +383,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                       const starPos = idx + 1;
                       const fillPercent = Math.min(
                         Math.max((ad.seller.rating - (starPos - 1)) * 100, 0),
-                        100
+                        100,
                       );
                       return (
                         <div key={idx} className="relative w-4 h-4">

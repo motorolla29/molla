@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import UserProfileSidebar from './components/user-profile-sidebar';
 import UserProfileSkeleton from './components/user-profile-skeleton';
 import UserAdsContent from './components/user-ads-content';
-import AvatarModal from '@/components/avatar-modal/avatar-modal';
+import ImageModal from '@/components/messenger/image-modal';
 
 interface UserProfile {
   id: string;
@@ -126,11 +126,11 @@ export default function UserProfilePage() {
       </div>
 
       {/* Модальное окно просмотра аватара */}
-      <AvatarModal
+      <ImageModal
         isOpen={showAvatarModal}
         onClose={() => setShowAvatarModal(false)}
-        avatar={user.avatar || '765-default-avatar.png'}
-        name={user.name}
+        imageUrl={user.avatar || '765-default-avatar.png'}
+        altText={user.name}
       />
     </div>
   );

@@ -144,7 +144,7 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
               <div className="absolute -top-1.5 -left-1.5 w-9 h-9 rounded-full border-2 border-white overflow-hidden bg-white">
                 {chat.otherUserAvatar ? (
                   <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${chat.otherUserAvatar}?tr=w-40`}
+                    src={`${chat.otherUserAvatar}?tr=w-40`}
                     alt={chat.otherUserName}
                     className="w-full h-full object-cover"
                   />

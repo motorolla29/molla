@@ -82,9 +82,11 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
         <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
           <img
             className="w-full h-full object-cover"
-            src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
-              ad.seller.avatar || '765-default-avatar.png'
-            }?tr=w-100`}
+            src={
+              ad.seller.avatar
+                ? `${ad.seller.avatar}?tr=w-100`
+                : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
+            }
             alt="avatar"
           />
         </div>
@@ -97,7 +99,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             const starPos = idx + 1;
             const fillPercent = Math.min(
               Math.max((ad.seller.rating - (starPos - 1)) * 100, 0),
-              100
+              100,
             );
             return (
               <div key={idx} className="relative w-4 h-4">

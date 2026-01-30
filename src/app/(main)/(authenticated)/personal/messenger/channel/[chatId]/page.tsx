@@ -140,7 +140,7 @@ export default function ChatPage() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/messenger/chats/${chatId}/messages?limit=20`,
+        `/api/messenger/chats/${chatId}/messages?limit=50`,
       );
       if (response.ok) {
         const data: { messages: Message[]; hasMore: boolean } =
@@ -162,7 +162,7 @@ export default function ChatPage() {
       setIsLoadingMore(true);
       const oldestMessageId = messages[0]?.id;
       const response = await fetch(
-        `/api/messenger/chats/${chatId}/messages?limit=20&beforeId=${encodeURIComponent(
+        `/api/messenger/chats/${chatId}/messages?limit=50&beforeId=${encodeURIComponent(
           oldestMessageId,
         )}`,
       );

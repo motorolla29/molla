@@ -41,9 +41,11 @@ export default function UserProfileSidebar({
           onClick={() => user.avatar && onAvatarClick()}
         >
           <img
-            src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
-              user.avatar ? user.avatar : '765-default-avatar.png'
-            }?tr=w-100`}
+            src={
+              user.avatar
+                ? `${user.avatar}?tr=w-100`
+                : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
+            }
             alt={`Аватар ${user.name}`}
             className="w-full h-full object-cover"
           />
@@ -60,7 +62,7 @@ export default function UserProfileSidebar({
               const starPos = idx + 1;
               const fillPercent = Math.min(
                 Math.max((user.rating - (starPos - 1)) * 100, 0),
-                100
+                100,
               );
               return (
                 <div key={idx} className="relative w-4 h-4">

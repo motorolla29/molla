@@ -83,7 +83,7 @@ export default function AvatarModal({
 
             {/* Аватар в большом размере */}
             <img
-              src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${avatar}`}
+              src={avatar}
               alt={name}
               className="w-full h-auto max-w-xl max-h-[80vh] mx-auto rounded-lg object-cover"
             />

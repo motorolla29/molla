@@ -7,7 +7,7 @@ import { getAvatarColor } from '@/utils';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-modal';
-import AvatarModal from '@/components/avatar-modal/avatar-modal';
+import ImageModal from '@/components/messenger/image-modal';
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuthStore();
@@ -61,7 +61,7 @@ export default function Profile() {
       const uploadData = await uploadRes.json();
 
       // Обновляем пользователя с новым аватаром
-      await updateUser({ avatar: uploadData.name });
+      await updateUser({ avatar: uploadData.url });
 
       toast.show('Аватар успешно обновлен!', {
         type: 'success',
@@ -72,7 +72,7 @@ export default function Profile() {
         error instanceof Error ? error.message : 'Ошибка при загрузке аватара',
         {
           type: 'error',
-        }
+        },
       );
     } finally {
       setIsAvatarUploading(false);
@@ -99,9 +99,11 @@ export default function Profile() {
         <div className="relative shrink-0 min-w-16 sm:min-w-20">
           {user.avatar ? (
             <img
-              src={`https://ik.imagekit.io/motorolla29/molla/user-avatars/${
-                user.avatar || '765-default-avatar.png'
-              }?tr=w-100`}
+              src={
+                user.avatar
+                  ? `${user.avatar}?tr=w-100`
+                  : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
+              }
               alt={user.name}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg cursor-pointer"
               onClick={() => setShowAvatarModal(true)}
@@ -173,7 +175,7 @@ export default function Profile() {
                   const starPos = idx + 1;
                   const fillPercent = Math.min(
                     Math.max((user.rating - (starPos - 1)) * 100, 0),
-                    100
+                    100,
                   );
                   return (
                     <div key={idx} className="relative w-4 h-4">
@@ -341,11 +343,11 @@ export default function Profile() {
       </div>
 
       {/* Модальное окно просмотра аватара */}
-      <AvatarModal
+      <ImageModal
         isOpen={showAvatarModal}
         onClose={() => setShowAvatarModal(false)}
-        avatar={user.avatar || '765-default-avatar.png'}
-        name={user.name}
+        imageUrl={user.avatar || '765-default-avatar.png'}
+        altText={user.name}
       />
 
       {/* Модальное окно редактирования профиля */}
