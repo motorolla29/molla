@@ -136,11 +136,12 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    // Сортируем чаты по времени последнего обновления
-    let chats = [...buyerChats, ...sellerChats].sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
+    // Сначала сортируем чаты по времени последнего сообщения (для базовой сортировки)
+    let chats = [...buyerChats, ...sellerChats].sort((a, b) => {
+      const aTime = a.messages[0]?.createdAt || a.createdAt;
+      const bTime = b.messages[0]?.createdAt || b.createdAt;
+      return new Date(bTime).getTime() - new Date(aTime).getTime();
+    });
 
     // Применяем пагинацию
     let hasMore = false;
@@ -172,6 +173,25 @@ export async function GET(request: NextRequest) {
           },
         });
 
+        // Получаем время последнего непрочитанного сообщения
+        let lastUnreadMessageTime = null;
+        if (unreadCount > 0) {
+          const lastUnreadMessage = await prisma.message.findFirst({
+            where: {
+              chatId: chat.id,
+              senderId: { not: userId },
+              status: { not: 'read' },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+            select: {
+              createdAt: true,
+            },
+          });
+          lastUnreadMessageTime = lastUnreadMessage?.createdAt || null;
+        }
+
         return {
           id: chat.id,
           adId: chat.adId,
@@ -200,6 +220,7 @@ export async function GET(request: NextRequest) {
             ? lastMessage.senderId === userId
             : false,
           unreadCount,
+          lastUnreadMessageTime,
         };
       }),
     );

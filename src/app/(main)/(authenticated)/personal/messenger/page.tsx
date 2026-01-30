@@ -23,6 +23,7 @@ interface Chat {
   lastMessageStatus?: string | null;
   lastMessageIsOutgoing?: boolean;
   unreadCount: number;
+  lastUnreadMessageTime?: Date | string | null;
 }
 
 export default function MessengerPage() {
@@ -326,16 +327,31 @@ export default function MessengerPage() {
           };
         });
 
-        // Сортируем по времени последнего сообщения (новые сверху), как в handleNewMessage
-        const sortedData = processedData.sort(
-          (a, b) =>
-            new Date(b.lastMessageTime).getTime() -
-            new Date(a.lastMessageTime).getTime(),
-        );
+        // Сортируем: сначала чаты с непрочитанными по времени последнего непрочитанного,
+        // затем чаты без непрочитанных по времени последнего сообщения
+        const sortedData = processedData.sort((a, b) => {
+          // Чаты с непрочитанными имеют приоритет
+          if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+          if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
+
+          // Оба имеют непрочитанные или оба не имеют
+          const aTime = a.unreadCount > 0 && a.lastUnreadMessageTime
+            ? new Date(a.lastUnreadMessageTime).getTime()
+            : new Date(a.lastMessageTime).getTime();
+
+          const bTime = b.unreadCount > 0 && b.lastUnreadMessageTime
+            ? new Date(b.lastUnreadMessageTime).getTime()
+            : new Date(b.lastMessageTime).getTime();
+
+          return bTime - aTime;
+        });
 
         if (beforeId) {
-          // Добавляем к существующим чатам
-          setChats((prev) => [...prev, ...sortedData]);
+          // Добавляем к существующим чатам, исключая дубликаты
+          setChats((prev) => {
+            const newChats = sortedData.filter(chat => !prev.some(existing => existing.id === chat.id));
+            return [...prev, ...newChats];
+          });
         } else {
           // Заменяем чаты
           setChats(sortedData);
