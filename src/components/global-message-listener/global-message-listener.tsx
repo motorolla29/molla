@@ -40,7 +40,7 @@ export default function GlobalMessageListener() {
         if (!res.ok) {
           return;
         }
-        const chats = await res.json();
+        const { chats } = await res.json();
         // Ожидаем, что API вернет объекты с { id, unreadCount }
         refreshUnreadCounts(chats);
       } catch (error) {

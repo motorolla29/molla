@@ -3,6 +3,7 @@
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 import { Check, CheckCheck } from 'lucide-react';
 import { getAvatarColor } from '@/utils';
+import { useRef, useEffect, useCallback } from 'react';
 
 interface Chat {
   id: string;
@@ -23,17 +24,51 @@ interface Chat {
 interface ChatListProps {
   chats: Chat[];
   onChatSelect: (chatId: string) => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMoreChats?: () => Promise<void> | void;
 }
 
-export default function ChatList({ chats, onChatSelect }: ChatListProps) {
+export default function ChatList({
+  chats,
+  onChatSelect,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMoreChats,
+}: ChatListProps) {
   // Real-time presence from Socket.IO
   const { onlineUserIds } = useChatPresenceStore();
   const typingMap = useChatPresenceStore((state) => state.typing);
+
+  const chatListRef = useRef<HTMLDivElement>(null);
+  const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
   // API-based presence (commented out for now)
   // const { fetchUsersStatuses, getUserStatus } = useOnlineUsersStore();
 
   // Real-time presence from Socket.IO - no need for API polling
+
+  // Подгрузка чатов при скроле
+  useEffect(() => {
+    const trigger = loadMoreTriggerRef.current;
+    if (!trigger || !onLoadMoreChats) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && hasMore && !isLoadingMore) {
+          onLoadMoreChats();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(trigger);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, isLoadingMore, onLoadMoreChats]);
 
   // API-based presence polling (commented out for now)
   // Загружаем статусы пользователей при монтировании и обновляем каждые 5 минут
@@ -103,7 +138,10 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
   }
 
   return (
-    <div className="flex-1 max-w-full overflow-y-auto custom-scrollbar">
+    <div
+      ref={chatListRef}
+      className="flex-1 max-w-full overflow-y-auto custom-scrollbar"
+    >
       {chats.map((chat) => (
         <div
           key={chat.id}
@@ -247,6 +285,19 @@ export default function ChatList({ chats, onChatSelect }: ChatListProps) {
           </div>
         </div>
       ))}
+
+      {/* Триггер для подгрузки */}
+      {hasMore && (
+        <div ref={loadMoreTriggerRef} className="flex justify-center py-4">
+          {isLoadingMore ? (
+            <div className="flex justify-center">
+              <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <div className="h-5 w-full"></div> // Невидимый триггер
+          )}
+        </div>
+      )}
     </div>
   );
 }
