@@ -115,19 +115,8 @@ export default function ChatArea({
     isNearBottomRef.current = isNearBottom;
   }, [isNearBottom]);
 
-  console.log(
-    '🔄 ChatArea рендер, messages:',
-    initialMessages.length,
-    'isNearBottom:',
-    isNearBottom,
-  );
-
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
-    console.log(
-      '🔄 ChatArea: обновление initialMessages, длина:',
-      initialMessages.length,
-    );
     setLocalMessages(initialMessages);
   }, [initialMessages]);
 
@@ -150,12 +139,6 @@ export default function ChatArea({
       // Обновляем только если состояние изменилось
       setIsNearBottom((prev) => {
         if (prev !== newIsNearBottom) {
-          console.log(
-            '📜 Изменение isNearBottom:',
-            prev,
-            '->',
-            newIsNearBottom,
-          );
           return newIsNearBottom;
         }
         return prev;
@@ -192,10 +175,6 @@ export default function ChatArea({
           }
 
           isLoadingMoreLocalRef.current = true;
-          console.log(
-            '📥 Начинаем подгрузку сообщений при scrollTop:',
-            currentScrollTop,
-          );
 
           // Сохраняем текущую позицию скролла и высоту перед подгрузкой
           const prevScrollTop = currentScrollTop;
@@ -225,7 +204,6 @@ export default function ChatArea({
               }
 
               isLoadingMoreLocalRef.current = false;
-              console.log('✅ Подгрузка завершена');
             };
 
             // Даем время на обновление DOM

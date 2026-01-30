@@ -77,10 +77,6 @@ const MessageItem = memo(
       [],
     );
 
-    console.log(
-      `🎯 Ререндер MessageItem: ${message.stableId}, статус: ${message.status}`,
-    );
-
     const currentDate =
       typeof message.timestamp === 'string'
         ? new Date(message.timestamp)
