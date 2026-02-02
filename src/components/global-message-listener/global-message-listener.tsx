@@ -44,7 +44,10 @@ export default function GlobalMessageListener() {
         // Ожидаем, что API вернет объекты с { id, unreadCount }
         refreshUnreadCounts(chats);
       } catch (error) {
-        console.error('Failed to load initial unread counts:', error);
+        // Игнорируем network errors при перезагрузке страницы
+        if (!(error instanceof TypeError && error.message.includes('fetch'))) {
+          console.error('Failed to load initial unread counts:', error);
+        }
       }
     })();
   }, [user, refreshUnreadCounts]);

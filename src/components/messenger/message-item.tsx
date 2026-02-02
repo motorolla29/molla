@@ -33,6 +33,7 @@ interface Chat {
   adCity: string;
   adCityLabel: string;
   adCategory: string;
+  isAdDeleted?: boolean;
   otherUserName: string;
   otherUserAvatar?: string;
   otherUserId: number;

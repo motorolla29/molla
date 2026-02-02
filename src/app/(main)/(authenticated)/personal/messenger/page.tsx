@@ -14,6 +14,7 @@ interface Chat {
   adTitle: string;
   adPhoto: string;
   adPrice?: string;
+  isAdDeleted?: boolean;
   otherUserId: number;
   otherUserName: string;
   otherUserAvatar?: string;

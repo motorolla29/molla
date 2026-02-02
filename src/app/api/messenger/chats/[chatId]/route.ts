@@ -97,15 +97,19 @@ export async function GET(
       },
     });
 
+    // Определяем, удалено ли объявление
+    const isAdDeleted = !chat.ad;
+
     const formattedChat = {
       id: chat.id,
-      adId: chat.ad.id,
-      adTitle: chat.ad.title,
-      adPhoto: chat.ad.photos[0] || '',
-      adPrice: chat.ad.price ? `${chat.ad.price.toLocaleString('ru-RU')} ${chat.ad.currency || 'RUB'}` : undefined,
-      adCity: chat.ad.city,
-      adCityLabel: chat.ad.cityLabel,
-      adCategory: chat.ad.category,
+      adId: chat.adId,
+      adTitle: isAdDeleted ? 'Объявление удалено' : chat.ad.title,
+      adPhoto: isAdDeleted ? '' : chat.ad.photos[0] || '',
+      adPrice: isAdDeleted ? undefined : chat.ad.price ? `${chat.ad.price.toLocaleString('ru-RU')} ${chat.ad.currency || 'RUB'}` : undefined,
+      adCity: isAdDeleted ? '' : chat.ad.city,
+      adCityLabel: isAdDeleted ? '' : chat.ad.cityLabel,
+      adCategory: isAdDeleted ? 'goods' : chat.ad.category,
+      isAdDeleted,
       otherUserId: otherUser.id,
       otherUserName: otherUser.name,
       otherUserAvatar: otherUser.avatar,

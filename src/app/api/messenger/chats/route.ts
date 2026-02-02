@@ -160,6 +160,7 @@ export async function GET(request: NextRequest) {
     // Форматируем данные для фронтенда и подсчитываем непрочитанные сообщения
     const formattedChats = await Promise.all(
       chats.map(async (chat) => {
+        console.log(`Processing chat ${chat.id}, ad:`, chat.ad ? 'exists' : 'null');
         const isBuyer = chat.buyerId === userId;
         const otherUser = isBuyer ? chat.seller : chat.buyer;
         const lastMessage = chat.messages[0];
@@ -192,14 +193,18 @@ export async function GET(request: NextRequest) {
           lastUnreadMessageTime = lastUnreadMessage?.createdAt || null;
         }
 
+        // Определяем, удалено ли объявление
+        const isAdDeleted = !chat.ad;
+
         return {
           id: chat.id,
           adId: chat.adId,
-          adTitle: chat.ad.title,
-          adPhoto: chat.ad.photos[0] || '',
-          adCity: chat.ad.city,
-          adCityLabel: chat.ad.cityLabel,
-          adCategory: chat.ad.category,
+          adTitle: isAdDeleted ? 'Объявление удалено' : chat.ad.title,
+          adPhoto: isAdDeleted ? null : chat.ad.photos[0] || '',
+          adCity: isAdDeleted ? null : chat.ad.city,
+          adCityLabel: isAdDeleted ? null : chat.ad.cityLabel,
+          adCategory: isAdDeleted ? null : chat.ad.category,
+          isAdDeleted,
           otherUserId: otherUser.id,
           otherUserName: otherUser.name,
           otherUserAvatar: otherUser.avatar,
@@ -225,6 +230,7 @@ export async function GET(request: NextRequest) {
       }),
     );
 
+    console.log(`Returning ${formattedChats.length} chats, deleted ads:`, formattedChats.filter(c => c.isAdDeleted).length);
     return NextResponse.json({
       chats: formattedChats,
       hasMore,

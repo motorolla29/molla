@@ -10,6 +10,7 @@ interface Chat {
   adTitle: string;
   adPhoto: string;
   adPrice?: string;
+  isAdDeleted?: boolean;
   otherUserId: number;
   otherUserName: string;
   otherUserAvatar?: string;
@@ -252,10 +253,16 @@ export default function ChatList({
               </div>
 
               <p className="mr-8 text-xs text-gray-600 truncate mb-1">
-                {chat.adTitle}
-                {chat.adPrice && <span className="mx-1">·</span>}
-                {chat.adPrice && (
-                  <span className="text-xs text-gray-900">{chat.adPrice}</span>
+                {chat.isAdDeleted ? (
+                  <span className="text-gray-500 italic">Объявление удалено</span>
+                ) : (
+                  <>
+                    {chat.adTitle}
+                    {chat.adPrice && <span className="mx-1">·</span>}
+                    {chat.adPrice && (
+                      <span className="text-xs text-gray-900">{chat.adPrice}</span>
+                    )}
+                  </>
                 )}
               </p>
 

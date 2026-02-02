@@ -20,6 +20,7 @@ interface Chat {
   adCity: string;
   adCityLabel: string;
   adCategory: string;
+  isAdDeleted?: boolean;
   otherUserId: number;
   otherUserName: string;
   otherUserAvatar?: string;
@@ -111,7 +112,10 @@ export default function ChatPage() {
         markChatAsRead(chatId);
       }
     } catch (error) {
-      console.error('Error marking messages as read:', error);
+      // Игнорируем network errors при навигации
+      if (!(error instanceof TypeError && error.message.includes('fetch'))) {
+        console.error('Error marking messages as read:', error);
+      }
     }
   };
 
@@ -131,6 +135,11 @@ export default function ChatPage() {
         setError('Ошибка загрузки чата');
       }
     } catch (error) {
+      // Игнорируем network errors (TypeError при fetch) - они нормальны при навигации
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.debug('Chat loading cancelled during navigation');
+        return;
+      }
       console.error('Error loading chat info:', error);
       setError('Ошибка загрузки чата');
     }
@@ -149,7 +158,10 @@ export default function ChatPage() {
         setHasMore(data.hasMore);
       }
     } catch (error) {
-      console.error('Error loading messages:', error);
+      // Игнорируем network errors при навигации
+      if (!(error instanceof TypeError && error.message.includes('fetch'))) {
+        console.error('Error loading messages:', error);
+      }
     } finally {
       setIsLoading(false);
     }

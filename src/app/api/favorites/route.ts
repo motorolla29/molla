@@ -37,8 +37,11 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
+    // Фильтруем избранное, исключая удаленные объявления
+    const activeFavorites = favorites.filter((favorite) => favorite.ad !== null);
+
     // Преобразуем данные в формат, совместимый с AdBase
-    const ads = favorites.map((favorite) => ({
+    const ads = activeFavorites.map((favorite) => ({
       id: favorite.ad.id,
       category: favorite.ad.category,
       title: favorite.ad.title,

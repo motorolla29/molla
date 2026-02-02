@@ -106,7 +106,6 @@ export default function SellerContacts({
       toast.show('Произошла ошибка при создании чата', {
         type: 'error',
       });
-    } finally {
       setIsCreatingChat(false);
     }
   };
@@ -168,7 +167,8 @@ export default function SellerContacts({
           className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-violet-500 hover:bg-violet-600 disabled:bg-violet-300 text-white text-sm sm:text-base font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
         >
           <ChatBubbleLeftRightIcon className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-          {isCreatingChat ? 'Создание чата...' : 'Написать'}
+          {/* {isCreatingChat ? 'Создание чата...' : 'Написать'} */}
+          Написать
         </button>
       )}
     </div>

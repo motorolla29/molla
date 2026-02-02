@@ -113,12 +113,12 @@ model Favorite {
   id             Int      @id @default(autoincrement())
   sellerId       Int?     // Может быть null для неавторизованных пользователей
   localUserToken String?  // Токен для неавторизованных пользователей
-  adId           String
+  adId           String?
   isActive       Boolean  @default(true) // Флаг активности лайка
 
   // Связи
   seller         Seller?  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  ad             Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  ad             Ad?      @relation(fields: [adId], references: [id], onDelete: SetNull)
 
   createdAt      DateTime @default(now())
 
@@ -133,12 +133,12 @@ model UserView {
   id             Int      @id @default(autoincrement())
   userId         Int?
   localUserToken String?
-  adId           String
+  adId           String?
   viewedAt       DateTime @default(now())
 
   // Связи
   user           Seller?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ad             Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  ad             Ad?      @relation(fields: [adId], references: [id], onDelete: SetNull)
 
   @@unique([userId, adId]) // Один авторизованный пользователь может просмотреть объявление только один раз
   @@unique([localUserToken, adId]) // Один неавторизованный пользователь (по токену) может просмотреть объявление только один раз
@@ -149,12 +149,12 @@ model UserView {
 // Модель чата
 model Chat {
   id          String   @id @default(cuid())
-  adId        String
+  adId        String?
   buyerId     Int      // ID покупателя
   sellerId    Int      // ID продавца
 
   // Связи
-  ad          Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  ad          Ad?      @relation(fields: [adId], references: [id], onDelete: SetNull)
   buyer       Seller   @relation("BuyerChats", fields: [buyerId], references: [id], onDelete: Cascade)
   seller      Seller   @relation("SellerChats", fields: [sellerId], references: [id], onDelete: Cascade)
 

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 export interface ConfirmationModalProps {
@@ -20,6 +21,7 @@ export interface ConfirmationModalProps {
 }
 
 export default function ConfirmationModal({
+  id,
   title = 'Подтверждение действия',
   message,
   confirmText = 'Подтвердить',
@@ -32,30 +34,16 @@ export default function ConfirmationModal({
   onCancel,
   onClose,
 }: ConfirmationModalProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Анимация появления
+  // Блокировка скролла
   useEffect(() => {
-    const animationTimer = setTimeout(() => {
-      setIsVisible(true);
-    }, 10);
-
-    // Блокировка скролла с компенсацией ширины полосы прокрутки
     lockScroll();
-
-    return () => {
-      clearTimeout(animationTimer);
-      unlockScroll();
-    };
+    return () => unlockScroll();
   }, []);
 
   const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      onClose();
-    }, 200);
+    onClose();
   };
 
   const handleConfirm = () => {
@@ -93,53 +81,74 @@ export default function ConfirmationModal({
   }, []);
 
   return (
-    <div
-      className={`
-        fixed inset-0 z-50 flex items-center justify-center p-4
-        bg-black/50 backdrop-blur-sm
-        transition-opacity duration-300
-        ${isVisible && !isExiting ? 'opacity-100' : 'opacity-0'}
-      `}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div
+      <motion.div
         ref={modalRef}
-        className={`
-          relative w-full max-w-md sm:max-w-md mx-auto
-          bg-white rounded-2xl shadow-2xl
-          transform transition-all duration-300 ease-out
-          ${
-            isVisible && !isExiting
-              ? 'translate-y-0 opacity-100 scale-100'
-              : isExiting
-              ? 'translate-y-4 opacity-0 scale-95'
-              : 'translate-y-4 opacity-0 scale-95'
-          }
-        `}
+        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 10 }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30
+        }}
+        className="relative w-full max-w-md sm:max-w-md mx-auto bg-white rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Иконка */}
-        <div className="flex justify-center -mt-6 sm:-mt-8 mb-3 sm:mb-4">
+        <motion.div
+          className="flex justify-center -mt-6 sm:-mt-8 mb-3 sm:mb-4"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 400 }}
+        >
           <div
             className={`w-12 h-12 sm:w-16 sm:h-16 ${iconBgColor} rounded-full flex items-center justify-center border-4 border-white shadow-lg`}
           >
             <Icon className={iconSize + ' ' + iconColor} />
           </div>
-        </div>
+        </motion.div>
 
         {/* Контент */}
-        <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+        <motion.div
+          className="px-4 sm:px-6 pb-4 sm:pb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
           <div className="text-center">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+            <motion.h3
+              className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               {title}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+            </motion.h3>
+            <motion.p
+              className="text-xs sm:text-sm text-gray-600 leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+            >
               {message}
-            </p>
+            </motion.p>
           </div>
 
           {/* Кнопки */}
-          <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
+          <motion.div
+            className="flex gap-2 sm:gap-3 mt-4 sm:mt-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
             <button
               onClick={handleCancel}
               className="
@@ -162,9 +171,9 @@ export default function ConfirmationModal({
             >
               {confirmText}
             </button>
-          </div>
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
