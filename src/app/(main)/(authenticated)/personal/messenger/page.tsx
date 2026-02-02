@@ -387,19 +387,12 @@ export default function MessengerPage() {
   };
 
   const handleChatSelect = (chatId: string) => {
-    // Оптимистичное обновление UI - сразу показываем что сообщения прочитаны
-    setChats((prevChats) =>
-      prevChats.map((chat) =>
-        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat,
-      ),
-    );
+    // Мгновенный переход в чат
+    router.push(`/personal/messenger/channel/${chatId}`);
 
     // Обновляем store с непрочитанными сообщениями
     const { markChatAsRead } = useUnreadMessagesStore.getState();
     markChatAsRead(chatId);
-
-    // Мгновенный переход в чат
-    router.push(`/personal/messenger/channel/${chatId}`);
 
     // Параллельно синхронизируем с сервером (без блокировки UI)
     fetch(`/api/messenger/chats/${chatId}/read`, {
@@ -410,10 +403,6 @@ export default function MessengerPage() {
       // Но для простоты оставим как есть
     });
   };
-
-  if (!user) {
-    return <div>Загрузка...</div>;
-  }
 
   return (
     <div className="m-4 lg:m-6 h-full">

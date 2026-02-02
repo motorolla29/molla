@@ -146,7 +146,7 @@ export default function ChatList({
         <div
           key={chat.id}
           onClick={() => onChatSelect(chat.id)}
-          className="px-1 py-2.5 min-[500px]:p-4 rounded-2xl border-gray-100 cursor-pointer min-[500px]:hover:bg-gray-100 transition-colors"
+          className="px-1 py-2.5 min-[500px]:p-4 rounded-2xl border-gray-100 cursor-pointer min-[500px]:hover:bg-gray-100 transition-colors select-none"
         >
           <div className="flex max-w-full items-center space-x-4">
             {/* Визуализация товара с аватаром */}
