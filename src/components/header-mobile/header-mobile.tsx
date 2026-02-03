@@ -1,12 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 import LocationModal from '../location-modal/location-modal';
 import { useLocationStore } from '@/store/useLocationStore';
+import { useNotificationsStore } from '@/store/useNotificationsStore';
 
 export default function HeaderMobile() {
   const { cityName, setLocation } = useLocationStore();
+  const unreadNotifications = useNotificationsStore(
+    (state) => state.unreadCount
+  );
 
   const [showLocationModal, setShowLocationModal] = useState(false);
 
@@ -25,7 +30,7 @@ export default function HeaderMobile() {
         </button>
 
         {/* уведомления */}
-        <div className="flex items-center shrink-0 gap-3">
+        <Link href="/personal/notifications" className="relative">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -38,7 +43,10 @@ export default function HeaderMobile() {
               clipRule="evenodd"
             />
           </svg>
-        </div>
+          {unreadNotifications > 0 && (
+            <div className="absolute top-2 right-2 border-2 border-neutral-100 bg-red-500 rounded-full w-2.5 h-2.5 flex items-center justify-center" />
+          )}
+        </Link>
       </div>
 
       <LocationModal

@@ -10,16 +10,23 @@ import { Socket } from 'socket.io-client';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
+import { useNotificationsStore } from '@/store/useNotificationsStore';
 
-export default function GlobalMessageListener() {
+export default function GlobalEventListener() {
   const { user } = useAuthStore();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState<SocketConnectionStatus>(
-    getConnectionStatus().status,
+    getConnectionStatus().status
   );
 
   const { setChatUnreadCount, refreshUnreadCounts } = useUnreadMessagesStore();
   const { setSnapshot, setOnline, setOffline } = useChatPresenceStore();
+  const setNotificationsUnreadCount = useNotificationsStore(
+    (state) => state.setUnreadCount
+  );
+  const initializeNotifications = useNotificationsStore(
+    (state) => state.initialize
+  );
 
   useEffect(() => {
     // Инициализируем сокет асинхронно
@@ -28,7 +35,10 @@ export default function GlobalMessageListener() {
       .catch((error) => {
         console.error('Failed to get socket:', error);
       });
-  }, []);
+
+    // Инициализируем счетчик уведомлений при запуске приложения
+    initializeNotifications();
+  }, [initializeNotifications]);
 
   // Начальная инициализация счетчиков непрочитанных при загрузке приложения / смене пользователя
   useEffect(() => {
@@ -89,19 +99,38 @@ export default function GlobalMessageListener() {
       setOffline(userId, lastSeenAt);
     };
 
+    // Обработка уведомлений
+    const handleNotificationCreated = (data: any) => {
+      // Делаем запрос на получение актуального количества за последние 30 дней
+      fetch('/api/notifications?unreadOnly=true&last30days=true')
+        .then((res) => res.json())
+        .then(({ unreadCount }) => {
+          console.log(
+            'GlobalEventListener: setting unread count to:',
+            unreadCount
+          );
+          setNotificationsUnreadCount(unreadCount);
+        })
+        .catch((error) => {
+          console.error('Failed to fetch unread count:', error);
+        });
+    };
+
     // Слушаем события
     socket.on('unread_update', handleUnreadUpdate);
     socket.on('presence_snapshot', handlePresenceSnapshot);
     socket.on('user_online', handleUserOnline);
     socket.on('user_offline', handleUserOffline);
+    socket.on('notification-created', handleNotificationCreated);
 
     return () => {
       socket.off('unread_update', handleUnreadUpdate);
       socket.off('presence_snapshot', handlePresenceSnapshot);
       socket.off('user_online', handleUserOnline);
       socket.off('user_offline', handleUserOffline);
+      socket.off('notification-created', handleNotificationCreated);
     };
-  }, [socket, user, setChatUnreadCount]);
+  }, [socket, user, setChatUnreadCount, setNotificationsUnreadCount]);
 
   return null;
 }

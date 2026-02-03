@@ -247,6 +247,72 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
+    // Создаем уведомление об изменении профиля
+    const changedFields = [];
+    if (name !== undefined && name.trim() !== currentUser.name) {
+      changedFields.push('имя');
+    }
+    if (phone !== undefined && phone?.trim() !== currentUser.phone) {
+      changedFields.push('телефон');
+    }
+    if (city !== undefined && city?.trim() !== currentUser.city) {
+      changedFields.push('город');
+    }
+    if (avatar !== undefined && avatar?.trim() !== currentUser.avatar) {
+      changedFields.push('аватар');
+    }
+
+    if (changedFields.length > 0) {
+      // Создаем уведомление асинхронно через Socket.IO
+      (async () => {
+        try {
+          // Создаем уведомление в БД
+          const notification = await prisma.inAppNotification.create({
+            data: {
+              userId,
+              type: 'profile_update',
+              title: 'Профиль обновлен',
+              message: `Вы изменили ${changedFields.join(', ')}.`,
+              data: {
+                changedFields,
+                timestamp: new Date().toISOString(),
+              },
+            },
+          });
+
+          // Отправляем событие через Socket.IO
+          await fetch(
+            `${
+              process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001'
+            }/emit`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                event: 'user-notification',
+                data: {
+                  userId,
+                  notification: {
+                    id: notification.id,
+                    type: notification.type,
+                    title: notification.title,
+                    message: notification.message,
+                    createdAt: notification.createdAt.toISOString(),
+                  },
+                },
+              }),
+            }
+          );
+
+          console.log('Profile notification sent via Socket.IO:', notification);
+        } catch (error) {
+          console.error('Failed to create/send profile notification:', error);
+        }
+      })();
+    }
+
     return NextResponse.json({
       user: {
         id: updatedUser.id,

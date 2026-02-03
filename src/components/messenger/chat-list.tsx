@@ -254,13 +254,17 @@ export default function ChatList({
 
               <p className="mr-8 text-xs text-gray-600 truncate mb-1">
                 {chat.isAdDeleted ? (
-                  <span className="text-gray-500 italic">Объявление удалено</span>
+                  <span className="text-gray-500 italic">
+                    Объявление удалено
+                  </span>
                 ) : (
                   <>
                     {chat.adTitle}
                     {chat.adPrice && <span className="mx-1">·</span>}
                     {chat.adPrice && (
-                      <span className="text-xs text-gray-900">{chat.adPrice}</span>
+                      <span className="text-xs text-gray-900">
+                        {chat.adPrice}
+                      </span>
                     )}
                   </>
                 )}
@@ -271,7 +275,11 @@ export default function ChatList({
                   chat.unreadCount > 0
                     ? 'bg-stone-200 text-gray-700 font-semibold'
                     : 'bg-stone-200/40 text-gray-600'
-                } ${isUserTyping(chat.id, chat.otherUserId) ? 'bg-transparent' : ''}`}
+                } ${
+                  isUserTyping(chat.id, chat.otherUserId)
+                    ? 'bg-transparent'
+                    : ''
+                }`}
               >
                 {isUserTyping(chat.id, chat.otherUserId) ? (
                   <div className="">

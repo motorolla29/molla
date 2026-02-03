@@ -47,6 +47,12 @@ model Seller {
   // Связь с отправленными сообщениями
   sentMessages Message[]
 
+  // Связь с push-подписками
+  pushSubscription PushSubscription?
+
+  // Связь с in-app уведомлениями
+  notifications InAppNotification[]
+
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
@@ -222,4 +228,51 @@ model MessageAttachment {
   createdAt  DateTime @default(now())
 
   @@map("message_attachments")
+}
+
+// Перечисление типов уведомлений
+enum NotificationType {
+  message          // Новое сообщение
+  ad_response      // Отклик на объявление
+  login_new_device // Вход с нового устройства
+  profile_update   // Изменение профиля
+  ad_status_change // Статус объявления
+  system           // Системные уведомления
+}
+
+// Модель push-подписок пользователей
+model PushSubscription {
+  id          String   @id @default(cuid())
+  userId      Int      // пользователь
+  endpoint    String   // push endpoint URL
+  p256dh      String   // encryption key
+  auth        String   // auth key
+
+  // Связи
+  user        Seller   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId])
+  @@map("push_subscriptions")
+}
+
+// Модель in-app уведомлений
+model InAppNotification {
+  id          String   @id @default(cuid())
+  userId      Int      // получатель
+  type        NotificationType
+  title       String   // "Вход с нового устройства"
+  message     String   // подробное сообщение
+  data        Json?    // дополнительные данные
+  isRead      Boolean  @default(false)
+
+  // Связи
+  user        Seller   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+
+  @@map("in_app_notifications")
 }
