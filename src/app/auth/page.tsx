@@ -34,6 +34,17 @@ export default function AuthPage() {
   const [verificationCode, setVerificationCode] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
 
+  // Генерация уникального deviceId для отслеживания устройств
+  const getDeviceId = (): string => {
+    const key = 'molla_device_id';
+    let deviceId = localStorage.getItem(key);
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem(key, deviceId);
+    }
+    return deviceId;
+  };
+
   // Таймер для повторной отправки кода
   useEffect(() => {
     if (resendTimer > 0) {
@@ -80,7 +91,11 @@ export default function AuthPage() {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({
+            email,
+            password,
+            deviceId: getDeviceId(),
+          }),
         });
 
         const data = await response.json();
@@ -151,6 +166,7 @@ export default function AuthPage() {
           email,
           code: verificationCode,
           isRegistration: true,
+          deviceId: getDeviceId(),
         }),
       });
 
