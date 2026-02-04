@@ -105,10 +105,6 @@ export default function GlobalEventListener() {
       fetch('/api/notifications?unreadOnly=true&last30days=true')
         .then((res) => res.json())
         .then(({ unreadCount }) => {
-          console.log(
-            'GlobalEventListener: setting unread count to:',
-            unreadCount
-          );
           setNotificationsUnreadCount(unreadCount);
         })
         .catch((error) => {

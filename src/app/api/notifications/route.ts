@@ -135,7 +135,6 @@ export async function POST(request: NextRequest) {
             }),
           }
         );
-        console.log('Notification sent via Socket.IO:', notification);
       } catch (error) {
         console.error('Failed to send notification via Socket.IO:', error);
       }

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -160,7 +160,6 @@ export async function GET(request: NextRequest) {
     // Форматируем данные для фронтенда и подсчитываем непрочитанные сообщения
     const formattedChats = await Promise.all(
       chats.map(async (chat) => {
-        console.log(`Processing chat ${chat.id}, ad:`, chat.ad ? 'exists' : 'null');
         const isBuyer = chat.buyerId === userId;
         const otherUser = isBuyer ? chat.seller : chat.buyer;
         const lastMessage = chat.messages[0];
@@ -213,7 +212,7 @@ export async function GET(request: NextRequest) {
             ? lastMessage.attachments &&
               lastMessage.attachments.length > 0 &&
               lastMessage.attachments.some((att: any) =>
-                att.fileType?.startsWith('image/'),
+                att.fileType?.startsWith('image/')
               ) &&
               !lastMessage.content?.trim()
               ? '📎 Фото'
@@ -227,10 +226,9 @@ export async function GET(request: NextRequest) {
           unreadCount,
           lastUnreadMessageTime,
         };
-      }),
+      })
     );
 
-    console.log(`Returning ${formattedChats.length} chats, deleted ads:`, formattedChats.filter(c => c.isAdDeleted).length);
     return NextResponse.json({
       chats: formattedChats,
       hasMore,
@@ -239,7 +237,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching chats:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

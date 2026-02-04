@@ -305,8 +305,6 @@ export async function PATCH(request: NextRequest) {
               }),
             }
           );
-
-          console.log('Profile notification sent via Socket.IO:', notification);
         } catch (error) {
           console.error('Failed to create/send profile notification:', error);
         }

@@ -13,7 +13,6 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   unreadCount: 0,
   isInitialized: false,
   setUnreadCount: (count) => {
-    console.log('useNotificationsStore: setUnreadCount called with:', count);
     set({ unreadCount: count });
   },
   increment: (delta = 1) =>
@@ -21,7 +20,6 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       unreadCount: Math.max(0, state.unreadCount + delta),
     })),
   reset: () => {
-    console.log('useNotificationsStore: reset called');
     set({ unreadCount: 0 });
   },
 

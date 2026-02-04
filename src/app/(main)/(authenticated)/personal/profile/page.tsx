@@ -72,7 +72,7 @@ export default function Profile() {
         error instanceof Error ? error.message : 'Ошибка при загрузке аватара',
         {
           type: 'error',
-        },
+        }
       );
     } finally {
       setIsAvatarUploading(false);
@@ -104,7 +104,7 @@ export default function Profile() {
                   ? `${user.avatar}?tr=w-100`
                   : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
               }
-              alt={user.name}
+              //alt={user.name}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg cursor-pointer"
               onClick={() => setShowAvatarModal(true)}
             />
@@ -175,7 +175,7 @@ export default function Profile() {
                   const starPos = idx + 1;
                   const fillPercent = Math.min(
                     Math.max((user.rating - (starPos - 1)) * 100, 0),
-                    100,
+                    100
                   );
                   return (
                     <div key={idx} className="relative w-4 h-4">

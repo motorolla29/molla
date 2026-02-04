@@ -76,7 +76,7 @@ export default function Header() {
               {user.avatar ? (
                 <img
                   src={`${user.avatar}?tr=w-45`}
-                  alt={user.name}
+                  //alt={user.name}
                   className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm overflow-hidden"
                 />
               ) : (
