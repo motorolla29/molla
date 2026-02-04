@@ -27,12 +27,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Получаем подписку пользователя
-    const subscription = await prisma.pushSubscription.findUnique({
+    // Получаем все подписки пользователя
+    const subscriptions = await prisma.pushSubscription.findMany({
       where: { userId },
     });
 
-    if (!subscription) {
+    if (!subscriptions.length) {
       return NextResponse.json(
         { error: 'Пользователь не подписан на push-уведомления' },
         { status: 404 }
@@ -57,41 +57,44 @@ export async function POST(request: NextRequest) {
       badge: '/icons/icon-72.png',
       data: {
         type: 'test',
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     });
 
-    // Отправляем push
-    const pushSubscription = {
-      endpoint: subscription.endpoint,
-      keys: {
-        p256dh: subscription.p256dh,
-        auth: subscription.auth,
-      },
-    };
+    // Отправляем push на все устройства
+    const results = await Promise.allSettled(
+      subscriptions.map((subscription) => {
+        const pushSubscription = {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.p256dh,
+            auth: subscription.auth,
+          },
+        };
 
-    try {
-      await webpush.sendNotification(pushSubscription, payload);
-      return NextResponse.json({ success: true, message: 'Push-уведомление отправлено' });
-    } catch (pushError: any) {
-      console.error('Push notification failed:', pushError);
+        return webpush.sendNotification(pushSubscription, payload);
+      })
+    );
 
-      // Если подписка устарела, удаляем её
-      if (pushError.statusCode === 410) {
+    // Чистим устаревшие подписки
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const sub = subscriptions[i];
+
+      if (
+        result.status === 'rejected' &&
+        (result.reason as any)?.statusCode === 410
+      ) {
         await prisma.pushSubscription.delete({
-          where: { userId },
+          where: { id: sub.id },
         });
-        return NextResponse.json(
-          { error: 'Подписка устарела и была удалена' },
-          { status: 410 }
-        );
       }
-
-      return NextResponse.json(
-        { error: 'Ошибка отправки push-уведомления' },
-        { status: 500 }
-      );
     }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Push-уведомление отправлено',
+    });
   } catch (error) {
     console.error('Send test push error:', error);
     return NextResponse.json(

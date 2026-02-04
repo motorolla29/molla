@@ -5,8 +5,12 @@ import webpush from 'web-push';
 // Настройка VAPID ключей (в продакшене должны быть в .env)
 const vapidKeys = {
   subject: 'mailto:admin@molla.app',
-  publicKey: process.env.VAPID_PUBLIC_KEY || 'BKxQzHdJC8q3yJ8Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3',
-  privateKey: process.env.VAPID_PRIVATE_KEY || '3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q',
+  publicKey:
+    process.env.VAPID_PUBLIC_KEY ||
+    'BKxQzHdJC8q3yJ8Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3',
+  privateKey:
+    process.env.VAPID_PRIVATE_KEY ||
+    '3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q',
 };
 
 // Настройка web-push
@@ -27,12 +31,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Получаем подписку пользователя
-    const subscription = await prisma.pushSubscription.findUnique({
+    // Получаем все подписки пользователя (несколько устройств)
+    const subscriptions = await prisma.pushSubscription.findMany({
       where: { userId },
     });
 
-    if (!subscription) {
+    if (!subscriptions.length) {
       return NextResponse.json(
         { error: 'Пользователь не подписан на push-уведомления' },
         { status: 404 }
@@ -49,37 +53,36 @@ export async function POST(request: NextRequest) {
       timestamp: Date.now(),
     });
 
-    // Отправляем push-уведомление
-    const pushSubscription = {
-      endpoint: subscription.endpoint,
-      keys: {
-        p256dh: subscription.p256dh,
-        auth: subscription.auth,
-      },
-    };
+    const results = await Promise.allSettled(
+      subscriptions.map((subscription) => {
+        const pushSubscription = {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.p256dh,
+            auth: subscription.auth,
+          },
+        };
 
-    try {
-      await webpush.sendNotification(pushSubscription, payload);
-      return NextResponse.json({ success: true });
-    } catch (pushError: any) {
-      console.error('Push notification failed:', pushError);
+        return webpush.sendNotification(pushSubscription, payload);
+      })
+    );
 
-      // Если подписка устарела, удаляем её
-      if (pushError.statusCode === 410) {
+    // Чистим устаревшие подписки (410 Gone)
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const sub = subscriptions[i];
+
+      if (
+        result.status === 'rejected' &&
+        (result.reason as any)?.statusCode === 410
+      ) {
         await prisma.pushSubscription.delete({
-          where: { userId },
+          where: { id: sub.id },
         });
-        return NextResponse.json(
-          { error: 'Подписка устарела и была удалена' },
-          { status: 410 }
-        );
       }
-
-      return NextResponse.json(
-        { error: 'Ошибка отправки push-уведомления' },
-        { status: 500 }
-      );
     }
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Send push notification error:', error);
     return NextResponse.json(

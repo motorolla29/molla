@@ -27,11 +27,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Сохраняем или обновляем подписку
+    // Сохраняем или обновляем подписку для конкретного endpoint
     const subscription = await prisma.pushSubscription.upsert({
-      where: { userId },
+      where: {
+        userId_endpoint: {
+          userId,
+          endpoint,
+        },
+      },
       update: {
-        endpoint,
         p256dh: keys.p256dh,
         auth: keys.auth,
         updatedAt: new Date(),
@@ -44,7 +48,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, subscriptionId: subscription.id });
+    return NextResponse.json({
+      success: true,
+      subscriptionId: subscription.id,
+    });
   } catch (error) {
     console.error('Push subscription error:', error);
     return NextResponse.json(

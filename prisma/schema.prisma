@@ -47,8 +47,8 @@ model Seller {
   // Связь с отправленными сообщениями
   sentMessages Message[]
 
-  // Связь с push-подписками
-  pushSubscription PushSubscription?
+  // Связь с push-подписками (несколько устройств)
+  pushSubscriptions PushSubscription[]
 
   // Связь с in-app уведомлениями
   notifications InAppNotification[]
@@ -254,7 +254,9 @@ model PushSubscription {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@unique([userId])
+  // Один и тот же endpoint не должен дублироваться для пользователя
+  @@unique([userId, endpoint])
+  @@index([userId])
   @@map("push_subscriptions")
 }
 
