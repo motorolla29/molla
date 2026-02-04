@@ -3,31 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { generateToken } from '@/lib/jwt';
 import bcrypt from 'bcryptjs';
 import { createDeviceDescription } from '@/utils/device';
-
-// Вспомогательная функция для извлечения IP
-function getClientIp(req: NextRequest): string | null {
-  // Проверяем различные заголовки для получения IP
-  const xForwardedFor = req.headers.get('x-forwarded-for');
-  if (xForwardedFor) {
-    return xForwardedFor.split(',')[0].trim();
-  }
-
-  const xRealIp = req.headers.get('x-real-ip');
-  if (xRealIp) {
-    return xRealIp.trim();
-  }
-
-  const forwarded = req.headers.get('forwarded');
-  if (forwarded) {
-    const match = forwarded.match(/for=["']?([^"',\s]+)/);
-    if (match) {
-      return match[1];
-    }
-  }
-
-  // В dev режиме можем использовать localhost
-  return null;
-}
+import { getClientIp } from '@/utils';
 
 export async function POST(request: NextRequest) {
   try {

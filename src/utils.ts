@@ -1,6 +1,34 @@
 import { Currency, AdBase } from './types/ad';
 import { CityRaw } from './types/city-raw';
 import { AVATAR_DEFAULT_COLORS } from './const';
+import { NextRequest } from 'next/server';
+
+/**
+ * Извлекает IP адрес клиента из заголовков Next.js запроса
+ */
+export function getClientIp(req: NextRequest): string | null {
+  // Проверяем различные заголовки для получения IP
+  const xForwardedFor = req.headers.get('x-forwarded-for');
+  if (xForwardedFor) {
+    return xForwardedFor.split(',')[0].trim();
+  }
+
+  const xRealIp = req.headers.get('x-real-ip');
+  if (xRealIp) {
+    return xRealIp.trim();
+  }
+
+  const forwarded = req.headers.get('forwarded');
+  if (forwarded) {
+    const match = forwarded.match(/for=["']?([^"',\s]+)/);
+    if (match) {
+      return match[1];
+    }
+  }
+
+  // В dev режиме можем использовать localhost
+  return null;
+}
 
 /**
  * Получить или создать userToken для неавторизованного пользователя
