@@ -20,8 +20,8 @@ interface UserProfile {
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const userId = params.id as string;
-  const status = params.status as 'active' | 'archived';
+  const userId = params?.id as string;
+  const status = params?.status as 'active' | 'archived';
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);

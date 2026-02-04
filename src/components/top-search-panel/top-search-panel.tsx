@@ -146,7 +146,7 @@ export default function TopSearchPanel({
           onSubmit={(e) => {
             e.preventDefault();
             const trimmed = searchTerm.trim();
-            const params = new URLSearchParams(searchParams.toString());
+            const params = new URLSearchParams(searchParams?.toString() ?? '');
 
             if (trimmed) {
               params.set('search', trimmed); // заменит или добавит параметр search

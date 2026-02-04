@@ -82,7 +82,7 @@ export default function CategoryClient({
 
         <h1 className="text-xl sm:text-3xl font-semibold mb-5">
           {categoryLabel} в {cityNamePrep}
-          {searchParams.get('search') && (
+          {searchParams?.get('search') && (
             <span className="text-neutral-400">
               {' '}
               (по запросу «

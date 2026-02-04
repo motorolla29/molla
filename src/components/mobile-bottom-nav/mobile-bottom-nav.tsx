@@ -24,7 +24,9 @@ const NAV_CONTEXT_KEY = 'mobile-nav-context';
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const [navContext, setNavContext] = useState<string | null>(null);
-  const totalUnreadCount = useUnreadMessagesStore((state) => state.totalUnreadCount);
+  const totalUnreadCount = useUnreadMessagesStore(
+    (state) => state.totalUnreadCount
+  );
 
   // Загружаем сохраненный контекст при монтировании
   useEffect(() => {
@@ -39,16 +41,16 @@ export default function MobileBottomNav() {
     if (pathname === '/') {
       setNavContext('home');
       sessionStorage.setItem(NAV_CONTEXT_KEY, 'home');
-    } else if (pathname.startsWith('/favorites')) {
+    } else if (pathname?.startsWith('/favorites')) {
       setNavContext('favorites');
       sessionStorage.setItem(NAV_CONTEXT_KEY, 'favorites');
-    } else if (pathname.startsWith('/personal/my-adds')) {
+    } else if (pathname?.startsWith('/personal/my-adds')) {
       setNavContext('ads');
       sessionStorage.setItem(NAV_CONTEXT_KEY, 'ads');
-    } else if (pathname.startsWith('/personal/messenger')) {
+    } else if (pathname?.startsWith('/personal/messenger')) {
       setNavContext('chats');
       sessionStorage.setItem(NAV_CONTEXT_KEY, 'chats');
-    } else if (pathname.startsWith('/personal/profile')) {
+    } else if (pathname?.startsWith('/personal/profile')) {
       setNavContext('profile');
       sessionStorage.setItem(NAV_CONTEXT_KEY, 'profile');
     }
@@ -62,7 +64,7 @@ export default function MobileBottomNav() {
   ];
   const isHomeActive =
     pathname === '/' ||
-    (!specialPaths.some((p) => pathname.startsWith(p)) &&
+    (!specialPaths.some((p) => pathname?.startsWith(p)) &&
       navContext === 'home');
 
   return (
@@ -79,12 +81,15 @@ export default function MobileBottomNav() {
 
           if (href === '/' && isHomeActive) {
             isActive = true;
-          } else if (specialPaths.includes(href) && pathname.startsWith(href)) {
+          } else if (
+            specialPaths.includes(href) &&
+            pathname?.startsWith(href)
+          ) {
             isActive = true;
           } else if (pathname === href) {
             isActive = true;
           } else if (
-            !specialPaths.some((p) => pathname.startsWith(p)) &&
+            !specialPaths.some((p) => pathname?.startsWith(p)) &&
             navContext === id
           ) {
             // Для страниц товаров показываем активной иконку в зависимости от контекста
@@ -100,8 +105,8 @@ export default function MobileBottomNav() {
               <div className="relative">
                 <Icon size={18} className={colorClass} />
                 {id === 'chats' && totalUnreadCount > 0 && (
-              <div className="absolute top-0 -right-0.5 bg-red-500 outline-2 outline-neutral-100 rounded-full w-2 h-2 flex items-center justify-center font-semibold"/>
-            )}
+                  <div className="absolute top-0 -right-0.5 bg-red-500 outline-2 outline-neutral-100 rounded-full w-2 h-2 flex items-center justify-center font-semibold" />
+                )}
               </div>
               {/* Показываем подпись только на ширине >=640px, иначе скрываем */}
               <span

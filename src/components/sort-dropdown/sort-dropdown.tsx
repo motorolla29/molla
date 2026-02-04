@@ -14,11 +14,13 @@ export default function SortDropdown() {
   const searchParams = useSearchParams();
 
   const [open, setOpen] = useState(false);
-  const [current, setCurrent] = useState(searchParams.get('sort') || 'default');
+  const [current, setCurrent] = useState(
+    searchParams?.get('sort') || 'default'
+  );
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const sortValue = searchParams.get('sort') || 'default';
+    const sortValue = searchParams?.get('sort') || 'default';
     setCurrent(sortValue);
   }, [searchParams]);
 
@@ -38,7 +40,9 @@ export default function SortDropdown() {
     setCurrent(val);
     setOpen(false);
 
-    const params = new URLSearchParams(Array.from(searchParams.entries())); // сохранить другие параметры
+    const params = new URLSearchParams(
+      searchParams ? Array.from(searchParams.entries()) : []
+    ); // сохранить другие параметры
     if (val === 'default') {
       params.delete('sort');
     } else {

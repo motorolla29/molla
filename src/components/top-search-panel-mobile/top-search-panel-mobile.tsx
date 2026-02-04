@@ -28,7 +28,7 @@ export default function TopSearchPanelMobile({
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = searchTerm.trim();
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
 
     if (trimmed) {
       params.set('search', trimmed); // заменит или добавит параметр search

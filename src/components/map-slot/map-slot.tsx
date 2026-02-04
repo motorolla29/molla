@@ -16,7 +16,13 @@ interface MapSlotProps {
   lon?: number | null;
 }
 
-export default function MapSlot({ ads, cityLabel, category, lat, lon }: MapSlotProps) {
+export default function MapSlot({
+  ads,
+  cityLabel,
+  category,
+  lat,
+  lon,
+}: MapSlotProps) {
   const searchParams = useSearchParams();
   const [showFullMap, setShowFullMap] = useState(false);
 
@@ -48,7 +54,7 @@ export default function MapSlot({ ads, cityLabel, category, lat, lon }: MapSlotP
     <>
       <div className="h-48 relative bg-gray-200 flex items-center justify-center rounded-md overflow-hidden">
         <MapGl
-          key={`mini-${searchParams.toString()}`}
+          key={`mini-${searchParams?.toString() ?? ''}`}
           ads={ads}
           cityLabel={cityLabel}
           category={category}
@@ -69,7 +75,7 @@ export default function MapSlot({ ads, cityLabel, category, lat, lon }: MapSlotP
         <div className="fixed inset-0 z-20 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="relative w-full h-full bg-white">
             <MapGl
-              key={`full-${searchParams.toString()}`}
+              key={`full-${searchParams?.toString() ?? ''}`}
               ads={ads}
               cityLabel={cityLabel}
               category={category}

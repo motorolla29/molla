@@ -38,36 +38,38 @@ export async function GET(request: NextRequest) {
     });
 
     // Фильтруем избранное, исключая удаленные объявления
-    const activeFavorites = favorites.filter((favorite) => favorite.ad !== null);
+    const activeFavorites = favorites.filter(
+      (favorite) => favorite.ad !== null
+    );
 
     // Преобразуем данные в формат, совместимый с AdBase
     const ads = activeFavorites.map((favorite) => ({
-      id: favorite.ad.id,
-      category: favorite.ad.category,
-      title: favorite.ad.title,
-      description: favorite.ad.description,
-      city: favorite.ad.city,
-      cityLabel: favorite.ad.cityLabel,
-      address: favorite.ad.address,
+      id: favorite.ad!.id,
+      category: favorite.ad!.category,
+      title: favorite.ad!.title,
+      description: favorite.ad!.description,
+      city: favorite.ad!.city,
+      cityLabel: favorite.ad!.cityLabel,
+      address: favorite.ad!.address,
       location: {
-        lat: favorite.ad.lat,
-        lng: favorite.ad.lng,
+        lat: favorite.ad!.lat,
+        lng: favorite.ad!.lng,
       },
-      price: favorite.ad.price ? Number(favorite.ad.price) : undefined,
-      currency: favorite.ad.currency || undefined,
-      datePosted: favorite.ad.datePosted.toISOString(),
-      photos: favorite.ad.photos || [],
+      price: favorite.ad!.price ? Number(favorite.ad!.price) : undefined,
+      currency: favorite.ad!.currency || undefined,
+      datePosted: favorite.ad!.datePosted.toISOString(),
+      photos: favorite.ad!.photos || [],
       seller: {
-        id: favorite.ad.seller.id,
-        avatar: favorite.ad.seller.avatar,
-        name: favorite.ad.seller.name,
-        rating: favorite.ad.seller.rating,
+        id: favorite.ad!.seller.id,
+        avatar: favorite.ad!.seller.avatar,
+        name: favorite.ad!.seller.name,
+        rating: favorite.ad!.seller.rating,
         contact: {
-          phone: favorite.ad.seller.phone || undefined,
-          email: favorite.ad.seller.email || undefined,
+          phone: favorite.ad!.seller.phone || undefined,
+          email: favorite.ad!.seller.email || undefined,
         },
       },
-      details: favorite.ad.details,
+      details: favorite.ad!.details,
     }));
 
     return NextResponse.json({ favorites: ads });

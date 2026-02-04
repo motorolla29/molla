@@ -54,6 +54,7 @@ export default function AsideFilters({
 
   // Инициализация из URL при монтировании
   useEffect(() => {
+    if (!searchParams) return;
     const sp = Object.fromEntries(searchParams.entries());
     if (sp.minPrice) setMinPrice(sp.minPrice);
     if (sp.maxPrice) setMaxPrice(sp.maxPrice);
@@ -71,15 +72,15 @@ export default function AsideFilters({
     cityLabel === 'russia' ? 'Все города' : cityName || 'Город не выбран';
 
   const appliedCategoryKey =
-    searchParams.get('categoryKey') ?? category ?? null;
+    searchParams?.get('categoryKey') ?? category ?? null;
 
   // Применённые фильтры из текущего URL
   const appliedFilters = useMemo(() => {
-    const time = searchParams.get('time');
+    const time = searchParams?.get('time');
     return {
-      minPrice: searchParams.get('minPrice') ?? '',
-      maxPrice: searchParams.get('maxPrice') ?? '',
-      isVip: searchParams.has('vip'),
+      minPrice: searchParams?.get('minPrice') ?? '',
+      maxPrice: searchParams?.get('maxPrice') ?? '',
+      isVip: searchParams?.has('vip') ?? false,
       timeFilter: time === '7' || time === '24' ? time : 'all',
     };
   }, [searchParams]);
@@ -124,7 +125,7 @@ export default function AsideFilters({
       categoryKey: string | null;
     }>
   ) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     const nextMinPrice = overrides?.minPrice ?? minPrice;
     const nextMaxPrice = overrides?.maxPrice ?? maxPrice;
     const nextIsVip = overrides?.isVip ?? isVip;
@@ -173,7 +174,7 @@ export default function AsideFilters({
     setIsResetting(true);
 
     // Сначала удаляем параметры из URL
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.delete('minPrice');
     params.delete('maxPrice');
     params.delete('vip');

@@ -103,27 +103,38 @@ export async function GET(
     const formattedChat = {
       id: chat.id,
       adId: chat.adId,
-      adTitle: isAdDeleted ? 'Объявление удалено' : chat.ad.title,
-      adPhoto: isAdDeleted ? '' : chat.ad.photos[0] || '',
-      adPrice: isAdDeleted ? undefined : chat.ad.price ? `${chat.ad.price.toLocaleString('ru-RU')} ${chat.ad.currency || 'RUB'}` : undefined,
-      adCity: isAdDeleted ? '' : chat.ad.city,
-      adCityLabel: isAdDeleted ? '' : chat.ad.cityLabel,
-      adCategory: isAdDeleted ? 'goods' : chat.ad.category,
+      adTitle: isAdDeleted ? 'Объявление удалено' : chat.ad!.title,
+      adPhoto: isAdDeleted ? '' : chat.ad!.photos[0] || '',
+      adPrice: isAdDeleted
+        ? undefined
+        : chat.ad!.price
+        ? `${chat.ad!.price.toLocaleString('ru-RU')} ${
+            chat.ad!.currency || 'RUB'
+          }`
+        : undefined,
+      adCity: isAdDeleted ? '' : chat.ad!.city,
+      adCityLabel: isAdDeleted ? '' : chat.ad!.cityLabel,
+      adCategory: isAdDeleted ? 'goods' : chat.ad!.category,
       isAdDeleted,
       otherUserId: otherUser.id,
       otherUserName: otherUser.name,
       otherUserAvatar: otherUser.avatar,
       otherUserLastSeenAt: otherUser.lastSeenAt,
       lastMessage: lastMessage
-        ? (lastMessage.attachments && lastMessage.attachments.length > 0 &&
-           lastMessage.attachments.some((att: any) => att.fileType?.startsWith('image/')) &&
-           !lastMessage.content?.trim())
+        ? lastMessage.attachments &&
+          lastMessage.attachments.length > 0 &&
+          lastMessage.attachments.some((att: any) =>
+            att.fileType?.startsWith('image/')
+          ) &&
+          !lastMessage.content?.trim()
           ? '📎 Фото'
           : lastMessage.content || 'Сообщение'
         : 'Нет сообщений',
       lastMessageTime: lastMessage?.createdAt || chat.createdAt,
       lastMessageStatus: lastMessage?.status || null,
-      lastMessageIsOutgoing: lastMessage ? lastMessage.senderId === userId : false,
+      lastMessageIsOutgoing: lastMessage
+        ? lastMessage.senderId === userId
+        : false,
       unreadCount,
     };
 

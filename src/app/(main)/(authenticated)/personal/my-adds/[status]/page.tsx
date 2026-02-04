@@ -24,7 +24,7 @@ export default function MyAddsPage() {
   const [openPopup, setOpenPopup] = useState<string | null>(null);
 
   // Получаем статус из URL
-  const status = params.status as 'active' | 'archived' | undefined;
+  const status = params?.status as 'active' | 'archived' | undefined;
 
   // Проверяем валидность статуса и перенаправляем если нужно
   useEffect(() => {

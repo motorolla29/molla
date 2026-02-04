@@ -36,7 +36,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
           <nav className="p-4">
             <div className="space-y-1">
               {navItems.map(({ href, Icon, label }) => {
-                const isActive = pathname.startsWith(href);
+                const isActive = pathname?.startsWith(href) ?? false;
                 return (
                   <Link
                     key={href}

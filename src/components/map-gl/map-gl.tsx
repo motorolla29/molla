@@ -70,7 +70,9 @@ export default function MapGl({
   const clampZoom = (zoom: number) =>
     Math.min(Math.max(zoom, minZoom), maxZoom);
   const targetZoom = clampZoom(
-    (cityLabel && lat && lon) || (storeLat && storeLon) ? CITY_ZOOM : DEFAULT_ZOOM
+    (cityLabel && lat && lon) || (storeLat && storeLon)
+      ? CITY_ZOOM
+      : DEFAULT_ZOOM
   );
 
   const [mapState, setMapState] = useState<{
@@ -129,10 +131,10 @@ export default function MapGl({
         });
 
         // Передаем параметры фильтров из URL
-        const minPrice = searchParams.get('minPrice');
-        const maxPrice = searchParams.get('maxPrice');
-        const vip = searchParams.get('vip');
-        const time = searchParams.get('time');
+        const minPrice = searchParams?.get('minPrice');
+        const maxPrice = searchParams?.get('maxPrice');
+        const vip = searchParams?.get('vip');
+        const time = searchParams?.get('time');
 
         if (category) params.set('category', category);
         if (minPrice) params.set('minPrice', minPrice);

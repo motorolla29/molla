@@ -32,9 +32,11 @@ export default function FiltersMobile({
 }: FiltersMobileProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const hasUrlFilters = ['minPrice', 'maxPrice', 'vip', 'time'].some((key) =>
-    searchParams.has(key)
-  );
+  const hasUrlFilters = searchParams
+    ? ['minPrice', 'maxPrice', 'vip', 'time'].some((key) =>
+        searchParams.has(key)
+      )
+    : false;
   const {
     cityLabel: storeCityLabel,
     cityName: storeCityName,
@@ -64,6 +66,7 @@ export default function FiltersMobile({
 
   // Инициализация из URL при монтировании
   useEffect(() => {
+    if (!searchParams) return;
     const sp = Object.fromEntries(searchParams.entries());
     if (sp.minPrice) setMinPrice(sp.minPrice);
     if (sp.maxPrice) setMaxPrice(sp.maxPrice);
@@ -115,7 +118,7 @@ export default function FiltersMobile({
       setLocation(cityLabel, cityName, cityPrep, lat, lon);
     }
     // Формируем query-параметры только для фильтров, не затрагивая routing-параметры
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
     if (isVip) params.set('vip', '1');
@@ -132,7 +135,7 @@ export default function FiltersMobile({
     setIsVip(false);
     setTimeFilter('all');
     setCategoryKey(null); // Сбрасываем категорию
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
 
     // удаляем только фильтры
     params.delete('minPrice');

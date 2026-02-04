@@ -10,7 +10,7 @@ interface InfiniteScrollAdsProps {
   // Параметры для API запроса
   cityLabel?: string;
   category?: string;
-  searchParams?: URLSearchParams;
+  searchParams?: URLSearchParams | null;
   sort?: string;
 
   // Количество объявлений на странице

@@ -28,10 +28,10 @@ export function usePushNotifications() {
       'PushManager' in window &&
       'Notification' in window;
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isSupported,
-      permission: isSupported ? Notification.permission : 'denied'
+      permission: isSupported ? Notification.permission : 'denied',
     }));
 
     if (isSupported) {
@@ -44,25 +44,25 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isSubscribed: !!subscription,
-        permission: Notification.permission
+        permission: Notification.permission,
       }));
     } catch (error) {
       console.error('Error checking subscription:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: 'Ошибка проверки подписки'
+        error: 'Ошибка проверки подписки',
       }));
     }
   };
 
   const requestPermission = async (): Promise<boolean> => {
     if (!state.isSupported) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: 'Push-уведомления не поддерживаются в этом браузере'
+        error: 'Push-уведомления не поддерживаются в этом браузере',
       }));
       return false;
     }
@@ -70,17 +70,17 @@ export function usePushNotifications() {
     try {
       const permission = await Notification.requestPermission();
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        permission
+        permission,
       }));
 
       return permission === 'granted';
     } catch (error) {
       console.error('Error requesting permission:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: 'Ошибка запроса разрешения'
+        error: 'Ошибка запроса разрешения',
       }));
       return false;
     }
@@ -89,17 +89,17 @@ export function usePushNotifications() {
   const subscribe = async (): Promise<boolean> => {
     if (!state.isSupported) return false;
 
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       // Запрашиваем разрешение если ещё не запрошено
       if (state.permission === 'default') {
         const granted = await requestPermission();
         if (!granted) {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             isLoading: false,
-            error: 'Разрешение на уведомления не получено'
+            error: 'Разрешение на уведомления не получено',
           }));
           return false;
         }
@@ -119,7 +119,7 @@ export function usePushNotifications() {
       // Создаём подписку
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey)
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
 
       // Отправляем подписку на сервер
@@ -128,26 +128,26 @@ export function usePushNotifications() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(subscription)
+        body: JSON.stringify(subscription),
       });
 
       if (!subscribeResponse.ok) {
         throw new Error('Ошибка сохранения подписки');
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isSubscribed: true,
-        isLoading: false
+        isLoading: false,
       }));
 
       return true;
     } catch (error) {
       console.error('Error subscribing to push:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Ошибка подписки'
+        error: error instanceof Error ? error.message : 'Ошибка подписки',
       }));
       return false;
     }
@@ -156,7 +156,7 @@ export function usePushNotifications() {
   const unsubscribe = async (): Promise<boolean> => {
     if (!state.isSupported) return false;
 
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -168,22 +168,22 @@ export function usePushNotifications() {
 
       // Удаляем подписку с сервера
       await fetch('/api/push/subscribe', {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isSubscribed: false,
-        isLoading: false
+        isLoading: false,
       }));
 
       return true;
     } catch (error) {
       console.error('Error unsubscribing:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: 'Ошибка отписки'
+        error: 'Ошибка отписки',
       }));
       return false;
     }
@@ -194,16 +194,14 @@ export function usePushNotifications() {
     requestPermission,
     subscribe,
     unsubscribe,
-    checkSubscriptionStatus
+    checkSubscriptionStatus,
   };
 }
 
 // Вспомогательная функция для конвертации VAPID ключа
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
 
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);

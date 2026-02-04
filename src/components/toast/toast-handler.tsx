@@ -14,12 +14,14 @@ export default function ToastHandler() {
   showRef.current = show;
 
   // Проверяем только наличие toast параметра
-  const toastParam = searchParams.get('toast');
+  const toastParam = searchParams?.get('toast');
 
   useEffect(() => {
     if (toastParam) {
       // Удаляем параметр из URL без перезагрузки
-      const newSearchParams = new URLSearchParams(searchParams);
+      const newSearchParams = new URLSearchParams(
+        searchParams?.toString() ?? ''
+      );
       newSearchParams.delete('toast');
 
       const newUrl = newSearchParams.toString()
