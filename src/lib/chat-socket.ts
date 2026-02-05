@@ -9,8 +9,9 @@ let socket: Socket | null = null;
 let socketPromise: Promise<Socket> | null = null;
 let status: ConnectionStatus = 'disconnected';
 let lastError: Error | null = null;
-const listeners: Array<(state: ConnectionStatus, error?: Error | null) => void> =
-  [];
+const listeners: Array<
+  (state: ConnectionStatus, error?: Error | null) => void
+> = [];
 
 function notify() {
   listeners.forEach((cb) => cb(status, lastError));
@@ -24,7 +25,10 @@ async function getSocketToken(): Promise<string | null> {
     });
 
     if (!response.ok) {
-      console.error('Failed to get socket token:', response.status);
+      // 401 для неавторизованного пользователя ожидаем, не спамим консоль
+      if (response.status !== 401) {
+        console.error('Failed to get socket token:', response.status);
+      }
       return null;
     }
 
@@ -49,7 +53,6 @@ export async function getSocket(): Promise<Socket> {
 
   // Создаем новый промис инициализации
   socketPromise = (async () => {
-
     const url =
       process.env.NEXT_PUBLIC_SOCKET_URL?.trim() || 'http://localhost:4001';
 

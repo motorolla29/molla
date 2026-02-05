@@ -61,7 +61,7 @@ export default function ChatList({
           onLoadMoreChats();
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     observer.observe(trigger);
@@ -157,7 +157,7 @@ export default function ChatList({
                 {chat.adPhoto ? (
                   <img
                     src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
-                    alt={chat.adTitle}
+                    //alt={chat.adTitle}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -184,7 +184,7 @@ export default function ChatList({
                 {chat.otherUserAvatar ? (
                   <img
                     src={`${chat.otherUserAvatar}?tr=w-40`}
-                    alt={chat.otherUserName}
+                    //alt={chat.otherUserName}
                     className="w-full h-full object-cover"
                   />
                 ) : (

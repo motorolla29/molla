@@ -21,7 +21,7 @@ self.addEventListener('push', (event) => {
   const options = {
     body: data.body || 'У вас новое уведомление',
     icon: data.icon || '/icons/icon-192.png',
-    //badge: data.badge || '/icons/icon-72.png',
+    badge: data.badge || '/icons/icon-badge-72.png',
     data: data.data || {},
     timestamp: data.timestamp || Date.now(),
     requireInteraction: true,

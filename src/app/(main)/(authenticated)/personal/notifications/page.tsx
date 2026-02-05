@@ -39,19 +39,6 @@ export default function NotificationsPage() {
     loadNotifications();
   }, []);
 
-  // Отмечаем прочитанными в БД при уходе со страницы
-  useEffect(() => {
-    return () => {
-      // При unmount отмечаем все прочитанными в БД
-      markAllAsRead().catch((error) => {
-        console.error(
-          'Failed to mark notifications as read on unmount:',
-          error
-        );
-      });
-    };
-  }, []);
-
   const loadNotifications = async () => {
     try {
       setLoading(true);
@@ -64,8 +51,9 @@ export default function NotificationsPage() {
       const data = await response.json();
       setNotifications(data.notifications);
 
-      // Уведомления показываются как есть - прочитанные и непрочитанные
-      // Marking as read происходит при unmount страницы
+      // Отмечаем все уведомления прочитанными после загрузки
+      // (это гарантированно сработает при обновлении страницы)
+      await markAllAsRead();
     } catch (error) {
       console.error('Error loading notifications:', error);
       setError(error instanceof Error ? error.message : 'Ошибка загрузки');

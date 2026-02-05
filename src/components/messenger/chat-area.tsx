@@ -18,7 +18,7 @@ interface ChatAreaProps {
     content: string,
     attachments?: File[],
     tempMessageId?: string,
-    localAttachments?: any[],
+    localAttachments?: any[]
   ) => Promise<{ messageId?: string; message?: any } | void>;
   onTyping?: () => void;
   onStopTyping?: () => void;
@@ -92,7 +92,7 @@ export default function ChatArea({
   }, [localMessages, hasMoreMessages]);
   const prevMessagesLengthRef = useRef(initialMessages.length);
   const prevLastMessageIdRef = useRef<string | null>(
-    initialMessages[initialMessages.length - 1]?.id ?? null,
+    initialMessages[initialMessages.length - 1]?.id ?? null
   );
 
   // Состояние для модального окна просмотра изображений
@@ -118,7 +118,9 @@ export default function ChatArea({
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
     setLocalMessages(initialMessages);
+  }, [initialMessages]);
 
+  useEffect(() => {
     // Скроллим вниз после загрузки сообщений для компенсации загрузки изображений
     const scrollToBottom = () => {
       if (messagesContainerRef.current) {
@@ -129,7 +131,7 @@ export default function ChatArea({
 
     setTimeout(scrollToBottom, 200);
     setTimeout(scrollToBottom, 400);
-  }, [initialMessages]);
+  }, []);
 
   // Оптимизированный обработчик скролла с debounce для предотвращения множественных загрузок
   const handleScroll = useCallback(() => {
@@ -359,10 +361,10 @@ export default function ChatArea({
 
   const updateMessageStatus = (
     messageId: string,
-    status: Message['status'],
+    status: Message['status']
   ) => {
     setLocalMessages((prev) =>
-      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg)),
+      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg))
     );
   };
 
@@ -388,7 +390,7 @@ export default function ChatArea({
         content,
         attachments,
         tempMessageId,
-        localAttachments,
+        localAttachments
       );
 
       // Все обновления происходят через socket события (message_saved, message_delivered)
@@ -448,8 +450,8 @@ export default function ChatArea({
                   >
                     {chat.adPhoto ? (
                       <img
-                        src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-60`}
-                        alt={chat.adTitle}
+                        src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
+                        //alt={chat.adTitle}
                         className="w-full h-full object-cover cursor-pointer transition-opacity"
                       />
                     ) : (
@@ -496,7 +498,7 @@ export default function ChatArea({
                 {chat?.otherUserAvatar ? (
                   <img
                     src={`${chat.otherUserAvatar}?tr=w-40`}
-                    alt={chat.otherUserName}
+                    //alt={chat.otherUserName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -548,7 +550,9 @@ export default function ChatArea({
                   {chat?.adTitle || 'Загрузка товара...'}
                   {chat?.adPrice && <span className="mx-1">·</span>}
                   {chat?.adPrice && (
-                    <span className="text-xs text-gray-900">{chat?.adPrice}</span>
+                    <span className="text-xs text-gray-900">
+                      {chat?.adPrice}
+                    </span>
                   )}
                 </>
               )}
@@ -619,7 +623,7 @@ export default function ChatArea({
                 openImageModal={openImageModal}
                 isNearBottomRef={isNearBottomRef}
               />
-            ),
+            )
           )
         )}
 
@@ -643,8 +647,8 @@ export default function ChatArea({
                       backgroundColor: chat?.otherUserAvatar
                         ? 'transparent'
                         : chat?.otherUserId
-                          ? getAvatarColor(chat.otherUserId)
-                          : 'rgba(209, 213, 219, 0.2)',
+                        ? getAvatarColor(chat.otherUserId)
+                        : 'rgba(209, 213, 219, 0.2)',
                     }}
                   >
                     {chat?.otherUserAvatar ? (

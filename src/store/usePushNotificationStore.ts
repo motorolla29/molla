@@ -72,7 +72,9 @@ export const usePushNotificationStore = create<PushNotificationState>(
             });
 
             if (!syncResponse.ok) {
-              console.error('[Push] server sync failed', syncResponse.status);
+              if (syncResponse.status !== 401) {
+                console.error('[Push] server sync failed', syncResponse.status);
+              }
             }
           } catch (syncError) {
             console.error('[Push] server sync error', syncError);

@@ -34,6 +34,9 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       if (response.ok) {
         const { unreadCount } = await response.json();
         set({ unreadCount, isInitialized: true });
+      } else if (response.status === 401) {
+        // Неавторизованный пользователь – просто считаем, что уведомлений нет
+        set({ unreadCount: 0, isInitialized: true });
       }
     } catch (error) {
       console.error('Failed to initialize notifications count:', error);

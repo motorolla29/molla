@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       title,
       body,
       icon: '/icons/icon-192.png',
-      //badge: '/icons/icon-72.png',
+      badge: '/icons/icon-badge-72.png',
       data: {
         type: 'test',
         timestamp: Date.now(),
