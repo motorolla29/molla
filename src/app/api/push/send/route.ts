@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       title,
       body,
       icon: icon || '/icons/icon-192.png',
-      badge: badge || '/icons/icon-72.png',
+      //badge: badge || '/icons/icon-72.png',
       data: data || {},
       timestamp: Date.now(),
     });

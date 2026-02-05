@@ -47,6 +47,23 @@ export const useAuthStore = create<AuthState>()(
           if (response.ok) {
             const data = await response.json();
             set({ isLoggedIn: true, user: data.user, isAuthChecking: false });
+
+            // После успешной проверки авторизации (первый заход / перезагрузка)
+            // один раз запрашиваем разрешение на push-уведомления,
+            // если это клиентский рендер и разрешение ещё не выдано/не запрещено окончательно.
+            if (
+              typeof window !== 'undefined' &&
+              typeof Notification !== 'undefined' &&
+              Notification.permission === 'default'
+            ) {
+              import('./usePushNotificationStore')
+                .then(({ usePushNotificationStore }) =>
+                  usePushNotificationStore.getState().requestPermission()
+                )
+                .catch(() => {
+                  // тихо игнорируем ошибки, чтобы не ломать auth flow
+                });
+            }
           } else {
             set({ isLoggedIn: false, user: null, isAuthChecking: false });
           }
