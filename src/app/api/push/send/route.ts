@@ -2,16 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import webpush from 'web-push';
 
-// Настройка VAPID ключей (в продакшене должны быть в .env)
+// Настройка VAPID ключей
 const vapidKeys = {
-  subject: 'mailto:admin@molla.app',
-  publicKey:
-    process.env.VAPID_PUBLIC_KEY ||
-    'BKxQzHdJC8q3yJ8Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3',
-  privateKey:
-    process.env.VAPID_PRIVATE_KEY ||
-    '3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q',
+  subject: 'mailto:eutyou@gmail.com',
+  publicKey: process.env.VAPID_PUBLIC_KEY,
+  privateKey: process.env.VAPID_PRIVATE_KEY,
 };
+
+// Проверяем наличие VAPID ключей
+if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
+  throw new Error(
+    'VAPID keys not configured. Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY environment variables.'
+  );
+}
 
 // Настройка web-push
 webpush.setVapidDetails(

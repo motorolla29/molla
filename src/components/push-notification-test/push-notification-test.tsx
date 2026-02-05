@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { usePushNotificationStore } from '@/store/usePushNotificationStore';
 
 export function PushNotificationTest() {
   const {
@@ -13,7 +13,7 @@ export function PushNotificationTest() {
     subscribe,
     unsubscribe,
     requestPermission,
-  } = usePushNotifications();
+  } = usePushNotificationStore();
 
   const [testMessage, setTestMessage] = useState('');
 
@@ -31,6 +31,13 @@ export function PushNotificationTest() {
           body: testMessage,
         }),
       });
+
+      let data: unknown = null;
+      try {
+        data = await response.json();
+      } catch {
+        // ignore json parse error
+      }
 
       if (response.ok) {
         alert('Push-уведомление отправлено!');
@@ -117,23 +124,18 @@ export function PushNotificationTest() {
           </button>
         )}
 
-        {!isSubscribed ? (
-          <button
-            onClick={subscribe}
-            disabled={isLoading || permission !== 'granted'}
-            className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {isLoading ? 'Подписка...' : 'Подписаться на push'}
-          </button>
-        ) : (
-          <button
-            onClick={unsubscribe}
-            disabled={isLoading}
-            className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-          >
-            {isLoading ? 'Отписка...' : 'Отписаться от push'}
-          </button>
-        )}
+        {/* Подписка управляется автоматически; здесь только отображаем состояние */}
+        <button
+          type="button"
+          disabled
+          className={`w-full px-4 py-2 rounded border text-sm ${
+            isSubscribed
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-gray-50 border-gray-200 text-gray-700'
+          }`}
+        >
+          {isSubscribed ? 'Подписка активна (авто)' : 'Подписка ещё не активна'}
+        </button>
       </div>
 
       {/* Тестовое уведомление */}

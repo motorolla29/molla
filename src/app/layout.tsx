@@ -4,6 +4,7 @@ import AuthInitializer from '@/components/auth-initializer/auth-initializer';
 import GlobalActivityTracker from '@/components/global-activity-tracker/global-activity-tracker';
 import GlobalEventListener from '@/components/global-event-listener/global-event-listener';
 import ServiceWorkerRegister from '@/components/service-worker-register/service-worker-register';
+import PushNotificationInitializer from '@/components/push-notification-initializer/push-notification-initializer';
 import { ToastProvider } from '@/components/toast/toast-context';
 import ToastContainer from '@/components/toast/toast-container';
 import ToastHandler from '@/components/toast/toast-handler';
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <GlobalActivityTracker />
         <GlobalEventListener />
         <ServiceWorkerRegister />
+        <PushNotificationInitializer />
         <ConfirmationModalProvider>
           <ToastProvider>
             {children}

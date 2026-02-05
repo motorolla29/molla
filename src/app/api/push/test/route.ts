@@ -20,6 +20,12 @@ export async function POST(request: NextRequest) {
     const userId = Number((decoded as any).userId);
     const { title, body } = await request.json();
 
+    console.log('[push/test] incoming request', {
+      userId,
+      title,
+      body,
+    });
+
     if (!title || !body) {
       return NextResponse.json(
         { error: 'Необходимо указать title и body' },
@@ -30,6 +36,11 @@ export async function POST(request: NextRequest) {
     // Получаем все подписки пользователя
     const subscriptions = await prisma.pushSubscription.findMany({
       where: { userId },
+    });
+
+    console.log('[push/test] found subscriptions', {
+      count: subscriptions.length,
+      endpoints: subscriptions.map((s) => s.endpoint),
     });
 
     if (!subscriptions.length) {
@@ -44,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Настройка VAPID ключей
     webpush.setVapidDetails(
-      'mailto:test@molla.app',
+      'mailto:eutyou@gmail.com',
       process.env.VAPID_PUBLIC_KEY!,
       process.env.VAPID_PRIVATE_KEY!
     );
@@ -76,18 +87,24 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    console.log('[push/test] sendNotification results', results);
+
     // Чистим устаревшие подписки
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       const sub = subscriptions[i];
 
-      if (
-        result.status === 'rejected' &&
-        (result.reason as any)?.statusCode === 410
-      ) {
-        await prisma.pushSubscription.delete({
-          where: { id: sub.id },
+      if (result.status === 'rejected') {
+        console.error('[push/test] sendNotification error', {
+          endpoint: sub.endpoint,
+          reason: result.reason,
         });
+
+        if ((result.reason as any)?.statusCode === 410) {
+          await prisma.pushSubscription.delete({
+            where: { id: sub.id },
+          });
+        }
       }
     }
 
