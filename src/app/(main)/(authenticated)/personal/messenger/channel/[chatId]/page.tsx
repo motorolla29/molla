@@ -297,23 +297,6 @@ export default function ChatPage() {
           console.error('Error marking message as read:', error);
         }
       }
-
-      // Smart scroll: only scroll if user is near bottom
-      setTimeout(
-        () => {
-          const container = document.querySelector(
-            '[data-messages-container]',
-          ) as HTMLElement;
-          if (container) {
-            const { scrollTop, scrollHeight, clientHeight } = container;
-            const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-            if (distanceFromBottom < 100) {
-              container.scrollTop = container.scrollHeight;
-            }
-          }
-        },
-        payload.attachments && payload.attachments.length > 0 ? 200 : 50,
-      );
     };
 
     const handleMessageSaved = ({

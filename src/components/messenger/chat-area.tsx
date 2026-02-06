@@ -273,6 +273,7 @@ export default function ChatArea({
     const lastMessage = localMessages[localMessages.length - 1];
     const isLastFromCurrentUser =
       lastMessage && lastMessage.senderId === currentUserId;
+    const isLastFromOtherUser = lastMessage && lastMessage.senderId !== currentUserId;
 
     const prevLength = prevMessagesLengthRef.current;
     const prevLastId = prevLastMessageIdRef.current;
@@ -293,7 +294,7 @@ export default function ChatArea({
       currentLength > prevLength &&
       currentLastId &&
       currentLastId !== prevLastId &&
-      (isNearBottom || isLastFromCurrentUser)
+      (isNearBottom || isLastFromCurrentUser || isLastFromOtherUser)
     ) {
       const container = messagesContainerRef.current;
       if (container) {
