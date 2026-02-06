@@ -222,9 +222,10 @@ const MessageItem = memo(
                       }`}
                       onClick={() =>
                         openImageModal(
-                          attachment.blobUrl && loadedImages[attachment.id]
-                            ? attachment.blobUrl // Быстрый просмотр из blob
-                            : attachment.fileUrl, // HTTP с сервера
+                          // Отправитель может открывать blob для быстрого просмотра, получатель всегда использует серверный URL
+                          message.senderId === currentUserId && attachment.blobUrl && loadedImages[attachment.id]
+                            ? attachment.blobUrl // Быстрый просмотр из blob только для отправителя
+                            : attachment.fileUrl, // HTTP с сервера для получателя и как fallback
                           attachment.fileName,
                         )
                       }
