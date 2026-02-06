@@ -11,17 +11,20 @@ import { MapPinIcon } from '@heroicons/react/24/outline';
 interface TopSearchPanelProps {
   categoryName: string | null;
   categoryKey: string | null;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
   onLocationModalOpen: () => void;
 }
 
 export default function TopSearchPanel({
   categoryName,
   categoryKey,
+  searchTerm,
+  setSearchTerm,
   onLocationModalOpen,
 }: TopSearchPanelProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const { cityLabel, cityName, cityNamePreposition } = useLocationStore();
 

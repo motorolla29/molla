@@ -13,6 +13,7 @@ interface AsideFiltersProps {
   cityNamePrep: string | null;
   lat: number | null;
   lon: number | null;
+  searchTerm?: string;
 }
 
 export default function AsideFilters({
@@ -22,6 +23,7 @@ export default function AsideFilters({
   cityNamePrep: pageCityNamePrep,
   lat: pageLat,
   lon: pageLon,
+  searchTerm = '',
 }: AsideFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,6 +125,7 @@ export default function AsideFilters({
       timeFilter: 'all' | '7' | '24';
       cityLabel: string | null;
       categoryKey: string | null;
+      searchTerm: string;
     }>
   ) => {
     const params = new URLSearchParams(searchParams?.toString() ?? '');
@@ -144,6 +147,14 @@ export default function AsideFilters({
       params.set('time', nextTimeFilter);
     } else {
       params.delete('time');
+    }
+
+    // Учитываем текущий поисковый запрос
+    const currentSearchTerm = overrides?.searchTerm ?? searchTerm;
+    if (currentSearchTerm.trim()) {
+      params.set('search', currentSearchTerm.trim());
+    } else {
+      params.delete('search');
     }
 
     const queryString = params.toString();

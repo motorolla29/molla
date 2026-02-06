@@ -18,6 +18,7 @@ interface FiltersMobileProps {
   cityNamePrep: string | null;
   lat: number | null;
   lon: number | null;
+  searchTerm?: string;
 }
 
 export default function FiltersMobile({
@@ -29,6 +30,7 @@ export default function FiltersMobile({
   cityNamePrep: pageCityNamePrep,
   lat: pageLat,
   lon: pageLon,
+  searchTerm = '',
 }: FiltersMobileProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,6 +125,12 @@ export default function FiltersMobile({
     if (maxPrice) params.set('maxPrice', maxPrice);
     if (isVip) params.set('vip', '1');
     if (timeFilter && timeFilter !== 'all') params.set('time', timeFilter);
+    // Учитываем текущий поисковый запрос
+    if (searchTerm.trim()) {
+      params.set('search', searchTerm.trim());
+    } else {
+      params.delete('search');
+    }
     const queryString = params.toString();
     const path = buildPath();
     router.push(path + (queryString ? `?${params.toString()}` : ''));

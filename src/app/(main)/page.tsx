@@ -4,7 +4,7 @@ import MapSlot from '@/components/map-slot/map-slot';
 import TopSearchPanel from '@/components/top-search-panel/top-search-panel';
 import TopSearchPanelMobile from '@/components/top-search-panel-mobile/top-search-panel-mobile';
 import HomePageFreshAndRecommendedAdsBlock from '@/components/home-page-fresh-and-recommended-ads-block/home-page-fresh-and-recommended-ads-block';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import FiltersMobile from '@/components/filters-mobile/filters-mobile';
 import LocationModal from '@/components/location-modal/location-modal';
 import { useLocationStore } from '@/store/useLocationStore';
@@ -12,8 +12,20 @@ import { useLocationStore } from '@/store/useLocationStore';
 export default function Home() {
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const { cityLabel, cityName, cityNamePreposition, lat, lon, setLocation } =
     useLocationStore();
+
+  // Инициализация searchTerm из URL для главной страницы
+  useEffect(() => {
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const searchParam = urlSearchParams.get('search');
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    } else {
+      setSearchTerm('');
+    }
+  }, []);
   return (
     <Suspense>
       <div className="min-h-screen">
@@ -22,11 +34,15 @@ export default function Home() {
             <TopSearchPanel
               categoryKey={null}
               categoryName={null}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
               onLocationModalOpen={() => setShowLocationModal(true)}
             />
             <TopSearchPanelMobile
               categoryKey={null}
               categoryName={null}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
               setFiltersVisible={setMobileFiltersVisible}
             />
           </div>
@@ -44,6 +60,7 @@ export default function Home() {
           cityNamePrep={cityNamePreposition}
           lat={lat}
           lon={lon}
+          searchTerm={searchTerm}
           setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
         />
 

@@ -33,6 +33,7 @@ export default function CategoryClient({
   lon = null,
 }: CategoryClientProps) {
   const [viewType, setViewType] = useState<'gallery' | 'default'>('default');
+  const [searchTerm, setSearchTerm] = useState('');
   const handleViewTypeChange = (type: 'gallery' | 'default') => {
     setViewType(type);
   };
@@ -40,6 +41,16 @@ export default function CategoryClient({
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const setLocation = useLocationStore((s) => s.setLocation);
+
+  // Инициализация searchTerm из URL
+  useEffect(() => {
+    const searchParam = searchParams?.get('search');
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    } else {
+      setSearchTerm('');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setLocation(cityLabel, cityName, cityNamePrep, lat, lon);
@@ -51,11 +62,15 @@ export default function CategoryClient({
         <TopSearchPanel
           categoryName={categoryLabel}
           categoryKey={categoryKey}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
           onLocationModalOpen={() => setShowLocationModal(true)}
         />
         <TopSearchPanelMobile
           categoryName={categoryLabel}
           categoryKey={categoryKey}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
           setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
         />
         {/* Breadcrumbs */}
@@ -102,6 +117,7 @@ export default function CategoryClient({
             cityNamePrep={cityNamePrep}
             lat={lat}
             lon={lon}
+            searchTerm={searchTerm}
           />
 
           {/* Основной блок */}
@@ -142,6 +158,7 @@ export default function CategoryClient({
           cityNamePrep={cityNamePrep}
           lat={lat}
           lon={lon}
+          searchTerm={searchTerm}
           setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
         />
 

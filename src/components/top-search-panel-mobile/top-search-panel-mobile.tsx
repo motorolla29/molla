@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocationStore } from '@/store/useLocationStore';
 import {
@@ -12,17 +12,20 @@ import {
 interface TopSearchPanelMobileProps {
   categoryName: string | null;
   categoryKey: string | null;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
   setFiltersVisible: (value: boolean) => void;
 }
 
 export default function TopSearchPanelMobile({
   categoryName,
   categoryKey,
+  searchTerm,
+  setSearchTerm,
   setFiltersVisible,
 }: TopSearchPanelMobileProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState('');
   const { cityLabel, cityNamePreposition } = useLocationStore();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -81,7 +84,7 @@ export default function TopSearchPanelMobile({
         {/* Кнопка фильтры справа */}
         <button
           onClick={() => setFiltersVisible(true)}
-          className="p-2 bg-violet-100 rounded-md cursor-pointer flex-shrink-0"
+          className="p-2 bg-violet-100 rounded-md cursor-pointer shrink-0"
           aria-label="Фильтры"
         >
           <AdjustmentsHorizontalIcon className="w-6 h-6 text-neutral-800" />

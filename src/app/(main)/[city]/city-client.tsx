@@ -30,12 +30,23 @@ export default function CityClient({
 }: CityClientProps) {
   const [viewType, setViewType] = useState<'gallery' | 'default'>('default');
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const handleViewTypeChange = (type: 'gallery' | 'default') => {
     setViewType(type);
   };
   const searchParams = useSearchParams();
   const [mobileFiltersVisible, setMobileFiltersVisible] = useState(false);
   const setLocation = useLocationStore((s) => s.setLocation);
+
+  // Инициализация searchTerm из URL
+  useEffect(() => {
+    const searchParam = searchParams?.get('search');
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    } else {
+      setSearchTerm('');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setLocation(cityLabel, cityName, cityNamePrep, lat, lon);
@@ -47,11 +58,15 @@ export default function CityClient({
         <TopSearchPanel
           categoryKey={null}
           categoryName={null}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
           onLocationModalOpen={() => setShowLocationModal(true)}
         />
         <TopSearchPanelMobile
           categoryKey={null}
           categoryName={null}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
           setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
         />
         {/* Breadcrumbs */}
@@ -90,6 +105,7 @@ export default function CityClient({
             cityNamePrep={cityNamePrep}
             lat={lat}
             lon={lon}
+            searchTerm={searchTerm}
           />
 
           {/* Основной блок с объявлениями */}
@@ -124,6 +140,7 @@ export default function CityClient({
           cityNamePrep={cityNamePrep}
           lat={lat}
           lon={lon}
+          searchTerm={searchTerm}
           setFiltersVisible={(bool: boolean) => setMobileFiltersVisible(bool)}
         />
 
