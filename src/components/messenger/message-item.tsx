@@ -186,7 +186,7 @@ const MessageItem = memo(
           )}
 
           <div
-            className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 ${message.attachments && message.attachments.length > 0 ? 'sm:max-w-[300px]' : 'sm:max-w-100'} px-3 py-1 rounded-lg relative ${
+            className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 ${message.attachments && message.attachments.length > 0 ? 'sm:max-w-[350px]' : 'sm:max-w-120'} px-3 py-1 rounded-lg relative ${
               message.senderId === currentUserId
                 ? 'bg-violet-500 text-white'
                 : 'bg-gray-100 text-gray-900'
@@ -198,7 +198,7 @@ const MessageItem = memo(
                 {message.attachments.map((attachment) => (
                   <div
                     key={attachment.id}
-                    className="relative min-w-[120px] min-h-[90px] bg-gray-300/25 rounded-lg"
+                    className="relative aspect-square w-full max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 sm:max-w-[350px] bg-gray-300/25 rounded-lg overflow-hidden"
                   >
                     <img
                       src={
@@ -210,12 +210,12 @@ const MessageItem = memo(
                               ? attachment.blobUrl
                               : attachment.fileUrl.startsWith('blob:')
                                 ? attachment.fileUrl
-                                : `${attachment.fileUrl}?tr=w-300`
+                                : `${attachment.fileUrl}?tr=w-350`
                           : // Для получателя просто HTTP URL
-                            `${attachment.fileUrl}?tr=w-300`
+                            `${attachment.fileUrl}?tr=w-350`
                       }
                       alt={attachment.fileName}
-                      className={`rounded-lg w-[300px] max-w-full h-auto cursor-pointer transition-opacity duration-150 ${
+                      className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${
                         loadedImages[attachment.id]
                           ? 'opacity-100'
                           : 'opacity-0'
