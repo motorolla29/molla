@@ -408,12 +408,7 @@ export default function ChatArea({
   };
 
   return (
-    <div
-      className="fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:h-[calc(100dvh-105px)] lg:top-auto"
-      style={{
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}
-    >
+    <div className="fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:h-[calc(100dvh-105px)] lg:top-auto">
       <div className=" bg-white p-4 border-b border-gray-200 shrink-0 sticky top-12 z-1 lg:static">
         <div className="flex items-center space-x-4">
           {/* Кнопка назад */}

@@ -25,7 +25,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   const [navContext, setNavContext] = useState<string | null>(null);
   const totalUnreadCount = useUnreadMessagesStore(
-    (state) => state.totalUnreadCount
+    (state) => state.totalUnreadCount,
   );
 
   // Загружаем сохраненный контекст при монтировании
@@ -68,13 +68,7 @@ export default function MobileBottomNav() {
       navContext === 'home');
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden z-50 shadow-md h-12"
-      style={{
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingRight: 'var(--scrollbar-compensation, 0px)',
-      }}
-    >
+    <nav className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden shadow-md h-12 z-50">
       <div className="flex h-full">
         {navItems.map(({ href, Icon, label, id }) => {
           let isActive = false;
