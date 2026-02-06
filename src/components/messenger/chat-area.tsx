@@ -18,7 +18,7 @@ interface ChatAreaProps {
     content: string,
     attachments?: File[],
     tempMessageId?: string,
-    localAttachments?: any[]
+    localAttachments?: any[],
   ) => Promise<{ messageId?: string; message?: any } | void>;
   onTyping?: () => void;
   onStopTyping?: () => void;
@@ -92,7 +92,7 @@ export default function ChatArea({
   }, [localMessages, hasMoreMessages]);
   const prevMessagesLengthRef = useRef(initialMessages.length);
   const prevLastMessageIdRef = useRef<string | null>(
-    initialMessages[initialMessages.length - 1]?.id ?? null
+    initialMessages[initialMessages.length - 1]?.id ?? null,
   );
 
   // Состояние для модального окна просмотра изображений
@@ -309,14 +309,6 @@ export default function ChatArea({
     }
   }, [isTyping, isNearBottom]);
 
-  const formatTime = (date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleTimeString('ru-RU', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const formatLastSeen = (value?: string | null) => {
     if (!value) return 'был(а) в сети давно';
     const date = new Date(value);
@@ -361,10 +353,10 @@ export default function ChatArea({
 
   const updateMessageStatus = (
     messageId: string,
-    status: Message['status']
+    status: Message['status'],
   ) => {
     setLocalMessages((prev) =>
-      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg))
+      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg)),
     );
   };
 
@@ -390,7 +382,7 @@ export default function ChatArea({
         content,
         attachments,
         tempMessageId,
-        localAttachments
+        localAttachments,
       );
 
       // Все обновления происходят через socket события (message_saved, message_delivered)
@@ -405,12 +397,12 @@ export default function ChatArea({
 
   return (
     <div
-      className="h-[calc(100dvh-95px)] lg:h-[calc(100dvh-105px)] flex flex-col"
+      className="fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:h-[calc(100dvh-105px)] lg:top-auto"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <div className=" bg-white p-4 border-b border-gray-200 shrink-0 sticky top-12 z-1 sm:static">
+      <div className=" bg-white p-4 border-b border-gray-200 shrink-0 sticky top-12 z-1 lg:static">
         <div className="flex items-center space-x-4">
           {/* Кнопка назад */}
           {showBackButton && (
@@ -623,7 +615,7 @@ export default function ChatArea({
                 openImageModal={openImageModal}
                 isNearBottomRef={isNearBottomRef}
               />
-            )
+            ),
           )
         )}
 
@@ -647,8 +639,8 @@ export default function ChatArea({
                       backgroundColor: chat?.otherUserAvatar
                         ? 'transparent'
                         : chat?.otherUserId
-                        ? getAvatarColor(chat.otherUserId)
-                        : 'rgba(209, 213, 219, 0.2)',
+                          ? getAvatarColor(chat.otherUserId)
+                          : 'rgba(209, 213, 219, 0.2)',
                     }}
                   >
                     {chat?.otherUserAvatar ? (
@@ -681,7 +673,7 @@ export default function ChatArea({
       </div>
 
       {/* Поле ввода сообщения - фиксированная высота внизу */}
-      <div className="bg-gray-50 shrink-0">
+      <div className="bg-gray-50 shrink-0 mb-12 lg:mb-0">
         <MessageInput
           onSendMessage={handleSendMessage}
           disabled={isLoading}

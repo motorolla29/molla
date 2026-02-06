@@ -64,7 +64,7 @@ export default function ChatPage() {
   // Блокировка скролла и прокрутка вверх при заходе на страницу (только для мобильных)
   useEffect(() => {
     // Проверяем ширину экрана - блокируем скролл только для экранов менее 640px
-    const isMobile = window.innerWidth < 640;
+    const isMobile = window.innerWidth < 1024;
     setIsScrollLocked(isMobile);
 
     if (isMobile) {

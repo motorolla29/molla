@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <ScrollRestorationManager />
       <Header />
       <HeaderMobile />
-      <div className="container mx-auto min-h-[calc(100vh-48px-48px)] lg:min-h-[calc(100vh-60px)] flex">
+      <div className="container mx-auto min-h-[calc(100dvh-48px-48px)] lg:min-h-[calc(100dvh-60px)] flex">
         {/* 48px - header mobile height, 48px - mobile bottom panel height, 60px - header desktop height */}
         <div className="flex-1 max-w-full">{children}</div>
       </div>
