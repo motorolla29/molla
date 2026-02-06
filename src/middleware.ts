@@ -19,12 +19,13 @@ export function middleware(request: NextRequest) {
     '/personal/my-adds',
     '/personal/profile',
     '/personal/messenger',
+    '/personal/notifications',
     '/ad/create',
     '/ad/edit',
   ];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    request.nextUrl.pathname.startsWith(route),
   );
 
   // Проверяем, если пользователь идет на страницу авторизации и уже авторизован
@@ -75,7 +76,7 @@ export function middleware(request: NextRequest) {
       const authUrl = new URL('/auth', request.url);
       authUrl.searchParams.set(
         'redirect',
-        request.nextUrl.pathname + request.nextUrl.search
+        request.nextUrl.pathname + request.nextUrl.search,
       );
       return NextResponse.redirect(authUrl);
     }
@@ -88,7 +89,7 @@ export function middleware(request: NextRequest) {
         const authUrl = new URL('/auth', request.url);
         authUrl.searchParams.set(
           'redirect',
-          request.nextUrl.pathname + request.nextUrl.search
+          request.nextUrl.pathname + request.nextUrl.search,
         );
         const response = NextResponse.redirect(authUrl);
         response.cookies.set('token', '', {
@@ -103,13 +104,13 @@ export function middleware(request: NextRequest) {
     } catch (error) {
       console.error(
         '[MIDDLEWARE] Error checking token on protected route:',
-        error
+        error,
       );
       // Если ошибка при проверке токена, удаляем его из cookies и перенаправляем на авторизацию
       const authUrl = new URL('/auth', request.url);
       authUrl.searchParams.set(
         'redirect',
-        request.nextUrl.pathname + request.nextUrl.search
+        request.nextUrl.pathname + request.nextUrl.search,
       );
       const response = NextResponse.redirect(authUrl);
       response.cookies.set('token', '', {
