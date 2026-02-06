@@ -55,7 +55,7 @@ export default function ImageModal({
           onClick={onClose}
         >
           <motion.div
-            className="relative max-w-4xl h-fit max-h-[80dvh] lg:max-h-[90dvh] min-w-[200px] min-h-[200px] rounded-xl shadow-2xl select-none flex items-center justify-center"
+            className={`relative max-w-4xl h-fit max-h-[80dvh] lg:max-h-[90dvh] ${!imageLoaded ? 'min-w-[200px] min-h-[200px]' : ''} rounded-xl shadow-2xl select-none flex items-center justify-center`}
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}

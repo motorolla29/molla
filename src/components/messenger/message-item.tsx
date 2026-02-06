@@ -198,7 +198,7 @@ const MessageItem = memo(
                 {message.attachments.map((attachment) => (
                   <div
                     key={attachment.id}
-                    className="relative aspect-square w-full max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 sm:max-w-[350px] bg-gray-300/25 rounded-lg overflow-hidden"
+                    className="relative aspect-square max-w-full w-36 min-[320px]:w-48 min-[390px]:w-56 sm:w-[350px] bg-gray-300/25 rounded-lg overflow-hidden"
                   >
                     <img
                       src={
@@ -223,7 +223,9 @@ const MessageItem = memo(
                       onClick={() =>
                         openImageModal(
                           // Отправитель может открывать blob для быстрого просмотра, получатель всегда использует серверный URL
-                          message.senderId === currentUserId && attachment.blobUrl && loadedImages[attachment.id]
+                          message.senderId === currentUserId &&
+                            attachment.blobUrl &&
+                            loadedImages[attachment.id]
                             ? attachment.blobUrl // Быстрый просмотр из blob только для отправителя
                             : attachment.fileUrl, // HTTP с сервера для получателя и как fallback
                           attachment.fileName,
