@@ -28,7 +28,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
 
   const lowResImages = useMemo(() => {
     return images.map((src) =>
-      src.includes('?') ? `${src}&tr=w-200` : `${src}?tr=w-200`
+      src.includes('?') ? `${src}&tr=w-200` : `${src}?tr=w-200`,
     );
   }, [images]);
 
@@ -37,7 +37,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
       if (!emblaMainApi) return;
       emblaMainApi.scrollTo(index);
     },
-    [emblaMainApi]
+    [emblaMainApi],
   );
 
   const onSelect = useCallback(() => {
@@ -94,7 +94,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
               <div className="flex-[0_0_100%] px-1" key={idx}>
                 <div
                   onClick={() => setIsZoomOpen(true)}
-                  className="relative w-full aspect-[4/3] overflow-hidden rounded-md bg-gray-100"
+                  className="relative w-full aspect-4/3 overflow-hidden rounded-md bg-gray-100"
                 >
                   {/* Фоновое размытие */}
                   <Image

@@ -15,12 +15,12 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
       target="blank"
       className="flex flex-col w-full overflow-hidden h-full min-w-0"
     >
-      <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg">
+      <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg bg-gray-200/25">
         <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'
           }?tr=w-350`}
-          alt={ad.title}
+          //alt={ad.title}
           className={`w-full h-full object-cover ${
             isArchived ? 'opacity-50' : ''
           }`}

@@ -33,12 +33,12 @@ export default function AdCard({
       <div className=" transition-colors rounded-lg overflow-visible">
         <div className="flex min-w-0">
           {/* Фото */}
-          <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-grey-100 flex items-center justify-center rounded-xl overflow-hidden">
+          <div className="w-16 h-16 bg-gray-200/25 sm:w-20 sm:h-20 shrink-0 bg-grey-100 flex items-center justify-center rounded-xl overflow-hidden">
             <img
               src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
                 ad.photos[0] || 'default.jpg'
               }?tr=w-200`}
-              alt={ad.title}
+              //alt={ad.title}
               className="w-full h-full object-cover"
             />
           </div>

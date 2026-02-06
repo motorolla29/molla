@@ -17,7 +17,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
     >
       {/* Фото */}
       <Link
-        className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 overflow-hidden"
+        className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 bg-gray-200/25 overflow-hidden"
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
         target="blank"
       >
@@ -25,7 +25,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'
           }?tr=w-250`}
-          alt={ad.title}
+          //alt={ad.title}
           className="w-full h-full object-cover"
         />
       </Link>
@@ -79,7 +79,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
         target="blank"
         className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
       >
-        <div className="w-18 h-18 rounded-lg mb-2 overflow-hidden">
+        <div className="w-18 h-18 rounded-lg mb-2 bg-gray-200/25 overflow-hidden">
           <img
             className="w-full h-full object-cover"
             src={
@@ -87,7 +87,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
                 ? `${ad.seller.avatar}?tr=w-100`
                 : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
             }
-            alt="avatar"
+            //alt="avatar"
           />
         </div>
         <span className="text-xs sm:text-sm font-semibold pr-1 max-w-full inline-block truncate wrap-break-words">

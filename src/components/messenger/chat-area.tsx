@@ -54,6 +54,7 @@ export default function ChatArea({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] =
     useState<Message[]>(initialMessages);
+  const hasInitiallyScrolledRef = useRef(false);
 
   const isSameDay = (d1: Date, d2: Date) => {
     return (
@@ -117,21 +118,32 @@ export default function ChatArea({
 
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
+    const prevLength = prevMessagesLengthRef.current;
     setLocalMessages(initialMessages);
+    prevMessagesLengthRef.current = initialMessages.length;
+
+    // Скроллим вниз только при первой загрузке сообщений (когда массив был пустой)
+    // Не скроллим при подгрузке дополнительных сообщений
+    if (
+      !hasInitiallyScrolledRef.current &&
+      initialMessages.length > 0 &&
+      prevLength === 0
+    ) {
+      hasInitiallyScrolledRef.current = true;
+
+      // Скроллим вниз после загрузки сообщений для компенсации загрузки изображений
+      const scrollToBottom = () => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop =
+            messagesContainerRef.current.scrollHeight;
+        }
+      };
+
+      setTimeout(scrollToBottom, 200);
+      setTimeout(scrollToBottom, 400);
+      setTimeout(scrollToBottom, 800);
+    }
   }, [initialMessages]);
-
-  useEffect(() => {
-    // Скроллим вниз после загрузки сообщений для компенсации загрузки изображений
-    const scrollToBottom = () => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop =
-          messagesContainerRef.current.scrollHeight;
-      }
-    };
-
-    setTimeout(scrollToBottom, 200);
-    setTimeout(scrollToBottom, 400);
-  }, []);
 
   // Оптимизированный обработчик скролла с debounce для предотвращения множественных загрузок
   const handleScroll = useCallback(() => {
@@ -646,7 +658,7 @@ export default function ChatArea({
                     {chat?.otherUserAvatar ? (
                       <img
                         src={`${chat.otherUserAvatar}?tr=w-40`}
-                        alt={chat?.otherUserName}
+                        //alt={chat?.otherUserName}
                         className="w-full h-full object-cover"
                       />
                     ) : (
