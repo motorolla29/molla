@@ -12,6 +12,7 @@ import {
   CogIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { ArrowLeft } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -96,7 +97,15 @@ export default function NotificationsPage() {
   return (
     <div className="m-4 lg:m-6">
       <div className="mb-4 pb-4 border-b border-gray-200">
-        <h1 className="text-lg font-semibold text-gray-900">Уведомления</h1>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors shrink-0"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-lg font-semibold text-gray-900">Уведомления</h1>
+        </div>
       </div>
 
       {loading ? (
