@@ -321,17 +321,25 @@ export default function ChatArea({
     const date = new Date(value);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffYears = Math.floor(diffDays / 365);
+
+    // Если прошло более года
+    if (diffYears >= 1) return 'был(а) давно';
+
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     if (diffMinutes < 1) return 'был(а) только что';
     if (diffMinutes < 60) return `был(а) ${diffMinutes} мин назад`;
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) return `был(а) ${diffHours} ч назад`;
-    return date.toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
+
+    // Если прошло больше суток, но менее года - показываем дату и время
+    return `был(а) ${date.toLocaleString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
       hour: '2-digit',
       minute: '2-digit',
-    });
+    })}`;
   };
 
   const addLocalMessage = (content: string, attachments?: File[]) => {
@@ -530,7 +538,7 @@ export default function ChatArea({
                     <div className="shrink-0 w-2 h-2 bg-emerald-500 rounded-full" />
                   ) : (
                     <span className="items-center gap-2 text-xs text-gray-500 shrink-0 hidden sm:flex">
-                      {formatLastSeen(otherUserLastSeen)}
+                      {!isLoading && otherUserLastSeen && formatLastSeen(otherUserLastSeen)}
                     </span>
                   )}
                 </div>

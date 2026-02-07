@@ -57,6 +57,7 @@ export default function ChatPage() {
   const chatId = (params?.chatId as string) || '';
   const { socket } = useChatSocket();
   const onlineUserIds = useChatPresenceStore((state) => state.onlineUserIds);
+  const lastSeenMap = useChatPresenceStore((state) => state.lastSeen);
   const updateLastSeen = useChatPresenceStore((state) => state.updateLastSeen);
   const typingMap = useChatPresenceStore((state) => state.typing);
   const markTyping = useChatPresenceStore((state) => state.markTyping);
@@ -542,6 +543,11 @@ export default function ChatPage() {
   const isOtherUserOnline =
     otherUserId !== undefined && onlineUserIds.has(Number(otherUserId));
 
+  // Используем lastSeen из presence store, если он есть, иначе из данных чата
+  const otherUserLastSeen = otherUserId
+    ? lastSeenMap[otherUserId] || chat?.otherUserLastSeenAt || null
+    : chat?.otherUserLastSeenAt || null;
+
   const typingForChat = chatId
     ? typingMap[chatId]?.[otherUserId ?? -1]
     : undefined;
@@ -605,7 +611,7 @@ export default function ChatPage() {
         onTyping={handleTyping}
         onStopTyping={handleStopTyping}
         isOtherUserOnline={!!isOtherUserOnline}
-        otherUserLastSeen={chat?.otherUserLastSeenAt || null}
+        otherUserLastSeen={otherUserLastSeen}
         isTyping={isTyping}
         isLoading={isLoading}
         hasMoreMessages={hasMore}
