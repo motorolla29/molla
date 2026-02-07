@@ -47,7 +47,7 @@ export default function ImageModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 px-6 pb-12 lg:py-12"
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 px-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -55,7 +55,7 @@ export default function ImageModal({
           onClick={onClose}
         >
           <motion.div
-            className={`relative max-w-4xl h-fit max-h-[80dvh] lg:max-h-[90dvh] ${!imageLoaded ? 'min-w-[200px] min-h-[200px]' : ''} rounded-xl shadow-2xl select-none flex items-center justify-center`}
+            className={`mb-12 mt-4 lg:mb-0 relative max-w-4xl h-fit max-h-[80dvh] ${!imageLoaded ? 'min-w-[200px] min-h-[200px]' : ''} rounded-xl shadow-2xl select-none flex items-center justify-center`}
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -102,7 +102,7 @@ export default function ImageModal({
             <img
               src={imageUrl}
               alt={altText}
-              className={`w-full h-auto max-h-[80dvh] lg:max-h-[90dvh] rounded-lg object-contain transition-opacity duration-300 ${
+              className={`w-full h-auto max-h-[80dvh] rounded-lg object-contain transition-opacity duration-300 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onClick={(e) => e.stopPropagation()}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -10,6 +10,7 @@ import ChatArea from '@/components/messenger/chat-area';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
+import ImageModal from '@/components/messenger/image-modal';
 
 interface Chat {
   id: string;
@@ -86,9 +87,22 @@ export default function ChatPage() {
   const [hasMore, setHasMore] = useState(false);
   const [isScrollLocked, setIsScrollLocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    url: string;
+    alt: string;
+  } | null>(null);
 
   // Ref для управления таймером typing
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Обработчики для модального окна изображений
+  const openImageModal = useCallback((imageUrl: string, altText: string) => {
+    setSelectedImage({ url: imageUrl, alt: altText });
+  }, []);
+
+  const closeImageModal = useCallback(() => {
+    setSelectedImage(null);
+  }, []);
 
   // Загрузка информации о чате
   useEffect(() => {
@@ -594,11 +608,20 @@ export default function ChatPage() {
         otherUserLastSeen={chat?.otherUserLastSeenAt || null}
         isTyping={isTyping}
         isLoading={isLoading}
-        isScrollLocked={isScrollLocked}
         hasMoreMessages={hasMore}
         isLoadingMoreMessages={isLoadingMore}
         onLoadMoreMessages={loadMoreMessages}
         showBackButton={true}
+        onImageModalOpen={openImageModal}
+      />
+
+      {/* Модальное окно для просмотра изображений */}
+      <ImageModal
+        isOpen={!!selectedImage}
+        onClose={closeImageModal}
+        imageUrl={selectedImage?.url || ''}
+        altText={selectedImage?.alt || ''}
+        scrollAlreadyLocked={isScrollLocked}
       />
     </div>
   );

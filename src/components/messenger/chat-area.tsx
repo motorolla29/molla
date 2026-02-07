@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import MessageInput from './message-input';
-import ImageModal from './image-modal';
 import MessageItem from './message-item';
 import type { Message, Chat } from './message-item';
 import { getAvatarColor } from '@/utils';
@@ -26,11 +25,11 @@ interface ChatAreaProps {
   otherUserLastSeen?: string | null;
   isTyping?: boolean;
   isLoading?: boolean;
-  isScrollLocked?: boolean;
   hasMoreMessages?: boolean;
   isLoadingMoreMessages?: boolean;
   onLoadMoreMessages?: () => Promise<void> | void;
   showBackButton?: boolean;
+  onImageModalOpen?: (imageUrl: string, altText: string) => void;
 }
 
 export default function ChatArea({
@@ -44,11 +43,11 @@ export default function ChatArea({
   otherUserLastSeen,
   isTyping = false,
   isLoading = false,
-  isScrollLocked = false,
   hasMoreMessages = false,
   isLoadingMoreMessages = false,
   onLoadMoreMessages,
   showBackButton = false,
+  onImageModalOpen,
 }: ChatAreaProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -95,12 +94,6 @@ export default function ChatArea({
   const prevLastMessageIdRef = useRef<string | null>(
     initialMessages[initialMessages.length - 1]?.id ?? null,
   );
-
-  // Состояние для модального окна просмотра изображений
-  const [selectedImage, setSelectedImage] = useState<{
-    url: string;
-    alt: string;
-  } | null>(null);
 
   // Состояние для отслеживания положения скролла
   const [isNearBottom, setIsNearBottom] = useState(true);
@@ -273,7 +266,8 @@ export default function ChatArea({
     const lastMessage = localMessages[localMessages.length - 1];
     const isLastFromCurrentUser =
       lastMessage && lastMessage.senderId === currentUserId;
-    const isLastFromOtherUser = lastMessage && lastMessage.senderId !== currentUserId;
+    const isLastFromOtherUser =
+      lastMessage && lastMessage.senderId !== currentUserId;
 
     const prevLength = prevMessagesLengthRef.current;
     const prevLastId = prevLastMessageIdRef.current;
@@ -374,13 +368,14 @@ export default function ChatArea({
   };
 
   // Обработчики для модального окна изображений
-  const openImageModal = useCallback((imageUrl: string, altText: string) => {
-    setSelectedImage({ url: imageUrl, alt: altText });
-  }, []);
-
-  const closeImageModal = () => {
-    setSelectedImage(null);
-  };
+  const openImageModal = useCallback(
+    (imageUrl: string, altText: string) => {
+      if (onImageModalOpen) {
+        onImageModalOpen(imageUrl, altText);
+      }
+    },
+    [onImageModalOpen],
+  );
 
   const handleSendMessage = async (content: string, attachments?: File[]) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
@@ -689,15 +684,6 @@ export default function ChatArea({
           onStopTyping={onStopTyping}
         />
       </div>
-
-      {/* Модальное окно для просмотра изображений */}
-      <ImageModal
-        isOpen={!!selectedImage}
-        onClose={closeImageModal}
-        imageUrl={selectedImage?.url || ''}
-        altText={selectedImage?.alt || ''}
-        scrollAlreadyLocked={isScrollLocked}
-      />
     </div>
   );
 }
