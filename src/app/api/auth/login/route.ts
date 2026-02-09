@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateToken } from '@/lib/jwt';
 import bcrypt from 'bcryptjs';
-import { createDeviceDescription } from '@/utils/device';
+import { createDeviceDescription, getDeviceTypeEmoji } from '@/utils/device';
 import { getClientIp } from '@/utils';
 
 export async function POST(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!normalizedEmail || !password) {
       return NextResponse.json(
         { error: 'Email и пароль обязательны' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (!user || !user.password) {
       return NextResponse.json(
         { error: 'Неверный email или пароль' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Неверный email или пароль' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -121,15 +121,18 @@ export async function POST(request: NextRequest) {
         const deviceDescription = await createDeviceDescription(
           ua,
           ip,
-          new Date()
+          new Date(),
         );
+
+        // Получаем эмодзи для типа устройства
+        const deviceEmoji = getDeviceTypeEmoji(ua);
 
         const notification = await prisma.inAppNotification.create({
           data: {
             userId: user.id,
             type: 'login_new_device',
             title: 'Вход с нового устройства',
-            message: `Мы зафиксировали вход с нового устройства: ${deviceDescription}. Если это были не вы, смените пароль.`,
+            message: `Если это были не вы, смените пароль: ${deviceDescription}.`,
             data: {
               deviceId: newDevice.deviceId,
               userAgent: newDevice.userAgent,
@@ -162,8 +165,36 @@ export async function POST(request: NextRequest) {
                 },
               },
             }),
-          }
+          },
         );
+
+        // Отправляем push-уведомление
+        await fetch(
+          `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/api/push/send`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: user.id,
+              title: `Вход с нового устройства${deviceEmoji ? ` ${deviceEmoji}` : ``}`,
+              body: `Мы зафиксировали вход с нового устройства: ${deviceDescription}. Если это были не вы, смените пароль.`,
+              data: {
+                type: 'login_new_device',
+                deviceId: newDevice.deviceId,
+                userAgent: newDevice.userAgent,
+                ip: newDevice.ip,
+                createdAt: newDevice.createdAt.toISOString(),
+              },
+            }),
+          },
+        ).catch((error) => {
+          console.error(
+            'Failed to send push notification for new device login:',
+            error,
+          );
+        });
       } catch (err) {
         console.error('Failed to handle new device login notification:', err);
       }
@@ -174,7 +205,7 @@ export async function POST(request: NextRequest) {
     console.error('Login error:', error);
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

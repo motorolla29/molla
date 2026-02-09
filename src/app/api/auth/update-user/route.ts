@@ -305,6 +305,29 @@ export async function PATCH(request: NextRequest) {
               }),
             }
           );
+
+          // Отправляем push-уведомление
+          await fetch(
+            `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/api/push/send`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId,
+                title: '👤 Профиль обновлен',
+                body: `Вы изменили ${changedFields.join(', ')}.`,
+                data: {
+                  type: 'profile_update',
+                  changedFields,
+                  timestamp: new Date().toISOString(),
+                },
+              }),
+            }
+          ).catch((error) => {
+            console.error('Failed to send push notification for profile update:', error);
+          });
         } catch (error) {
           console.error('Failed to create/send profile notification:', error);
         }

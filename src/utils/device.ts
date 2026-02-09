@@ -194,12 +194,28 @@ async function getCityFromIP(ip: string): Promise<string | undefined> {
 }
 
 /**
+ * Возвращает тип устройства с соответствующим эмодзи
+ */
+export function getDeviceTypeEmoji(userAgent: string): string {
+  const deviceInfo = parseUserAgent(userAgent);
+
+  const emojiMap = {
+    desktop: '💻',
+    mobile: '📱',
+    tablet: '📱',
+    unknown: '',
+  };
+
+  return emojiMap[deviceInfo.type] || '';
+}
+
+/**
  * Создает человекочитаемое описание устройства для уведомлений
  */
 export async function createDeviceDescription(
   userAgent: string,
   ip: string | null,
-  loginTime?: Date
+  loginTime?: Date,
 ): Promise<string> {
   const deviceInfo = parseUserAgent(userAgent);
 
