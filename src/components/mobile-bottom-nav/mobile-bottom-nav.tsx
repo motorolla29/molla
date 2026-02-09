@@ -9,7 +9,12 @@ import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 const navItems = [
   { href: '/', Icon: Home, label: 'Главная', id: 'home' },
   { href: '/favorites', Icon: Heart, label: 'Избранное', id: 'favorites' },
-  { href: '/personal/my-adds', Icon: List, label: 'Объявления', id: 'ads' },
+  {
+    href: '/personal/my-adds/active',
+    Icon: List,
+    label: 'Объявления',
+    id: 'ads',
+  },
   {
     href: '/personal/messenger',
     Icon: MessageCircle,
