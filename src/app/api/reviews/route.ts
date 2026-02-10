@@ -72,6 +72,13 @@ export async function GET(request: NextRequest) {
       // Получаем отзывы, оставленные пользователем
       whereClause = { userId };
       includeClause = {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
         seller: {
           select: {
             id: true,

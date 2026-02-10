@@ -98,8 +98,6 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
   return (
     <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
       <div className="flex items-start gap-2.5 sm:gap-3">
-        {/* Аватар пользователя */}
-
         {/* Содержимое отзыва */}
         <div className="flex-1 min-w-0">
           {/* Шапка: на мобильном в колонку, на десктопе в ряд */}
@@ -127,27 +125,37 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
 
           
 
-          {/* Информация об объявлении */}
-          <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <div className="min-w-0 truncate max-[300px]:flex max-[300px]:flex-col">
-              <span className="text-[10px] sm:text-xs text-gray-500">Объявление: </span>
-              <span className="text-[10px] sm:text-xs text-gray-700">
-                {review.ad.title}
-              </span>
+          {/* Информация об объявлении - отображаем только если отзыв о продавце */}
+          {!isSeller && (
+            <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <div className="min-w-0 truncate max-[300px]:flex max-[300px]:flex-col">
+                <span className="text-[10px] sm:text-xs text-gray-500">Объявление: </span>
+                <span className="text-[10px] sm:text-xs text-gray-700">
+                  {review.ad.title}
+                </span>
+              </div>
+              {review.purchased !== undefined && (
+                <span
+                  className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 w-fit ${
+                    review.purchased
+                      ? 'bg-green-50 text-green-600 border border-green-200'
+                      : 'bg-orange-50 text-orange-600 border border-orange-200'
+                  }`}
+                >
+                  <ShoppingBag size={9} className="sm:w-2.5 sm:h-2.5" />
+                  {review.purchased ? 'Товар куплен' : 'Товар не куплен'}
+                </span>
+              )}
             </div>
-            {review.purchased !== undefined && (
-              <span
-                className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 w-fit ${
-                  review.purchased
-                    ? 'bg-green-50 text-green-600 border border-green-200'
-                    : 'bg-orange-50 text-orange-600 border border-orange-200'
-                }`}
-              >
-                <ShoppingBag size={9} className="sm:w-2.5 sm:h-2.5" />
-                {review.purchased ? 'Товар куплен' : 'Товар не куплен'}
-              </span>
-            )}
-          </div>
+          )}
+          {/* При отображении отзыва о покупателе (пользователь - продавец) не показываем информацию об объявлении */}
+          {isSeller && (
+            <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <div className="min-w-0 truncate max-[300px]:flex max-[300px]:flex-col">
+                <span className="text-[10px] sm:text-xs text-gray-500">Отзыв о покупателе</span>
+              </div>
+            </div>
+          )}
 
           {/* Текст отзыва */}
           <div className="relative">

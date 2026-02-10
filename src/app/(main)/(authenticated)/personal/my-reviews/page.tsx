@@ -1,15 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, User, MoreVertical, ExternalLink, Trash2 } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { FidgetSpinner } from 'react-loader-spinner';
+import MyReviewCard from '@/components/my-review-card';
 
 interface Review {
   id: string;
   rating: number;
   content: string;
+  photos?: string[];
+  purchased?: boolean;
   createdAt: string;
+  user: {
+    id: number;
+    name: string | null;
+    avatar: string | null;
+  };
   seller: {
     id: number;
     name: string | null;
@@ -17,32 +23,62 @@ interface Review {
   ad: {
     id: string;
     title: string;
+    photos: string[];
   };
 }
 
 export default function MyReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const limit = 5;
 
   useEffect(() => {
-    loadReviews();
+    loadReviews(1, false);
   }, []);
 
-  const loadReviews = async () => {
+  const loadReviews = async (pageNum: number = 1, append: boolean = false) => {
     try {
-      const response = await fetch('/api/reviews/my-reviews');
+      const params = new URLSearchParams();
+      params.set('my-reviews', 'true');
+      params.set('page', pageNum.toString());
+      params.set('limit', limit.toString());
+      
+      const response = await fetch(`/api/reviews?${params.toString()}`);
       const data = await response.json();
-      setReviews(data.reviews || []);
+      
+      if (data.reviews && Array.isArray(data.reviews)) {
+        if (append) {
+          setReviews((prev) => [...prev, ...data.reviews]);
+        } else {
+          setReviews(data.reviews);
+        }
+        
+        setHasMore(data.pagination?.hasMore || false);
+        setPage(pageNum);
+      } else {
+        setHasMore(false);
+      }
     } catch (error) {
       console.error('Error loading reviews:', error);
+      setHasMore(false);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const deleteReview = async (reviewId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) return;
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    await loadReviews(nextPage, true);
+  };
 
+  const deleteReview = async (reviewId: string) => {
     try {
       const response = await fetch(`/api/reviews?id=${reviewId}`, {
         method: 'DELETE',
@@ -50,28 +86,18 @@ export default function MyReviewsPage() {
 
       if (response.ok) {
         setReviews(reviews.filter(r => r.id !== reviewId));
+        // Also update the hasMore state if we removed the last review on the page
+        if (reviews.length === 1 && page > 1) {
+          // If we deleted the last review on a page > 1, reload the current page
+          await loadReviews(page, false);
+        }
+      } else {
+        throw new Error('Failed to delete review');
       }
     } catch (error) {
       console.error('Error deleting review:', error);
+      throw error;
     }
-  };
-
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            size={14}
-            className={`${
-              star <= rating
-                ? 'text-yellow-400 fill-yellow-400'
-                : 'text-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-    );
   };
 
   if (loading) {
@@ -107,54 +133,46 @@ export default function MyReviewsPage() {
       ) : (
         <div className="space-y-4">
           {reviews.map((review) => (
-            <div key={review.id} className="border border-gray-200 rounded-lg p-4 bg-white">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-medium">Продавец: {review.seller.name}</span>
-                    {renderStars(review.rating)}
-                  </div>
-
-                  <div className="mb-3">
-                    <span className="text-sm text-gray-500">Объявление: </span>
-                    <span className="text-sm text-gray-700">{review.ad.title}</span>
-                  </div>
-
-                  <p className="text-gray-700 mb-2">{review.content}</p>
-
-                  <span className="text-xs text-gray-500">
-                    {new Date(review.createdAt).toLocaleDateString('ru-RU')}
-                  </span>
-                </div>
-
-                <div className="relative ml-4">
-                  <div className="group relative">
-                    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                      <MoreVertical size={16} className="text-gray-400" />
-                    </button>
-
-                    {/* Dropdown menu */}
-                    <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                      <Link
-                        href={`/user/${review.seller.id}/active`}
-                        className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
-                      >
-                        <ExternalLink size={16} />
-                        Перейти в профиль продавца
-                      </Link>
-                      <button
-                        onClick={() => deleteReview(review.id)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors text-red-600 w-full text-left"
-                      >
-                        <Trash2 size={16} />
-                        Удалить
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MyReviewCard
+              key={review.id}
+              review={review}
+              onDelete={deleteReview}
+            />
           ))}
+          
+          {/* Кнопка "Показать еще" */}
+          {hasMore && (
+            <div className="flex justify-center">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="mt-4 mb-2 px-5 py-2.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-xs sm:text-sm shadow-sm"
+              >
+                {loadingMore ? (
+                  <div className="flex items-center gap-2">
+                    <FidgetSpinner
+                      visible={true}
+                      height="20"
+                      width="20"
+                      ariaLabel="fidget-spinner-loading"
+                      wrapperStyle={{}}
+                      wrapperClass="fidget-spinner-wrapper"
+                    />
+                    Загрузка...
+                  </div>
+                ) : (
+                  'Показать еще'
+                )}
+              </button>
+            </div>
+          )}
+          
+          {/* Сообщение о конце списка */}
+          {!hasMore && reviews.length > 0 && (
+            <div className="text-center py-4 sm:py-6">
+              <div className="text-gray-500 text-xs sm:text-sm">Это все ваши отзывы</div>
+            </div>
+          )}
         </div>
       )}
     </div>

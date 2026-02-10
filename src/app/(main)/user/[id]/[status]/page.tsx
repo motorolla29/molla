@@ -130,7 +130,7 @@ export default function UserProfilePage() {
           </div>
 
           {/* Правый блок с объявлениями */}
-          <div className="flex-1">
+          <div className="flex-1 lg:max-w-[calc(100%-352px)]">
             <UserAdsContent
               userId={userId}
               currentStatus={status}

@@ -72,7 +72,7 @@ export default function ReviewsList({
           setReviews(data.reviews);
         }
 
-        setHasMore(data.pagination?.hasMore || data.reviews.length === limit);
+        setHasMore(data.pagination?.hasMore);
       } else {
         setHasMore(false);
       }
@@ -239,7 +239,7 @@ export default function ReviewsList({
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="mt-6 mb-2 px-5 py-2.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-xs sm:text-sm shadow-sm"
+            className="mt-4 mb-2 px-5 py-2.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-xs sm:text-sm shadow-sm"
           >
             {loadingMore ? (
               <div className="flex items-center gap-2">
