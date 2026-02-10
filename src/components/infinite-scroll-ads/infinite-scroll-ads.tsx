@@ -203,7 +203,7 @@ export default function InfiniteScrollAds({
       {/* Сообщение о конце списка */}
       {!loading && showEndMessage && !hasMore && ads.length > 0 && (
         <div className="text-center py-4 text-neutral-500">
-          <p className="text-sm">Это все объявления</p>
+          <p className="text-xs sm:text-sm">Это все объявления</p>
         </div>
       )}
     </>

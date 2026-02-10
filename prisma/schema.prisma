@@ -56,6 +56,12 @@ model Seller {
   // Связь с устройствами входа
   loginDevices LoginDevice[]
 
+  // Связь с отзывами (отзывы, оставленные пользователем)
+  userReviews Review[] @relation("UserReviews")
+
+  // Связь с отзывами (отзывы, полученные продавцом)
+  sellerReviews Review[] @relation("SellerReviews")
+
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
@@ -96,6 +102,9 @@ model Ad {
 
   // Связь с чатами
   chats         Chat[]
+
+  // Связь с отзывами
+  reviews       Review[]
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -298,4 +307,27 @@ model LoginDevice {
   @@unique([userId, deviceId])
   @@index([userId])
   @@map("login_devices")
+}
+
+// Модель отзывов
+model Review {
+  id        String   @id @default(cuid())
+  userId    Int      // ID пользователя, оставившего отзыв
+  sellerId  Int      // ID продавца, которому оставлен отзыв
+  adId      String   // ID объявления
+  rating    Int      // Рейтинг от 1 до 5
+  content   String   // Текст отзыва
+  photos    String[] // URL фотографий отзыва
+  purchased Boolean  @default(false) // Был ли товар куплен
+
+  // Связи
+  user      Seller   @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
+  seller    Seller   @relation("SellerReviews", fields: [sellerId], references: [id], onDelete: Cascade)
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, adId]) // Один пользователь — один отзыв на объявление
+  @@map("reviews")
 }

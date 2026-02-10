@@ -15,14 +15,7 @@ const getSameSitePolicy = (request: NextRequest) => {
 
 export function middleware(request: NextRequest) {
   // Защищенные маршруты
-  const protectedRoutes = [
-    '/personal/my-adds',
-    '/personal/profile',
-    '/personal/messenger',
-    '/personal/notifications',
-    '/ad/create',
-    '/ad/edit',
-  ];
+  const protectedRoutes = ['/personal', '/ad/create', '/ad/edit'];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route),

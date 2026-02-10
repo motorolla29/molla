@@ -1,12 +1,14 @@
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import SellerContacts from '@/app/(main)/[city]/[category]/[adId]/components/seller-contacts';
+import { formatReviewCount } from '@/utils';
 
 interface UserProfile {
   id: string;
   name: string;
   avatar: string;
   rating: number;
+  reviewsCount: number;
   joinDate: string;
   phone?: string;
   email?: string;
@@ -28,6 +30,16 @@ export default function UserProfileSidebar({
       month: 'long',
       year: 'numeric',
     });
+  };
+
+  const scrollToReviews = () => {
+    const reviewsSection = document.querySelector('[data-reviews-section]');
+    if (reviewsSection) {
+      reviewsSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
   };
 
   return (
@@ -79,9 +91,12 @@ export default function UserProfileSidebar({
               );
             })}
           </div>
-          <span className="text-xs sm:text-sm text-gray-600">
-            {user.rating.toFixed(1)} (0 отзывов)
-          </span>
+          <button
+            onClick={scrollToReviews}
+            className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+          >
+            {user.rating.toFixed(1)} ({formatReviewCount(user.reviewsCount)})
+          </button>
         </div>
 
         {/* Дата регистрации */}

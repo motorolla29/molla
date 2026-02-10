@@ -3,11 +3,12 @@
 import { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, List, ArrowLeft, MessageCircle, Bell } from 'lucide-react';
+import { User, List, ArrowLeft, MessageCircle, Bell, Star } from 'lucide-react';
 
 const navItems = [
   { href: '/personal/profile', Icon: User, label: 'Профиль' },
   { href: '/personal/my-adds', Icon: List, label: 'Мои объявления' },
+  { href: '/personal/my-reviews', Icon: Star, label: 'Мои отзывы' },
   { href: '/personal/messenger', Icon: MessageCircle, label: 'Сообщения' },
   { href: '/personal/notifications', Icon: Bell, label: 'Уведомления' },
 ];

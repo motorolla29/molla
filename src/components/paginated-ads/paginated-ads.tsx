@@ -146,8 +146,8 @@ export default function PaginatedAds({
 
       {/* Сообщение о конце списка */}
       {!hasMore && showEndMessage && ads.length > 0 && !isLoading && (
-        <div className="text-center py-8">
-          <div className="text-gray-500 text-sm">Это все объявления</div>
+        <div className="text-center py-4 sm:py-6">
+          <div className="text-gray-500 text-xs sm:text-sm">Это все объявления</div>
         </div>
       )}
     </div>
