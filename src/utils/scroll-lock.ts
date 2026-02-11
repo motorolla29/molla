@@ -5,6 +5,7 @@
 let scrollbarWidth: number = 0;
 let originalOverflow: string = '';
 let originalPaddingRight: string = '';
+let lockCount: number = 0; // Счетчик активных блокировок
 
 /**
  * Вычисляет ширину полосы прокрутки
@@ -32,8 +33,13 @@ export function getScrollbarWidth(): number {
 export function lockScroll(): void {
   if (typeof document === 'undefined') return;
 
-  originalOverflow = document.body.style.overflow || '';
-  originalPaddingRight = document.body.style.paddingRight || '';
+  lockCount++;
+
+  // Сохраняем оригинальные значения только при первой блокировке
+  if (lockCount === 1) {
+    originalOverflow = document.body.style.overflow || '';
+    originalPaddingRight = document.body.style.paddingRight || '';
+  }
 
   const width = getScrollbarWidth();
 
@@ -54,10 +60,15 @@ export function lockScroll(): void {
 export function unlockScroll(): void {
   if (typeof document === 'undefined') return;
 
-  document.body.style.overflow = originalOverflow;
-  document.body.style.paddingRight = originalPaddingRight;
-  // Сбрасываем CSS переменную
-  document.documentElement.style.setProperty('--scrollbar-compensation', '0px');
+  lockCount = Math.max(0, lockCount - 1);
+
+  // Восстанавливаем оригинальные значения только когда все блокировки сняты
+  if (lockCount === 0) {
+    document.body.style.overflow = originalOverflow;
+    document.body.style.paddingRight = originalPaddingRight;
+    // Сбрасываем CSS переменную
+    document.documentElement.style.setProperty('--scrollbar-compensation', '0px');
+  }
 }
 
 /**

@@ -277,7 +277,7 @@ export default function ReviewFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 pb-12 lg:pb-0 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg h-[80dvh] max-h-fit overflow-y-auto shadow-xl">
+      <div className="bg-white rounded-2xl w-full max-w-lg h-[80dvh] max-h-fit overflow-y-auto shadow-xl custom-scrollbar-2">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate pr-2">
@@ -305,13 +305,11 @@ export default function ReviewFormModal({
               >
                 {selectedAd ? (
                   <>
-                    {selectedAd.photos?.[0] && (
-                      <img
-                        src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${selectedAd.photos[0]}?tr=w-80`}
-                        alt=""
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0"
-                      />
-                    )}
+                    <img
+                      src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${selectedAd.photos?.[0] || 'default.jpg'}?tr=w-80`}
+                      alt=""
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0"
+                    />
                     <span className="truncate flex-1">
                       {selectedAd.title}
                     </span>
@@ -339,7 +337,7 @@ export default function ReviewFormModal({
               </button>
 
               {adDropdownOpen && (
-                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar-2">
                   {ads.length === 0 ? (
                     <div className="p-3 sm:p-4 text-xs sm:text-sm text-gray-400 text-center">
                       {adsLoading
@@ -361,15 +359,11 @@ export default function ReviewFormModal({
                             : 'text-gray-700'
                         }`}
                       >
-                        {ad.photos?.[0] ? (
-                          <img
-                            src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${ad.photos[0]}?tr=w-80`}
-                            alt=""
-                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-100 shrink-0" />
-                        )}
+                        <img
+                          src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${ad.photos?.[0] || 'default.jpg'}?tr=w-80`}
+                          alt=""
+                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0"
+                        />
                         <span className="truncate flex-1">{ad.title}</span>
                         {selectedAdId === ad.id && (
                           <Check size={16} className="text-violet-500 shrink-0" />

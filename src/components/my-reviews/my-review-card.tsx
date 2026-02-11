@@ -223,7 +223,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
                   key={idx}
                   type="button"
                   onClick={() => setModalImage(photo)}
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                  className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   <img
                     src={`${photo}?tr=w-150`}
