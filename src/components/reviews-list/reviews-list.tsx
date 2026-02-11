@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { FidgetSpinner } from 'react-loader-spinner';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import ReviewCard from './review-card';
+import ReviewCard from '../reviews/review-card';
+import ReviewSkeleton from '../review-skeleton/review-skeleton';
 
 interface Review {
   id: string;
@@ -140,23 +141,7 @@ export default function ReviewsList({
 
   // Скелетон для загрузки
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="border border-gray-200 rounded-lg p-4 animate-pulse">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0"></div>
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-                <div className="h-4 bg-gray-200 rounded w-full"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <ReviewSkeleton count={3} showSorting={true} />;
   }
 
   return (

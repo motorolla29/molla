@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import UserProfileSidebar from './components/user-profile-sidebar';
 import UserProfileSkeleton from './components/user-profile-skeleton';
 import UserAdsContent from './components/user-ads-content';
-import ReviewsList from '@/components/reviews-list';
+import ReviewsList from '@/components/reviews-list/reviews-list';
 import ReviewFormModal from '@/components/review-form-modal/review-form-modal';
 import ImageModal from '@/components/messenger/image-modal';
 import { useAuthStore } from '@/store/useAuthStore';
