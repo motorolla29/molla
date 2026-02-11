@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Star, MoreVertical, ExternalLink, Trash2, ShoppingBag } from 'lucide-react';
+import {
+  Star,
+  MoreVertical,
+  ExternalLink,
+  Trash2,
+  ShoppingBag,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import ImageModal from '@/components/messenger/image-modal';
@@ -52,7 +58,8 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
   // Определяем, является ли текущий пользователь продавцом, которому оставлен отзыв
   // Если да - это отзыв, оставленный пользователю как продавцу
   // Если нет - это отзыв, который пользователь оставил кому-то другому
-  const isReviewAboutCurrentUser = user?.id && parseInt(user.id) === review.seller.id;
+  const isReviewAboutCurrentUser =
+    user?.id && parseInt(user.id) === review.seller.id;
   // Определяем, является ли текущий пользователь автором отзыва
   const isCurrentUserAuthor = user?.id && parseInt(user.id) === review.user.id;
   const roleLabel = isCurrentUserAuthor ? 'Покупатель' : 'Продавец';
@@ -142,7 +149,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
         icon: Trash2,
         iconBgColor: 'bg-red-100',
         iconColor: 'text-red-500',
-      }
+      },
     );
     setMenuOpen(false);
   };
@@ -153,29 +160,35 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
         {/* Содержимое отзыва */}
         <div className="flex-1 min-w-0">
           {/* Шапка: аватар, имя и дата слева, звезды справа */}
-          <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 max-[400px]:gap-1 sm:gap-3 mb-2 max-[400px]:mb-0">
-            <div className='flex flex-1 items-center gap-3 truncate max-w-full'>
-              <div className='shrink-0'>{getAvatarContent()}</div>
+          <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 sm:gap-3 mb-2 max-[400px]:mb-0">
+            <div className="flex flex-1 items-center gap-3 truncate max-w-full">
+              <div className="shrink-0">{getAvatarContent()}</div>
               <div className="flex-col items-center min-w-0">
                 <span className="font-medium text-xs sm:text-sm text-neutral-700 truncate block">
                   {user?.name || 'Пользователь'}
                 </span>
                 <div className="flex items-center flex-wrap gap-1 gap-y-0 text-[10px] sm:text-xs text-gray-500 shrink-0">
                   <span>
-                    {new Date(review.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(review.createdAt).toLocaleDateString('ru-RU', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
                   </span>
                   <span>•</span>
                   <span>{roleLabel}</span>
                 </div>
               </div>
             </div>
-            <div className='py-1'>{renderStars(review.rating)}</div>
+            <div className="py-1">{renderStars(review.rating)}</div>
           </div>
 
           {/* Информация об объявлении */}
           <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
             <div className="min-w-0 truncate max-[300px]:flex max-[300px]:flex-col">
-              <span className="text-[10px] sm:text-xs text-gray-500">Объявление: </span>
+              <span className="text-[10px] sm:text-xs text-gray-500">
+                Объявление:{' '}
+              </span>
               <span className="text-[10px] sm:text-xs text-gray-700">
                 {review.ad.title}
               </span>
@@ -268,7 +281,10 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
                       className="w-full px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       onClick={() => setMenuOpen(false)}
                     >
-                      <ExternalLink size={12} className="sm:w-[14px] sm:h-[14px]" />
+                      <ExternalLink
+                        size={12}
+                        className="sm:w-[14px] sm:h-[14px]"
+                      />
                       Перейти в профиль покупателя
                     </Link>
                   )}
@@ -279,7 +295,10 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
                       className="w-full px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       onClick={() => setMenuOpen(false)}
                     >
-                      <ExternalLink size={12} className="sm:w-[14px] sm:h-[14px]" />
+                      <ExternalLink
+                        size={12}
+                        className="sm:w-[14px] sm:h-[14px]"
+                      />
                       Перейти в профиль продавца
                     </Link>
                   )}

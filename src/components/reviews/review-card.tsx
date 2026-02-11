@@ -101,35 +101,38 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
         {/* Содержимое отзыва */}
         <div className="flex-1 min-w-0">
           {/* Шапка: на мобильном в колонку, на десктопе в ряд */}
-          <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 max-[400px]:gap-1 sm:gap-3 mb-2 max-[400px]:mb-0">
-            
-            <div className='flex flex-1 items-center gap-3 truncate max-w-full'>
-              <div className='shrink-0'>{getAvatarContent()}</div>
+          <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 sm:gap-3 mb-2 max-[400px]:mb-0">
+            <div className="flex flex-1 items-center gap-3 truncate max-w-full">
+              <div className="shrink-0">{getAvatarContent()}</div>
               <div className="flex-col items-center min-w-0">
                 <span className="font-medium text-xs sm:text-sm text-neutral-700 truncate block">
                   {review.user.name || 'Пользователь'}
                 </span>
                 <div className="flex items-center flex-wrap gap-1 gap-y-0 text-[10px] sm:text-xs text-gray-500 shrink-0">
                   <span>
-                    {new Date(review.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(review.createdAt).toLocaleDateString('ru-RU', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
                   </span>
                   <span>•</span>
                   <span>{roleLabel}</span>
                 </div>
               </div>
             </div>
-            <div className='py-1.5 sm:py-2'>{renderStars(review.rating)}</div>
-
-
+            <div className="max-[400px]:py-1 py-1.5 sm:py-2">
+              {renderStars(review.rating)}
+            </div>
           </div>
-
-          
 
           {/* Информация об объявлении - отображаем только если отзыв о продавце */}
           {!isSeller && (
             <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
               <div className="min-w-0 truncate max-[300px]:flex max-[300px]:flex-col">
-                <span className="text-[10px] sm:text-xs text-gray-500">Объявление: </span>
+                <span className="text-[10px] sm:text-xs text-gray-500">
+                  Объявление:{' '}
+                </span>
                 <span className="text-[10px] sm:text-xs text-gray-700">
                   {review.ad.title}
                 </span>
@@ -152,7 +155,9 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
           {isSeller && (
             <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
               <div className="min-w-0 truncate max-[300px]:flex max-[300px]:flex-col">
-                <span className="text-[10px] sm:text-xs text-gray-500">Отзыв о покупателе</span>
+                <span className="text-[10px] sm:text-xs text-gray-500">
+                  Отзыв о покупателе
+                </span>
               </div>
             </div>
           )}
