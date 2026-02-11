@@ -63,7 +63,7 @@ export default function AdCard({
                 </div>
 
                 {/* Десктоп версия - заголовок в одной строке с ценой и кнопкой */}
-                <div className="hidden sm:flex items-center justify-between gap-4 mt-1 mb-1">
+                <div className="hidden sm:flex items-center justify-between gap-4 mt-1 mb-0.5">
                   <h3 className="text-lg font-semibold text-neutral-700 truncate flex-1 min-w-0">
                     {ad.title}
                   </h3>
@@ -75,9 +75,9 @@ export default function AdCard({
                 </div>
 
                 {/* Мета-информация */}
-                <div className="text-xs sm:text-sm text-gray-600 space-y-0.5">
+                <div className="text-xs sm:text-sm text-gray-600">
                   {/* Город и дата в одной строке */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 sm:gap-x-4 mb-1 sm:mb-0.5">
                     <div className="flex items-center">
                       <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 shrink-0" />
                       <span className="truncate">{ad.city}</span>
