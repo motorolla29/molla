@@ -22,7 +22,7 @@ interface LocationModalProps {
     cityName: string,
     cityNamePreposition: string,
     lat: number | null,
-    lon: number | null
+    lon: number | null,
   ) => void;
   saveToStorage?: boolean;
   disableScrollLock?: boolean;
@@ -124,19 +124,19 @@ export default function LocationModal({
   const [error, setError] = useState<string | null>(null);
 
   const [previewLabel, setPreviewLabel] = useState<string | null>(
-    currentCityLabel
+    currentCityLabel,
   );
   const [previewNameNom, setPreviewNameNom] = useState<string | null>(
-    currentCityName
+    currentCityName,
   );
   const [previewNamePrep, setPreviewNamePrep] = useState<string | null>(
-    currentCityPrepositional
+    currentCityPrepositional,
   );
   const [previewLat, setPreviewLat] = useState<number | null>(
-    currentLat ?? null
+    currentLat ?? null,
   );
   const [previewLon, setPreviewLon] = useState<number | null>(
-    currentLon ?? null
+    currentLon ?? null,
   );
 
   const modalRef = useRef<HTMLDivElement>(null);
@@ -269,7 +269,7 @@ export default function LocationModal({
               cityNamePreposition,
               lat,
               lon,
-            })
+            }),
           );
         } catch (e) {
           console.warn('Не удалось сохранить location в localStorage', e);
@@ -287,7 +287,7 @@ export default function LocationModal({
         previewNameNom,
         previewNamePrep,
         previewLat,
-        previewLon
+        previewLon,
       );
 
       if (saveToStorage) {
@@ -300,7 +300,7 @@ export default function LocationModal({
               cityNamePreposition: previewNamePrep,
               lat: previewLat,
               lon: previewLon,
-            })
+            }),
           );
         } catch (e) {
           console.warn('Не удалось сохранить location в localStorage', e);
@@ -429,7 +429,7 @@ export default function LocationModal({
               </button>
               <button
                 onClick={handleApply}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-violet-400 text-white rounded-md hover:bg-violet-500 text-sm sm:text-base"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-violet-500 text-white rounded-md hover:bg-violet-600 active:bg-violet-700 text-sm sm:text-base"
               >
                 Применить
               </button>

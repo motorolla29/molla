@@ -82,7 +82,7 @@ export default function ReviewFormModal({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const MAX_PHOTOS = 5;
-  const ADS_LIMIT = 5;
+  const ADS_LIMIT = 24;
 
   const loadAds = async (skip = 0, append = false) => {
     if (!sellerId) return;
@@ -468,13 +468,13 @@ export default function ReviewFormModal({
                         ))}
 
                         {(adsLoading || adsLoadingMore) && (
-                          <div className="p-3 text-xs sm:text-sm text-gray-400 text-center">
-                            Загрузка объявлений...
+                          <div className="px-4 pt-1 pb-4 flex justify-center">
+                            <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
                           </div>
                         )}
 
                         {!adsHasMore && ads.length > 0 && (
-                          <div className="px-3 pt-1 pb-4 text-[11px] sm:text-xs text-gray-400 text-center">
+                          <div className="px-4 pt-1 pb-4 text-[11px] sm:text-xs text-gray-400 text-center">
                             Это все объявления продавца
                           </div>
                         )}

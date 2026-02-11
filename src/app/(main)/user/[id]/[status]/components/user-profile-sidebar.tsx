@@ -1,7 +1,7 @@
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import SellerContacts from '@/app/(main)/[city]/[category]/[adId]/components/seller-contacts';
-import { formatReviewCount } from '@/utils';
+import { formatReviewCount, getAvatarColor } from '@/utils';
 
 interface UserProfile {
   id: string;
@@ -46,21 +46,22 @@ export default function UserProfileSidebar({
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       {/* Аватар и основная информация */}
       <div className="flex flex-col items-center text-center mb-6">
-        <div
-          className={`w-20 h-20 rounded-full overflow-hidden mb-4 ${
-            user.avatar ? 'cursor-pointer' : ''
-          }`}
-          onClick={() => user.avatar && onAvatarClick()}
-        >
-          <img
-            src={
-              user.avatar
-                ? `${user.avatar}?tr=w-100`
-                : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
-            }
-            alt={`Аватар ${user.name}`}
-            className="w-full h-full object-cover"
-          />
+        <div className="w-20 h-20 mb-4 rounded-full overflow-hidden">
+          {user.avatar ? (
+            <img
+              src={`${user.avatar}?tr=w-100`}
+              alt={`Аватар ${user.name}`}
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={onAvatarClick}
+            />
+          ) : (
+            <div
+              className="w-full h-full rounded-full flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg select-none"
+              style={{ backgroundColor: getAvatarColor(user.id) }}
+            >
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          )}
         </div>
 
         <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2 line-clamp-2">

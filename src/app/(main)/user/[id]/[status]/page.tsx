@@ -145,8 +145,11 @@ export default function UserProfilePage() {
             <div className="mt-8" data-reviews-section>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4 sm:mb-6 max-[400px]:flex-col max-[400px]:items-start max-[400px]:gap-3">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                    Отзывы
+                  <h2 className="flex items-center text-lg sm:text-xl font-semibold text-gray-900">
+                    <span>Отзывы</span>
+                    <span className="text-xs sm:text-sm font-bold text-neutral-500 ml-2">
+                      {user.reviewsCount}
+                    </span>
                   </h2>
                   {isLoggedIn &&
                     authUser &&
