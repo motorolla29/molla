@@ -52,13 +52,17 @@ export default function UserProfilePage() {
     const loadUserProfile = async () => {
       try {
         // Загружаем профиль пользователя, счетчики объявлений и отзывы параллельно
-        const [userResponse, activeResponse, archivedResponse, reviewsResponse] =
-          await Promise.all([
-            fetch(`/api/users/${userId}`),
-            fetch(`/api/users/${userId}/ads?status=active&limit=1`),
-            fetch(`/api/users/${userId}/ads?status=archived&limit=1`),
-            fetch(`/api/reviews?sellerId=${userId}&page=1&limit=1`),
-          ]);
+        const [
+          userResponse,
+          activeResponse,
+          archivedResponse,
+          reviewsResponse,
+        ] = await Promise.all([
+          fetch(`/api/users/${userId}`),
+          fetch(`/api/users/${userId}/ads?status=active&limit=1`),
+          fetch(`/api/users/${userId}/ads?status=archived&limit=1`),
+          fetch(`/api/reviews?sellerId=${userId}&page=1&limit=1`),
+        ]);
 
         if (!userResponse.ok) {
           const errorData = await userResponse.json();
@@ -141,16 +145,20 @@ export default function UserProfilePage() {
             <div className="mt-8" data-reviews-section>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4 sm:mb-6 max-[400px]:flex-col max-[400px]:items-start max-[400px]:gap-3">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Отзывы</h2>
-                  {isLoggedIn && authUser && Number(authUser.id) !== parseInt(userId) && (
-                    <button
-                      onClick={() => setShowReviewModal(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-violet-500 text-white rounded-xl text-xs sm:text-sm font-medium hover:bg-violet-600 transition-colors"
-                    >
-                      <PencilSquareIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-                      Оставить отзыв
-                    </button>
-                  )}
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                    Отзывы
+                  </h2>
+                  {isLoggedIn &&
+                    authUser &&
+                    Number(authUser.id) !== parseInt(userId) && (
+                      <button
+                        onClick={() => setShowReviewModal(true)}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-violet-500 text-white rounded-xl text-xs sm:text-sm font-medium hover:bg-violet-600 active:bg-violet-700 transition-colors"
+                      >
+                        <PencilSquareIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                        Оставить отзыв
+                      </button>
+                    )}
                 </div>
                 <ReviewsList key={reviewsKey} sellerId={parseInt(userId)} />
               </div>
@@ -177,7 +185,7 @@ export default function UserProfilePage() {
           setReviewsKey((prev) => prev + 1);
           // Обновляем количество отзывов
           setUser((prev) =>
-            prev ? { ...prev, reviewsCount: prev.reviewsCount + 1 } : prev
+            prev ? { ...prev, reviewsCount: prev.reviewsCount + 1 } : prev,
           );
         }}
       />

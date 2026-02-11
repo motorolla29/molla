@@ -15,15 +15,26 @@ export async function GET(request: NextRequest) {
     const maxPrice = searchParams.get('maxPrice');
     const search = searchParams.get('search');
     const isVip = searchParams.get('vip') === '1';
+    const statusFilter = searchParams.get('status') || 'active'; // 'active' | 'all' | конкретный статус
+    const sellerId = searchParams.get('sellerId');
+    const forReview = searchParams.get('forReview') === '1';
     const timeFilter = searchParams.get('time');
     const sort = searchParams.get('sort') || 'datePosted';
     const skip = parseInt(searchParams.get('skip') || '0');
     const limit = parseInt(searchParams.get('limit') || '24');
 
     // Строим условия фильтрации
-    const where: any = {
-      status: 'active', // показываем только активные объявления
-    };
+    const where: any = {};
+
+    // Фильтр по статусу: по умолчанию только активные, но можно запросить все
+    if (statusFilter !== 'all') {
+      where.status = statusFilter; // например 'active' | 'archived'
+    }
+
+    // Фильтр по продавцу (для модалки отзывов и других кейсов)
+    if (sellerId) {
+      where.sellerId = Number(sellerId);
+    }
 
     // Фильтр по городу
     if (cityLabel && cityLabel !== 'russia') {
@@ -75,10 +86,16 @@ export async function GET(request: NextRequest) {
     // Сортировка
     let orderBy: any = undefined; // По умолчанию - без сортировки
 
-    if (sort === 'new') {
-      orderBy = { datePosted: 'desc' };
-    } else if (sort === 'price_asc') {
-      orderBy = { price: 'asc' };
+    if (forReview) {
+      // Для модалки отзывов: сначала активные, внутри по дате (новые сверху),
+      // затем остальные статусы (например, архивные)
+      orderBy = [{ status: 'asc' }, { datePosted: 'desc' }];
+    } else {
+      if (sort === 'new') {
+        orderBy = { datePosted: 'desc' };
+      } else if (sort === 'price_asc') {
+        orderBy = { price: 'asc' };
+      }
     }
 
     const ads = await prisma.ad.findMany({
@@ -108,14 +125,14 @@ export async function GET(request: NextRequest) {
     console.error('❌ Error fetching ads:', error);
     console.error(
       'Stack trace:',
-      error instanceof Error ? error.stack : 'Unknown error'
+      error instanceof Error ? error.stack : 'Unknown error',
     );
     return NextResponse.json(
       {
         error: 'Failed to fetch ads',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -156,7 +173,7 @@ export async function POST(request: NextRequest) {
     if (!title || !category || typeof price !== 'number') {
       return NextResponse.json(
         { error: 'Отсутствуют обязательные поля: заголовок, категория, цена' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

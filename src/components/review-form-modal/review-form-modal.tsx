@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Star, X, Camera, Check, ShoppingBag } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
 import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
+import Link from 'next/link';
 
 interface SellerAd {
   id: string;
@@ -28,6 +30,33 @@ interface UploadingPhoto {
   status: 'pending' | 'uploading' | 'done' | 'error';
 }
 
+const adsDropdownVariants = {
+  hidden: {
+    opacity: 0,
+    y: -8,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+  },
+};
+
+const modalBackdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const modalContentVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 },
+};
+
 export default function ReviewFormModal({
   isOpen,
   onClose,
@@ -40,6 +69,8 @@ export default function ReviewFormModal({
 
   const [ads, setAds] = useState<SellerAd[]>([]);
   const [adsLoading, setAdsLoading] = useState(false);
+  const [adsLoadingMore, setAdsLoadingMore] = useState(false);
+  const [adsHasMore, setAdsHasMore] = useState(true);
   const [selectedAdId, setSelectedAdId] = useState<string>('');
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -51,29 +82,63 @@ export default function ReviewFormModal({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const MAX_PHOTOS = 5;
+  const ADS_LIMIT = 5;
+
+  const loadAds = async (skip = 0, append = false) => {
+    if (!sellerId) return;
+
+    if (append) {
+      setAdsLoadingMore(true);
+    } else {
+      setAdsLoading(true);
+    }
+
+    try {
+      const params = new URLSearchParams();
+      params.set('sellerId', String(sellerId));
+      params.set('limit', String(ADS_LIMIT));
+      params.set('skip', String(skip));
+      params.set('status', 'all');
+      params.set('forReview', '1');
+
+      const response = await fetch(`/api/ads?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to load seller ads');
+      }
+      const data: SellerAd[] = await response.json();
+
+      if (append) {
+        setAds((prev) => [...prev, ...(data || [])]);
+      } else {
+        setAds(data || []);
+      }
+
+      // Если пришло меньше, чем лимит, значит дальше объявлений нет
+      if (!data || data.length < ADS_LIMIT) {
+        setAdsHasMore(false);
+      } else {
+        setAdsHasMore(true);
+      }
+    } catch (err) {
+      console.error('Failed to load seller ads:', err);
+    } finally {
+      if (append) {
+        setAdsLoadingMore(false);
+      } else {
+        setAdsLoading(false);
+      }
+    }
+  };
 
   // Загружаем объявления продавца
   useEffect(() => {
     if (!isOpen) return;
 
-    const loadAds = async () => {
-      setAdsLoading(true);
-      try {
-        const response = await fetch(
-          `/api/users/${sellerId}/ads?status=active&limit=100`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setAds(data.ads || []);
-        }
-      } catch (err) {
-        console.error('Failed to load seller ads:', err);
-      } finally {
-        setAdsLoading(false);
-      }
-    };
+    // При каждом открытии модалки сбрасываем список и пагинацию
+    setAds([]);
+    setAdsHasMore(true);
 
-    loadAds();
+    loadAds(0, false);
   }, [isOpen, sellerId]);
 
   // Закрытие dropdown при клике вне
@@ -141,8 +206,8 @@ export default function ReviewFormModal({
           prev.map((p) =>
             p.id === item.id
               ? { ...p, previewUrl: ev.target?.result as string }
-              : p
-          )
+              : p,
+          ),
         );
       };
       reader.readAsDataURL(item.file);
@@ -156,7 +221,7 @@ export default function ReviewFormModal({
 
   const uploadPhoto = async (item: UploadingPhoto) => {
     setPhotos((prev) =>
-      prev.map((p) => (p.id === item.id ? { ...p, status: 'uploading' } : p))
+      prev.map((p) => (p.id === item.id ? { ...p, status: 'uploading' } : p)),
     );
 
     try {
@@ -176,13 +241,13 @@ export default function ReviewFormModal({
 
       setPhotos((prev) =>
         prev.map((p) =>
-          p.id === item.id ? { ...p, status: 'done', url: data.url } : p
-        )
+          p.id === item.id ? { ...p, status: 'done', url: data.url } : p,
+        ),
       );
     } catch (err) {
       console.error('Photo upload error:', err);
       setPhotos((prev) =>
-        prev.map((p) => (p.id === item.id ? { ...p, status: 'error' } : p))
+        prev.map((p) => (p.id === item.id ? { ...p, status: 'error' } : p)),
       );
     }
   };
@@ -247,37 +312,47 @@ export default function ReviewFormModal({
 
   const selectedAd = ads.find((a) => a.id === selectedAdId);
   const isFormValid =
-    selectedAdId && rating > 0 && content.trim().length >= 10 && purchased !== null;
-
-  if (!isOpen) return null;
-
-  // Проверка авторизации
-  if (!isLoggedIn || !user) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center">
-          <p className="text-gray-700 mb-4">
-            Для того чтобы оставить отзыв, необходимо авторизоваться
-          </p>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
-          >
-            Понятно
-          </button>
-        </div>
-      </div>
-    );
-  }
+    selectedAdId &&
+    rating > 0 &&
+    content.trim().length >= 10 &&
+    purchased !== null;
 
   // Проверка: нельзя оставить отзыв самому себе
-  if (Number(user.id) === sellerId) {
+  if (user && Number(user.id) === sellerId) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 pb-12 lg:pb-0 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg h-[80dvh] max-h-fit overflow-y-auto shadow-xl custom-scrollbar-2">
+  const renderContent = () => {
+    if (!isLoggedIn || !user) {
+      return (
+        <motion.div
+          className="bg-white rounded-2xl p-6 max-w-xs sm:max-w-sm w-full text-center"
+          variants={modalContentVariants}
+        >
+          <p className="text-gray-700 mb-4 text-sm sm:text-base">
+            Для того чтобы оставить отзыв, необходимо{' '}
+            <Link
+              className="text-violet-500 hover:text-violet-600 transition-colors underline"
+              href="/auth"
+            >
+              авторизоваться
+            </Link>
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm sm:text-base bg-violet-500 text-white rounded-lg hover:bg-violet-600 active:bg-violet-700 transition-colors"
+          >
+            Понятно
+          </button>
+        </motion.div>
+      );
+    }
+
+    return (
+      <motion.div
+        className="bg-white rounded-2xl w-full max-w-lg h-[80dvh] max-h-fit overflow-y-auto shadow-xl custom-scrollbar-2"
+        variants={modalContentVariants}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate pr-2">
@@ -306,13 +381,12 @@ export default function ReviewFormModal({
                 {selectedAd ? (
                   <>
                     <img
+                      key={selectedAd.id}
                       src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${selectedAd.photos?.[0] || 'default.jpg'}?tr=w-80`}
                       alt=""
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0"
+                      className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
                     />
-                    <span className="truncate flex-1">
-                      {selectedAd.title}
-                    </span>
+                    <span className="truncate flex-1">{selectedAd.title}</span>
                   </>
                 ) : (
                   <span className="text-gray-400 flex-1">
@@ -336,50 +410,87 @@ export default function ReviewFormModal({
                 </svg>
               </button>
 
-              {adDropdownOpen && (
-                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar-2">
-                  {ads.length === 0 ? (
-                    <div className="p-3 sm:p-4 text-xs sm:text-sm text-gray-400 text-center">
-                      {adsLoading
-                        ? 'Загрузка объявлений...'
-                        : 'У продавца нет активных объявлений'}
-                    </div>
-                  ) : (
-                    ads.map((ad) => (
-                      <button
-                        key={ad.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAdId(ad.id);
-                          setAdDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm hover:bg-violet-50 transition-colors text-left ${
-                          selectedAdId === ad.id
-                            ? 'bg-violet-50 text-violet-700'
-                            : 'text-gray-700'
-                        }`}
-                      >
-                        <img
-                          src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${ad.photos?.[0] || 'default.jpg'}?tr=w-80`}
-                          alt=""
-                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0"
-                        />
-                        <span className="truncate flex-1">{ad.title}</span>
-                        {selectedAdId === ad.id && (
-                          <Check size={16} className="text-violet-500 shrink-0" />
+              <AnimatePresence>
+                {adDropdownOpen && (
+                  <motion.div
+                    key="ads-dropdown"
+                    className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar-2"
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={adsDropdownVariants}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                    onScroll={(e) => {
+                      const el = e.currentTarget;
+                      if (!adsHasMore || adsLoadingMore) return;
+                      const threshold = 40; // px до низа списка
+                      if (
+                        el.scrollTop + el.clientHeight >=
+                        el.scrollHeight - threshold
+                      ) {
+                        loadAds(ads.length, true);
+                      }
+                    }}
+                  >
+                    {ads.length === 0 && !adsLoading ? (
+                      <div className="p-3 sm:p-4 text-xs sm:text-sm text-gray-400 text-center">
+                        У продавца нет объявлений
+                      </div>
+                    ) : (
+                      <>
+                        {ads.map((ad) => (
+                          <button
+                            key={ad.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAdId(ad.id);
+                              setAdDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm hover:bg-violet-50 transition-colors text-left ${
+                              selectedAdId === ad.id
+                                ? 'bg-violet-50 text-violet-700'
+                                : 'text-gray-700'
+                            }`}
+                          >
+                            <img
+                              src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${ad.photos?.[0] || 'default.jpg'}?tr=w-80`}
+                              alt=""
+                              className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
+                            />
+                            <span className="truncate flex-1">{ad.title}</span>
+                            {selectedAdId === ad.id && (
+                              <Check
+                                size={16}
+                                className="text-violet-500 shrink-0"
+                              />
+                            )}
+                          </button>
+                        ))}
+
+                        {(adsLoading || adsLoadingMore) && (
+                          <div className="p-3 text-xs sm:text-sm text-gray-400 text-center">
+                            Загрузка объявлений...
+                          </div>
                         )}
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
+
+                        {!adsHasMore && ads.length > 0 && (
+                          <div className="px-3 pt-1 pb-4 text-[11px] sm:text-xs text-gray-400 text-center">
+                            Это все объявления продавца
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
           {/* 2. Товар куплен? */}
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-              Вы купили этот товар/воспользовались услугой? <span className="text-red-400">*</span>
+              Вы купили этот товар/воспользовались услугой?{' '}
+              <span className="text-red-400">*</span>
             </label>
             <div className="flex gap-3">
               <button
@@ -439,12 +550,12 @@ export default function ReviewFormModal({
                   {rating === 1
                     ? 'Ужасно'
                     : rating === 2
-                    ? 'Плохо'
-                    : rating === 3
-                    ? 'Нормально'
-                    : rating === 4
-                    ? 'Хорошо'
-                    : 'Отлично'}
+                      ? 'Плохо'
+                      : rating === 3
+                        ? 'Нормально'
+                        : rating === 4
+                          ? 'Хорошо'
+                          : 'Отлично'}
                 </span>
               )}
             </div>
@@ -550,7 +661,23 @@ export default function ReviewFormModal({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    );
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 pb-12 lg:pb-0 px-4"
+          variants={modalBackdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          {renderContent()}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
