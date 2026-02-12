@@ -388,7 +388,7 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify({
               userId: sellerIdNum,
               title: `📣 Новый отзыв от ${actorRoleGenitive}`,
-              body: `Вам написали отзыв с оценкой ${rating} ⭐.`,
+              body: `Вам написали отзыв с оценкой ${rating} ★.`,
               data: {
                 reviewId: review.id,
                 adId,
