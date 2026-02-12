@@ -314,19 +314,30 @@ export async function POST(request: NextRequest) {
       try {
         const actorRoleLabel =
           normalizedTargetRole === 'seller' ? 'Покупатель' : 'Продавец';
+        const actorRoleGenitive =
+          normalizedTargetRole === 'seller' ? 'покупателя' : 'продавца';
+        const actorName = review.user.name || actorRoleLabel;
+
+        const fullAdTitle = review.ad.title || '';
+        const MAX_PUSH_TITLE_LEN = 40;
+        const shortAdTitle =
+          fullAdTitle.length > MAX_PUSH_TITLE_LEN
+            ? fullAdTitle.slice(0, MAX_PUSH_TITLE_LEN - 1).trimEnd() + '…'
+            : fullAdTitle;
 
         // Создаем запись уведомления для получателя отзыва
         const notification = await prisma.inAppNotification.create({
           data: {
             userId: sellerIdNum,
             type: 'review_created',
-            title: 'Новый отзыв о вас',
-            message: `${review.user.name || actorRoleLabel} оставил(а) отзыв с оценкой ${rating} ★`,
+            title: `Новый отзыв от ${actorRoleGenitive}`,
+            message: `${actorName} оставил(а) отзыв с оценкой ${rating} ★ по объявлению "${fullAdTitle}"`,
             data: {
               reviewId: review.id,
               adId,
               sellerId: sellerIdNum,
               targetRole: normalizedTargetRole,
+              path: '/personal/rating',
             },
           },
         });
@@ -366,7 +377,9 @@ export async function POST(request: NextRequest) {
 
         // Пытаемся отправить push-уведомление через отдельный endpoint
         await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'}/api/push/send`,
+          `${
+            process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
+          }/api/push/send`,
           {
             method: 'POST',
             headers: {
@@ -374,8 +387,8 @@ export async function POST(request: NextRequest) {
             },
             body: JSON.stringify({
               userId: sellerIdNum,
-              title: 'Новый отзыв о вас',
-              body: `Оценка ${rating} ★ по объявлению "${review.ad.title}"`,
+              title: `📣 Новый отзыв от ${actorRoleGenitive}`,
+              body: `Вам написали отзыв с оценкой ${rating} ⭐.`,
               data: {
                 reviewId: review.id,
                 adId,
@@ -383,6 +396,9 @@ export async function POST(request: NextRequest) {
                 notificationId: notification.id,
                 type: 'review_created',
                 targetRole: normalizedTargetRole,
+                // путь, куда вести при клике по push
+                path: '/personal/rating',
+                shortTitle: shortAdTitle,
               },
             }),
           },

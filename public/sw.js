@@ -64,6 +64,8 @@ self.addEventListener('notificationclick', (event) => {
     url = `/personal/messenger/channel/${data.chatId}`;
   } else if (data.type === 'profile_update') {
     url = '/personal/profile';
+  } else if (data.type === 'review_created') {
+    url = '/personal/rating';
   }
 
   event.waitUntil(
