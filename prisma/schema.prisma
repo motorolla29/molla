@@ -329,8 +329,9 @@ model Review {
   targetRole ReviewTargetRole @default(seller) // Кому адресован отзыв: продавцу или покупателю
 
   // Ответ на отзыв от пользователя, которому этот отзыв адресован
-  replyContent   String?   // Текст ответа на отзыв
-  replyCreatedAt DateTime? // Дата и время ответа на отзыв
+  replyContent   String?    // Текст ответа на отзыв
+  replyCreatedAt DateTime?  // Дата и время ответа на отзыв
+  replyPhotos    String[]   @default([]) // До 3 фотографий в ответе
 
   // Связи
   user      Seller   @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)

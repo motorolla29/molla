@@ -40,6 +40,7 @@ interface Review {
     title: string;
     photos: string[];
   };
+  replyPhotos?: string[] | null;
 }
 
 interface MyReviewCardProps {

@@ -521,7 +521,7 @@ export async function PATCH(request: NextRequest) {
 
     const userId = Number((decoded as any).userId);
     const body = await request.json();
-    const { reviewId, replyContent } = body ?? {};
+    const { reviewId, replyContent, replyPhotos } = body ?? {};
 
     if (!reviewId || typeof reviewId !== 'string') {
       return NextResponse.json(
@@ -543,6 +543,20 @@ export async function PATCH(request: NextRequest) {
         { error: 'Ответ должен содержать минимум 3 символа' },
         { status: 400 },
       );
+    }
+
+    // Валидируем фотографии ответа (до 3 штук)
+    let normalizedReplyPhotos: string[] = [];
+    if (replyPhotos !== undefined) {
+      if (!Array.isArray(replyPhotos)) {
+        return NextResponse.json(
+          { error: 'Фотографии ответа должны быть массивом строк' },
+          { status: 400 },
+        );
+      }
+      normalizedReplyPhotos = replyPhotos
+        .filter((p: unknown) => typeof p === 'string' && p.trim().length > 0)
+        .slice(0, 3);
     }
 
     // Находим отзыв и проверяем право на ответ
@@ -574,6 +588,10 @@ export async function PATCH(request: NextRequest) {
       replyContent: trimmedReply,
       replyCreatedAt: new Date(),
     };
+
+    if (normalizedReplyPhotos.length > 0) {
+      updateData.replyPhotos = normalizedReplyPhotos;
+    }
 
     const updatedReview = (await prisma.review.update({
       where: { id: reviewId },

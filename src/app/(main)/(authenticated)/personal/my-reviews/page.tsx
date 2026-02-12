@@ -28,6 +28,7 @@ interface Review {
     title: string;
     photos: string[];
   };
+  replyPhotos?: string[] | null;
 }
 
 export default function MyReviewsPage() {

@@ -17,6 +17,7 @@ interface Review {
   createdAt: string;
   replyContent?: string | null;
   replyCreatedAt?: string | null;
+  replyPhotos?: string[] | null;
   user: {
     id: number;
     name: string | null;

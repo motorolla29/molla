@@ -13,8 +13,9 @@ interface Review {
   photos?: string[];
   purchased?: boolean;
   createdAt: string;
-   replyContent?: string | null;
-   replyCreatedAt?: string | null;
+  replyContent?: string | null;
+  replyCreatedAt?: string | null;
+  replyPhotos?: string[] | null;
   user: {
     id: number;
     name: string | null;
@@ -233,6 +234,25 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
                 <p className="text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line">
                   {review.replyContent.trim()}
                 </p>
+                {Array.isArray(review.replyPhotos) &&
+                  review.replyPhotos.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
+                      {review.replyPhotos.slice(0, 3).map((photo, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setModalImage(photo)}
+                          className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                        >
+                          <img
+                            src={`${photo}?tr=w-140`}
+                            alt={`Фото ответа ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
           )}
