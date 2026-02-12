@@ -147,7 +147,7 @@ export default function MyAddsPage() {
   // Функция для изменения статуса объявления
   const toggleAdStatus = async (
     adId: string,
-    currentStatus: 'active' | 'archived'
+    currentStatus: 'active' | 'archived',
   ) => {
     const newStatus = currentStatus === 'active' ? 'archived' : 'active';
 
@@ -169,8 +169,8 @@ export default function MyAddsPage() {
       if (data.success) {
         setAllAds((prevAds) =>
           prevAds.map((ad) =>
-            ad.id === adId ? { ...ad, status: newStatus } : ad
-          )
+            ad.id === adId ? { ...ad, status: newStatus } : ad,
+          ),
         );
 
         // Показываем тост в зависимости от действия

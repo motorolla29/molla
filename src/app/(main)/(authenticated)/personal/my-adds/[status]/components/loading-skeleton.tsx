@@ -4,15 +4,15 @@ export default function LoadingSkeleton() {
   return (
     <div className="m-4 lg:m-6">
       {/* Заголовок для мобильных */}
-      <div className="mb-4 lg:mb-0">
+      <div className="mb-5 sm:mb-4 lg:mb-0">
         <div className="flex items-center lg:hidden">
-          <div className="h-7 bg-gray-200 rounded-lg w-44 animate-pulse"></div>
+          <div className="h-6 sm:h-7 bg-gray-200 rounded-lg w-44 animate-pulse"></div>
         </div>
       </div>
 
       {/* Кнопка создания и счетчик */}
       <div className="flex items-center justify-between mb-6">
-        <div className="h-9 bg-gray-200 rounded-lg w-full lg:w-48 animate-pulse"></div>
+        <div className="h-8.5 sm:h-9 bg-gray-200 rounded-lg w-full lg:w-48 animate-pulse"></div>
         <div className="hidden lg:block h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
       </div>
 
