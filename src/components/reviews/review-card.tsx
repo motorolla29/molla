@@ -13,6 +13,8 @@ interface Review {
   photos?: string[];
   purchased?: boolean;
   createdAt: string;
+   replyContent?: string | null;
+   replyCreatedAt?: string | null;
   user: {
     id: number;
     name: string | null;
@@ -200,6 +202,38 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
                   />
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Ответ продавца на отзыв (только для чтения) */}
+          {review.replyContent && review.replyContent.trim().length > 0 && (
+            <div className="mt-3 sm:mt-4">
+              <div className="relative pl-3 sm:pl-4 border-l-2 border-violet-100">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-50 text-violet-500">
+                    {/* Простая иконка "ответ" */}
+                    <span className="text-[11px] font-semibold">Ответ</span>
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-semibold text-gray-800">
+                    Ответ продавца
+                  </span>
+                  {review.replyCreatedAt && (
+                    <span className="text-[10px] sm:text-[11px] text-gray-400">
+                      {new Date(review.replyCreatedAt).toLocaleDateString(
+                        'ru-RU',
+                        {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        },
+                      )}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line">
+                  {review.replyContent.trim()}
+                </p>
+              </div>
             </div>
           )}
         </div>

@@ -502,3 +502,106 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+// PATCH /api/reviews - добавить ответ на отзыв
+export async function PATCH(request: NextRequest) {
+  try {
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Требуется авторизация' },
+        { status: 401 },
+      );
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded || typeof decoded !== 'object' || !('userId' in decoded)) {
+      return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
+    }
+
+    const userId = Number((decoded as any).userId);
+    const body = await request.json();
+    const { reviewId, replyContent } = body ?? {};
+
+    if (!reviewId || typeof reviewId !== 'string') {
+      return NextResponse.json(
+        { error: 'Не указан ID отзыва' },
+        { status: 400 },
+      );
+    }
+
+    if (!replyContent || typeof replyContent !== 'string') {
+      return NextResponse.json(
+        { error: 'Текст ответа обязателен' },
+        { status: 400 },
+      );
+    }
+
+    const trimmedReply = replyContent.trim();
+    if (trimmedReply.length < 3) {
+      return NextResponse.json(
+        { error: 'Ответ должен содержать минимум 3 символа' },
+        { status: 400 },
+      );
+    }
+
+    // Находим отзыв и проверяем право на ответ
+    const review = (await prisma.review.findUnique({
+      where: { id: reviewId },
+    })) as any;
+
+    if (!review) {
+      return NextResponse.json({ error: 'Отзыв не найден' }, { status: 404 });
+    }
+
+    // Ответ может написать только пользователь, на которого оставлен отзыв
+    if (review.sellerId !== userId) {
+      return NextResponse.json(
+        { error: 'У вас нет прав отвечать на этот отзыв' },
+        { status: 403 },
+      );
+    }
+
+    // Разрешаем только один ответ на отзыв
+    if (review.replyContent && review.replyContent.trim().length > 0) {
+      return NextResponse.json(
+        { error: 'На этот отзыв уже оставлен ответ' },
+        { status: 400 },
+      );
+    }
+
+    const updateData: any = {
+      replyContent: trimmedReply,
+      replyCreatedAt: new Date(),
+    };
+
+    const updatedReview = (await prisma.review.update({
+      where: { id: reviewId },
+      data: updateData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        ad: {
+          select: {
+            id: true,
+            title: true,
+            photos: true,
+          },
+        },
+      },
+    })) as any;
+
+    return NextResponse.json({ review: updatedReview }, { status: 200 });
+  } catch (error) {
+    console.error('Reply to review error:', error);
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 },
+    );
+  }
+}

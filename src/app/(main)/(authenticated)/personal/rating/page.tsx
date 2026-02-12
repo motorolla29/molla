@@ -15,6 +15,8 @@ interface Review {
   photos?: string[];
   purchased?: boolean;
   createdAt: string;
+  replyContent?: string | null;
+  replyCreatedAt?: string | null;
   user: {
     id: number;
     name: string | null;

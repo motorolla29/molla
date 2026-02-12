@@ -19,6 +19,8 @@ interface Review {
   photos?: string[];
   purchased?: boolean;
   createdAt: string;
+  replyContent?: string | null;
+  replyCreatedAt?: string | null;
   user: {
     id: number;
     name: string | null;
@@ -42,6 +44,16 @@ export default function ReceivedReviewCard({
   const [expanded, setExpanded] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState(review.replyContent ?? '');
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [localReplyContent, setLocalReplyContent] = useState<string | null>(
+    review.replyContent ?? null,
+  );
+  const [localReplyCreatedAt, setLocalReplyCreatedAt] = useState<
+    string | null
+  >(review.replyCreatedAt ?? null);
   const contentRef = useRef<HTMLParagraphElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -63,6 +75,70 @@ export default function ReceivedReviewCard({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const hasReply = Boolean(
+    (localReplyContent ?? review.replyContent)?.trim().length,
+  );
+
+  const handleStartReply = () => {
+    if (hasReply) return;
+    setReplyError(null);
+    setIsReplying(true);
+    setMenuOpen(false);
+  };
+
+  const handleCancelReply = () => {
+    setIsReplying(false);
+    setReplyError(null);
+    // Не сбрасываем текст, чтобы пользователь мог вернуться
+  };
+
+  const handleSubmitReply = async () => {
+    const text = replyText.trim();
+    if (text.length < 3) {
+      setReplyError('Ответ должен содержать минимум 3 символа');
+      return;
+    }
+
+    try {
+      setIsSubmittingReply(true);
+      setReplyError(null);
+
+      const res = await fetch('/api/reviews', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reviewId: review.id,
+          replyContent: text,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const message =
+          (data && (data.error as string)) ||
+          'Не удалось отправить ответ на отзыв';
+        setReplyError(message);
+        return;
+      }
+
+      const updated = data.review;
+      setLocalReplyContent(updated?.replyContent ?? text);
+      setLocalReplyCreatedAt(
+        updated?.replyCreatedAt
+          ? updated.replyCreatedAt
+          : new Date().toISOString(),
+      );
+      setIsReplying(false);
+    } catch (err) {
+      setReplyError('Произошла ошибка при отправке ответа. Повторите попытку.');
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
 
   const renderStars = (rating: number) => (
     <div className="flex items-center gap-0.5 sm:gap-1">
@@ -196,6 +272,97 @@ export default function ReceivedReviewCard({
               ))}
             </div>
           )}
+
+          {/* Ответ на отзыв */}
+          {hasReply && (
+            <div className="mt-3 sm:mt-4">
+              <div className="relative pl-3 sm:pl-4 border-l-2 border-violet-100">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-50 text-violet-500">
+                    <MessageCircleMore size={13} />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-semibold text-gray-800">
+                    Ваш ответ
+                  </span>
+                  {localReplyCreatedAt && (
+                    <span className="text-[10px] sm:text-[11px] text-gray-400">
+                      {new Date(localReplyCreatedAt).toLocaleDateString(
+                        'ru-RU',
+                        {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        },
+                      )}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line">
+                  {(localReplyContent ?? review.replyContent)?.trim()}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Форма ответа на отзыв */}
+          {!hasReply && isReplying && (
+            <div className="mt-3 sm:mt-4">
+              <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-2.5 sm:p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-50 text-violet-500">
+                    <MessageCircleMore size={13} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] sm:text-xs font-semibold text-gray-800">
+                      Напишите ответ на отзыв
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] text-gray-500">
+                      Ответ увидит автор отзыва и другие пользователи.
+                    </span>
+                  </div>
+                </div>
+
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  rows={3}
+                  maxLength={1000}
+                  className="w-full resize-none rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400/70 focus:border-violet-400 transition-shadow"
+                  placeholder="Например: спасибо за отзыв! Нам очень приятно 🙂"
+                />
+
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <span className="text-[10px] sm:text-[11px] text-gray-400">
+                    Осталось {1000 - replyText.length} символов
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={handleCancelReply}
+                      disabled={isSubmittingReply}
+                      className="px-2.5 py-1.5 text-[11px] sm:text-xs text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Отменить
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSubmitReply}
+                      disabled={isSubmittingReply}
+                      className="px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg bg-violet-500 text-white hover:bg-violet-600 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm transition-colors"
+                    >
+                      {isSubmittingReply ? 'Отправка...' : 'Отправить ответ'}
+                    </button>
+                  </div>
+                </div>
+
+                {replyError && (
+                  <div className="mt-1 text-[10px] sm:text-[11px] text-red-500">
+                    {replyError}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Меню с 3 точками */}
@@ -209,7 +376,7 @@ export default function ReceivedReviewCard({
           </button>
           {/* Выпадающее меню с анимацией */}
           <AnimatePresence>
-            {menuOpen && (
+            {menuOpen && !hasReply && (
               <motion.div
                 className="absolute right-0 top-full mt-1 w-52 sm:w-60 bg-white border border-gray-200 rounded-lg shadow-lg z-50 pointer-events-auto"
                 initial={{ opacity: 0, scale: 0.8, y: -10 }}
@@ -224,8 +391,7 @@ export default function ReceivedReviewCard({
                   <button
                     type="button"
                     className="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    // Пока заглушка — только закрываем меню
-                    onClick={() => setMenuOpen(false)}
+                    onClick={handleStartReply}
                   >
                     <MessageCircleMore
                       size={12}
