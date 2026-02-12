@@ -34,14 +34,16 @@ interface ReviewsListProps {
 export default function ReviewsList({
   sellerId,
   initialSort = 'newest',
-  limit = 5,
+  limit = 8,
 }: ReviewsListProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [sort, setSort] = useState<'newest' | 'oldest' | 'positive' | 'negative'>(initialSort);
+  const [sort, setSort] = useState<
+    'newest' | 'oldest' | 'positive' | 'negative'
+  >(initialSort);
   const [mobileSelectOpen, setMobileSelectOpen] = useState(false);
   const mobileSelectRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +54,8 @@ export default function ReviewsList({
     { value: 'negative' as const, label: 'Сначала отрицательные' },
   ];
 
-  const currentSortLabel = sortOptions.find((o) => o.value === sort)?.label || '';
+  const currentSortLabel =
+    sortOptions.find((o) => o.value === sort)?.label || '';
 
   // Загрузка отзывов
   const loadReviews = async (pageNum: number = 1, append: boolean = false) => {
@@ -125,7 +128,9 @@ export default function ReviewsList({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSortChange = (newSort: 'newest' | 'oldest' | 'positive' | 'negative') => {
+  const handleSortChange = (
+    newSort: 'newest' | 'oldest' | 'positive' | 'negative',
+  ) => {
     setSort(newSort);
   };
 
@@ -210,11 +215,7 @@ export default function ReviewsList({
       {/* Список отзывов */}
       <div className="space-y-4">
         {reviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={review}
-            sellerId={sellerId}
-          />
+          <ReviewCard key={review.id} review={review} sellerId={sellerId} />
         ))}
       </div>
 

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       if (!token) {
         return NextResponse.json(
           { error: 'Требуется авторизация' },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       if (!sellerId) {
         return NextResponse.json(
           { error: 'Не указан ID продавца' },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       if (isNaN(sellerIdNum)) {
         return NextResponse.json(
           { error: 'Неверный ID продавца' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -93,9 +93,9 @@ export async function GET(request: NextRequest) {
         },
       };
     } else {
-      // Получаем отзывы о продавце
+      // Получаем отзывы о продавце (для страницы пользователя и рейтинга)
       const sellerIdNum = parseInt(sellerId!);
-      whereClause = { sellerId: sellerIdNum };
+      whereClause = { sellerId: sellerIdNum, targetRole: 'seller' };
       includeClause = {
         user: {
           select: {
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const hasMore = (page * limit) < totalCount;
+    const hasMore = page * limit < totalCount;
 
     return NextResponse.json({
       reviews,
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
     console.error('Get reviews error:', error);
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -168,27 +168,32 @@ export async function POST(request: NextRequest) {
     const userId = Number((decoded as any).userId);
 
     const body = await request.json();
-    const { sellerId, adId, rating, content, photos, purchased } = body;
+    const { sellerId, adId, rating, content, photos, purchased, targetRole } =
+      body;
+
+    // Кому адресован отзыв: продавцу (по умолчанию) или покупателю
+    const normalizedTargetRole: 'seller' | 'buyer' =
+      targetRole === 'buyer' ? 'buyer' : 'seller';
 
     // Валидация входных данных
     if (!sellerId || !adId || !rating || !content) {
       return NextResponse.json(
         { error: 'Все поля обязательны для заполнения' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (rating < 1 || rating > 5) {
       return NextResponse.json(
         { error: 'Рейтинг должен быть от 1 до 5' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (content.trim().length < 10) {
       return NextResponse.json(
         { error: 'Текст отзыва должен содержать минимум 10 символов' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -196,7 +201,7 @@ export async function POST(request: NextRequest) {
     if (isNaN(sellerIdNum)) {
       return NextResponse.json(
         { error: 'Неверный ID продавца' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -204,7 +209,7 @@ export async function POST(request: NextRequest) {
     if (userId === sellerIdNum) {
       return NextResponse.json(
         { error: 'Нельзя оставить отзыв самому себе' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -217,16 +222,29 @@ export async function POST(request: NextRequest) {
     if (!ad) {
       return NextResponse.json(
         { error: 'Объявление не найдено' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    // Проверяем, что объявление принадлежит указанному продавцу
-    if (ad.sellerId !== sellerIdNum) {
-      return NextResponse.json(
-        { error: 'Объявление не принадлежит указанному продавцу' },
-        { status: 400 }
-      );
+    if (normalizedTargetRole === 'seller') {
+      // Отзыв о продавце: проверяем, что объявление принадлежит указанному продавцу
+      if (ad.sellerId !== sellerIdNum) {
+        return NextResponse.json(
+          { error: 'Объявление не принадлежит указанному продавцу' },
+          { status: 400 },
+        );
+      }
+    } else {
+      // Отзыв о покупателе: проверяем, что текущий пользователь является продавцом этого объявления
+      if (ad.sellerId !== userId) {
+        return NextResponse.json(
+          {
+            error:
+              'Только владелец объявления может оставить отзыв о покупателе',
+          },
+          { status: 400 },
+        );
+      }
     }
 
     // Проверяем, что пользователь еще не оставлял отзыв на это объявление
@@ -240,7 +258,7 @@ export async function POST(request: NextRequest) {
     if (existingReview) {
       return NextResponse.json(
         { error: 'Вы уже оставили отзыв на это объявление' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -254,6 +272,7 @@ export async function POST(request: NextRequest) {
         content: content.trim(),
         photos: Array.isArray(photos) ? photos : [],
         purchased: purchased === true,
+        targetRole: normalizedTargetRole,
       },
       include: {
         user: {
@@ -273,25 +292,117 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Обновляем рейтинг продавца
-    const allReviews = await prisma.review.findMany({
+    // Обновляем общий рейтинг пользователя (учитываем отзывы во всех ролях)
+    const sellerReviews = await prisma.review.findMany({
       where: { sellerId: sellerIdNum },
       select: { rating: true },
     });
 
-    const averageRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+    const averageRating =
+      sellerReviews.length > 0
+        ? sellerReviews.reduce((sum, r) => sum + r.rating, 0) /
+          sellerReviews.length
+        : 0;
 
     await prisma.seller.update({
       where: { id: sellerIdNum },
       data: { rating: Math.round(averageRating * 10) / 10 }, // Округляем до 1 знака после запятой
     });
 
+    // Отправляем in-app, socket и push-уведомление пользователю, о котором оставили отзыв
+    (async () => {
+      try {
+        const actorRoleLabel =
+          normalizedTargetRole === 'seller' ? 'Покупатель' : 'Продавец';
+
+        // Создаем запись уведомления для получателя отзыва
+        const notification = await prisma.inAppNotification.create({
+          data: {
+            userId: sellerIdNum,
+            type: 'review_created',
+            title: 'Новый отзыв о вас',
+            message: `${review.user.name || actorRoleLabel} оставил(а) отзыв с оценкой ${rating} ★`,
+            data: {
+              reviewId: review.id,
+              adId,
+              sellerId: sellerIdNum,
+              targetRole: normalizedTargetRole,
+            },
+          },
+        });
+
+        // Отправляем событие в сокет-сервер, чтобы обновить счетчик непрочитанных
+        try {
+          await fetch(
+            `${
+              process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001'
+            }/emit`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                event: 'user-notification',
+                data: {
+                  userId: sellerIdNum,
+                  notification: {
+                    id: notification.id,
+                    type: notification.type,
+                    title: notification.title,
+                    message: notification.message,
+                    createdAt: notification.createdAt.toISOString(),
+                  },
+                },
+              }),
+            },
+          );
+        } catch (err) {
+          console.error(
+            'Failed to send notification via Socket.IO for review:',
+            err,
+          );
+        }
+
+        // Пытаемся отправить push-уведомление через отдельный endpoint
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'}/api/push/send`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: sellerIdNum,
+              title: 'Новый отзыв о вас',
+              body: `Оценка ${rating} ★ по объявлению "${review.ad.title}"`,
+              data: {
+                reviewId: review.id,
+                adId,
+                sellerId: sellerIdNum,
+                notificationId: notification.id,
+                type: 'review_created',
+                targetRole: normalizedTargetRole,
+              },
+            }),
+          },
+        ).catch((error) => {
+          console.error('Failed to send push for review:', error);
+        });
+      } catch (error) {
+        console.error(
+          'Failed to create in-app/push notification for review:',
+          error,
+        );
+      }
+    })();
+
     return NextResponse.json({ review }, { status: 201 });
   } catch (error) {
     console.error('Create review error:', error);
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -304,7 +415,7 @@ export async function DELETE(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -321,7 +432,7 @@ export async function DELETE(request: NextRequest) {
     if (!reviewId) {
       return NextResponse.json(
         { error: 'Не указан ID отзыва' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -332,16 +443,13 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!review) {
-      return NextResponse.json(
-        { error: 'Отзыв не найден' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Отзыв не найден' }, { status: 404 });
     }
 
     if (review.userId !== userId) {
       return NextResponse.json(
         { error: 'У вас нет прав на удаление этого отзыва' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -358,7 +466,9 @@ export async function DELETE(request: NextRequest) {
 
     let newRating = 0;
     if (remainingReviews.length > 0) {
-      const averageRating = remainingReviews.reduce((sum, r) => sum + r.rating, 0) / remainingReviews.length;
+      const averageRating =
+        remainingReviews.reduce((sum, r) => sum + r.rating, 0) /
+        remainingReviews.length;
       newRating = Math.round(averageRating * 10) / 10;
     }
 
@@ -372,7 +482,7 @@ export async function DELETE(request: NextRequest) {
     console.error('Delete review error:', error);
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

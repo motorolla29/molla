@@ -468,7 +468,7 @@ export default function ReviewFormModal({
                         ))}
 
                         {(adsLoading || adsLoadingMore) && (
-                          <div className="px-4 pt-1 pb-4 flex justify-center">
+                          <div className="px-4 py-3 flex justify-center">
                             <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
                           </div>
                         )}

@@ -249,7 +249,14 @@ enum NotificationType {
   login_new_device // Вход с нового устройства
   profile_update   // Изменение профиля
   ad_status_change // Статус объявления
+  review_created   // Новый отзыв о пользователе
   system           // Системные уведомления
+}
+
+// Роль, в которой пользователь получает отзыв
+enum ReviewTargetRole {
+  seller // отзыв о продавце
+  buyer  // отзыв о покупателе
 }
 
 // Модель push-подписок пользователей
@@ -313,12 +320,13 @@ model LoginDevice {
 model Review {
   id        String   @id @default(cuid())
   userId    Int      // ID пользователя, оставившего отзыв
-  sellerId  Int      // ID продавца, которому оставлен отзыв
+  sellerId  Int      // ID пользователя, которому оставлен отзыв (как продавцу или покупателю)
   adId      String   // ID объявления
   rating    Int      // Рейтинг от 1 до 5
   content   String   // Текст отзыва
   photos    String[] // URL фотографий отзыва
   purchased Boolean  @default(false) // Был ли товар куплен
+  targetRole ReviewTargetRole @default(seller) // Кому адресован отзыв: продавцу или покупателю
 
   // Связи
   user      Seller   @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)

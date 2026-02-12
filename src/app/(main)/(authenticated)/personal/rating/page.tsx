@@ -47,7 +47,7 @@ export default function RatingPage() {
   const [totalReviews, setTotalReviews] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const REVIEWS_LIMIT = 12;
+  const REVIEWS_LIMIT = 8;
 
   // Загрузка отзывов с пагинацией
   const loadReviews = async (pageNum: number, append: boolean) => {
@@ -271,7 +271,7 @@ export default function RatingPage() {
             )}
 
             {!hasMore && reviews.length > 0 && (
-              <div className="text-center py-4 sm:py-6">
+              <div className="text-center pt-4 sm:pt-6">
                 <div className="text-gray-500 text-xs sm:text-sm">
                   Это все отзывы
                 </div>

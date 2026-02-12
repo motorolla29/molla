@@ -11,6 +11,7 @@ import {
   DocumentTextIcon,
   CogIcon,
   ExclamationTriangleIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowLeft } from 'lucide-react';
 
@@ -85,6 +86,8 @@ export default function NotificationsPage() {
         return <ShieldCheckIcon className={`${iconClass} text-orange-600`} />;
       case 'ad_status_change':
         return <DocumentTextIcon className={`${iconClass} text-purple-600`} />;
+      case 'review_created':
+        return <StarIcon className={`${iconClass} text-yellow-500`} />;
       case 'system':
         return <CogIcon className={`${iconClass} text-gray-600`} />;
       default:
