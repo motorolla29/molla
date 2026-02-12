@@ -13,6 +13,7 @@ import {
   ArchiveBoxIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
+import { getAvatarColor } from '@/utils';
 import PhotoSlider from '@/components/photo-slider/photo-slider';
 import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapModal from '@/components/map-modal/map-modal';
@@ -352,7 +353,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </div>
             )}
 
-            <div className="p-4 border border-amber-300 rounded-md">
+              <div className="p-4 border border-amber-300 rounded-md">
               <h3 className="text-lg sm:text-xl font-semibold mb-2">
                 Продавец
               </h3>
@@ -361,15 +362,20 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   href={`/user/${ad.seller.id}/active`}
                   className="w-12 h-12 rounded-lg overflow-hidden shrink-0 hover:opacity-90 transition-opacity"
                 >
-                  <img
-                    src={
-                      ad.seller.avatar
-                        ? `${ad.seller.avatar}?tr=w-60`
-                        : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-60'
-                    }
-                    alt="Аватар продавца"
-                    className="w-full h-full object-cover"
-                  />
+                  {ad.seller.avatar ? (
+                    <img
+                      src={`${ad.seller.avatar}?tr=w-60`}
+                      alt="Аватар продавца"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full rounded-lg flex items-center justify-center text-white font-semibold text-base select-none"
+                      style={{ backgroundColor: getAvatarColor(ad.seller.id) }}
+                    >
+                      {ad.seller.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </Link>
                 <div className="flex-1 min-w-0">
                   <Link
