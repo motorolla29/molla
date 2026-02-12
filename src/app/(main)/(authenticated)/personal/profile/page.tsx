@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
 import { getAvatarColor } from '@/utils';
@@ -169,8 +170,10 @@ export default function Profile() {
               <p className="text-gray-600 text-xs sm:text-sm mb-2">
                 ID: {user.id.toString().slice(-8).toUpperCase()}
               </p>
-              <div className="flex items-center space-x-1">
-                {/* Stars with underlying outline and overlay fill */}
+              <Link
+                href="/personal/rating"
+                className="inline-flex items-center space-x-1 group"
+              >
                 {Array.from({ length: 5 }).map((_, idx) => {
                   const starPos = idx + 1;
                   const fillPercent = Math.min(
@@ -179,10 +182,10 @@ export default function Profile() {
                   );
                   return (
                     <div key={idx} className="relative w-4 h-4">
-                      <OutlineStarIcon className="w-4 h-4 text-yellow-400" />
+                      <OutlineStarIcon className="w-4 h-4 text-yellow-400 group-hover:text-yellow-500" />
                       {fillPercent > 0 && (
                         <SolidStarIcon
-                          className="absolute top-0 left-0 w-4 h-4 text-yellow-400 overflow-hidden"
+                          className="absolute top-0 left-0 w-4 h-4 text-yellow-400 group-hover:text-yellow-500 overflow-hidden"
                           style={{
                             clipPath: `inset(0 ${100 - fillPercent}% 0 0)`,
                           }}
@@ -191,11 +194,10 @@ export default function Profile() {
                     </div>
                   );
                 })}
-                {/* Rating number */}
-                <span className="text-xs sm:text-sm text-gray-600 ml-1">
+                <span className="text-xs sm:text-sm text-gray-600 ml-1 group-hover:text-gray-800">
                   {user.rating.toFixed(1)}
                 </span>
-              </div>
+              </Link>
             </div>
             <button
               onClick={() => setShowEditProfile(true)}

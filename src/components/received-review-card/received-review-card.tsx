@@ -1,0 +1,254 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import {
+  Star,
+  MoreVertical,
+  ShoppingBag,
+  MessageCircleMore,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { getAvatarColor } from '@/utils';
+import ImageModal from '@/components/messenger/image-modal';
+
+interface Review {
+  id: string;
+  rating: number;
+  content: string;
+  photos?: string[];
+  purchased?: boolean;
+  createdAt: string;
+  user: {
+    id: number;
+    name: string | null;
+    avatar: string | null;
+  };
+  ad: {
+    id: string;
+    title: string;
+    photos: string[];
+  };
+}
+
+interface ReceivedReviewCardProps {
+  review: Review;
+}
+
+export default function ReceivedReviewCard({
+  review,
+}: ReceivedReviewCardProps) {
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [isClamped, setIsClamped] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Проверяем, обрезан ли текст
+  useEffect(() => {
+    if (contentRef.current) {
+      const el = contentRef.current;
+      setIsClamped(el.scrollHeight > el.clientHeight);
+    }
+  }, [review.content]);
+
+  // Закрытие меню при клике вне его
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const renderStars = (rating: number) => (
+    <div className="flex items-center gap-0.5 sm:gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          size={12}
+          className={`sm:w-3.5 sm:h-3.5 ${
+            star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+          }`}
+        />
+      ))}
+    </div>
+  );
+
+  const getAvatarContent = () => {
+    if (review.user.avatar) {
+      return (
+        <Image
+          src={review.user.avatar}
+          alt={review.user.name || 'Пользователь'}
+          width={40}
+          height={40}
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+        />
+      );
+    }
+
+    const firstLetter = (review.user.name || 'П')[0].toUpperCase();
+    const bgColor = getAvatarColor(review.user.id);
+
+    return (
+      <div
+        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm"
+        style={{ backgroundColor: bgColor }}
+      >
+        {firstLetter}
+      </div>
+    );
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
+      <div className="flex items-start gap-2.5 sm:gap-3">
+        <div className="flex-1 min-w-0">
+          {/* Шапка */}
+          <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 sm:gap-3 mb-2 max-[400px]:mb-0">
+            <div className="flex flex-1 items-center gap-3 truncate max-w-full">
+              <div className="shrink-0">{getAvatarContent()}</div>
+              <div className="flex-col items-center min-w-0">
+                <span className="font-medium text-xs sm:text-sm text-neutral-700 truncate block">
+                  {review.user.name || 'Пользователь'}
+                </span>
+                <div className="flex items-center flex-wrap gap-1 gap-y-0 text-[10px] sm:text-xs text-gray-500 shrink-0">
+                  <span>
+                    {new Date(review.createdAt).toLocaleDateString('ru-RU', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
+                  <span>•</span>
+                  <span>Покупатель</span>
+                </div>
+              </div>
+            </div>
+            <div className="py-1">{renderStars(review.rating)}</div>
+          </div>
+
+          {/* Информация об объявлении и покупке */}
+          <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <div className="min-w-0 truncate max-[300px]:flex max-[300px]:flex-col">
+              <span className="text-[10px] sm:text-xs text-gray-500">
+                Объявление:{' '}
+              </span>
+              <span className="text-[10px] sm:text-xs text-gray-700">
+                {review.ad.title}
+              </span>
+            </div>
+            {review.purchased !== undefined && (
+              <span
+                className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 w-fit ${
+                  review.purchased
+                    ? 'bg-green-50 text-green-600 border border-green-200'
+                    : 'bg-orange-50 text-orange-600 border border-orange-200'
+                }`}
+              >
+                <ShoppingBag size={9} className="sm:w-2.5 sm:h-2.5" />
+                {review.purchased ? 'Товар куплен' : 'Товар не куплен'}
+              </span>
+            )}
+          </div>
+
+          {/* Текст отзыва */}
+          <div className="relative">
+            <p
+              ref={contentRef}
+              className={`text-xs sm:text-sm text-gray-700 leading-relaxed wrap-break-word ${
+                expanded ? '' : 'line-clamp-3'
+              }`}
+            >
+              {review.content}
+            </p>
+            {isClamped && !expanded && (
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-medium"
+              >
+                Показать полностью
+              </button>
+            )}
+          </div>
+
+          {/* Фото */}
+          {review.photos && review.photos.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2.5 sm:mt-3">
+              {review.photos.map((photo, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setModalImage(photo)}
+                  className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                >
+                  <img
+                    src={`${photo}?tr=w-150`}
+                    alt={`Фото ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Меню с 3 точками */}
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-lg transition-colors"
+          >
+            <MoreVertical size={16} />
+          </button>
+          {/* Выпадающее меню с анимацией */}
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                className="absolute right-0 top-full mt-1 w-52 sm:w-60 bg-white border border-gray-200 rounded-lg shadow-lg z-50 pointer-events-auto"
+                initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -5 }}
+                transition={{
+                  duration: 0.15,
+                  ease: 'easeOut',
+                }}
+              >
+                <div className="py-1">
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    // Пока заглушка — только закрываем меню
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <MessageCircleMore
+                      size={12}
+                      className="sm:w-[14px] sm:h-[14px]"
+                    />
+                    Написать ответ под отзывом
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Модальное окно просмотра фото */}
+      {modalImage && (
+        <ImageModal
+          isOpen={true}
+          onClose={() => setModalImage(null)}
+          imageUrl={modalImage}
+          altText="Фото отзыва"
+        />
+      )}
+    </div>
+  );
+}
