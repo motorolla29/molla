@@ -350,7 +350,7 @@ export default function ReviewFormModal({
 
     return (
       <motion.div
-        className="bg-white rounded-2xl w-full max-w-lg h-[80dvh] max-h-fit overflow-y-auto shadow-xl custom-scrollbar-2"
+        className="bg-white rounded-2xl w-full max-w-lg max-h-[80dvh] h-fit overflow-y-auto shadow-xl custom-scrollbar-2"
         variants={modalContentVariants}
       >
         {/* Header */}
