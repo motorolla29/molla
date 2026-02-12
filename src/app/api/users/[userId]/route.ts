@@ -28,8 +28,7 @@ export async function GET(
         phone: true,
         email: true,
         createdAt: true,
-        // Для рейтинга можно добавить логику подсчета на основе отзывов/оценок
-        // Пока возвращаем mock рейтинг
+        rating: true,
         _count: {
           select: {
             ads: {
@@ -52,8 +51,7 @@ export async function GET(
       id: user.id.toString(),
       name: user.name,
       avatar: user.avatar,
-      // Mock рейтинг - в реальности нужно рассчитывать на основе отзывов
-      rating: 4.8,
+      rating: user.rating,
       joinDate: user.createdAt.toISOString().split('T')[0], // YYYY-MM-DD формат
       phone: user.phone,
       email: user.email,
