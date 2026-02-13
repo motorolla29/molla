@@ -543,7 +543,7 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
                 size={32}
                 className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0 flex items-center justify-center text-white font-semibold text-[10px]"
               />
-              <span className="text-[11px] sm:text-xs font-semibold text-neutral-800 max-w-full truncate">
+              <span className="text-[11px] sm:text-xs font-semibold text-neutral-700 max-w-full truncate">
                 Ваш ответ
               </span>
               {localReplyCreatedAt && (
