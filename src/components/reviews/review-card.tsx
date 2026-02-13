@@ -16,11 +16,17 @@ interface Review {
   replyContent?: string | null;
   replyCreatedAt?: string | null;
   replyPhotos?: string[] | null;
+  targetRole?: 'seller' | 'buyer' | null;
   user: {
     id: number;
     name: string | null;
     avatar: string | null;
   };
+  seller?: {
+    id: number;
+    name: string | null;
+    avatar: string | null;
+  } | null;
   ad: {
     id: string;
     title: string;
@@ -38,6 +44,9 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
   const [expanded, setExpanded] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
   const [isClamped, setIsClamped] = useState(false);
+  const [replyExpanded, setReplyExpanded] = useState(false);
+  const [isReplyClamped, setIsReplyClamped] = useState(false);
+  const replyContentRef = useRef<HTMLParagraphElement>(null);
 
   // Проверяем, обрезан ли текст
   useEffect(() => {
@@ -46,6 +55,14 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
       setIsClamped(element.scrollHeight > element.clientHeight);
     }
   }, [review.content]);
+
+  // Проверяем, обрезан ли текст ответа продавца
+  useEffect(() => {
+    if (replyContentRef.current) {
+      const element = replyContentRef.current;
+      setIsReplyClamped(element.scrollHeight > element.clientHeight);
+    }
+  }, [review.replyContent]);
 
   // Определяем роль автора отзыва
   const isSeller = review.user.id === sellerId;
@@ -75,7 +92,7 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
     if (review.user.avatar) {
       return (
         <Image
-          src={review.user.avatar}
+          src={`${review.user.avatar}?tr=w-80`}
           alt={review.user.name || 'Пользователь'}
           width={40}
           height={40}
@@ -98,6 +115,38 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
     );
   };
 
+  // Аватар продавца для блока ответа (фото или первая буква на цветном фоне)
+  const getSellerAvatarContent = () => {
+    const seller = review.seller;
+
+    if (seller?.avatar) {
+      return (
+        <Image
+          src={`${seller.avatar}?tr=w-40`}
+          alt={seller.name || 'Продавец'}
+          width={32}
+          height={32}
+          className="w-6 h-6 rounded-full object-cover"
+        />
+      );
+    }
+
+    const firstLetter = (seller?.name || 'П')[0]?.toUpperCase();
+    const bgColor = seller?.id ? getAvatarColor(seller.id) : '#6D28D9';
+
+    return (
+      <div
+        className="w-6 h-6 rounded-full flex items-center justify-center text-white font-semibold text-[10px]"
+        style={{ backgroundColor: bgColor }}
+      >
+        {firstLetter}
+      </div>
+    );
+  };
+
+  const answerRoleLabel =
+    review.targetRole === 'buyer' ? 'Ответ покупателя' : 'Ответ продавца';
+
   return (
     <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
       <div className="flex items-start gap-2.5 sm:gap-3">
@@ -108,7 +157,7 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
             <div className="flex flex-1 items-center gap-3 truncate max-w-full">
               <div className="shrink-0">{getAvatarContent()}</div>
               <div className="flex-col items-center min-w-0">
-                <span className="font-medium text-xs sm:text-sm text-neutral-700 truncate block">
+                <span className="font-semibold text-xs sm:text-sm text-neutral-700 truncate block">
                   {review.user.name || 'Пользователь'}
                 </span>
                 <div className="flex items-center flex-wrap gap-1 gap-y-0 text-[10px] sm:text-xs text-gray-500 shrink-0">
@@ -142,7 +191,7 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
               </div>
               {review.purchased !== undefined && (
                 <span
-                  className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 w-fit ${
+                  className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-semibold shrink-0 w-fit ${
                     review.purchased
                       ? 'bg-green-50 text-green-600 border border-green-200'
                       : 'bg-orange-50 text-orange-600 border border-orange-200'
@@ -179,7 +228,7 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
-                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-medium"
+                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-semibold"
               >
                 Показать полностью
               </button>
@@ -211,12 +260,9 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
             <div className="mt-3 sm:mt-4">
               <div className="relative pl-3 sm:pl-4 border-l-2 border-violet-100">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-50 text-violet-500">
-                    {/* Простая иконка "ответ" */}
-                    <span className="text-[11px] font-semibold">Ответ</span>
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-gray-800">
-                    Ответ продавца
+                  {getSellerAvatarContent()}
+                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-800">
+                    {answerRoleLabel}
                   </span>
                   {review.replyCreatedAt && (
                     <span className="text-[10px] sm:text-[11px] text-gray-400">
@@ -231,9 +277,23 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line">
+                <p
+                  ref={replyContentRef}
+                  className={`text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line wrap-break-word ${
+                    replyExpanded ? '' : 'line-clamp-5'
+                  }`}
+                >
                   {review.replyContent.trim()}
                 </p>
+                {isReplyClamped && !replyExpanded && (
+                  <button
+                    type="button"
+                    onClick={() => setReplyExpanded(true)}
+                    className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-semibold"
+                  >
+                    Показать полностью
+                  </button>
+                )}
                 {Array.isArray(review.replyPhotos) &&
                   review.replyPhotos.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">

@@ -369,7 +369,7 @@ export default function ReviewFormModal({
         <div className="p-4 sm:p-5 space-y-4 sm:space-y-5">
           {/* 1. Выбор объявления */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
               Объявление <span className="text-red-400">*</span>
             </label>
             <div ref={dropdownRef} className="relative">
@@ -488,7 +488,7 @@ export default function ReviewFormModal({
 
           {/* 2. Товар куплен? */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
               Вы купили этот товар/воспользовались услугой?{' '}
               <span className="text-red-400">*</span>
             </label>
@@ -496,7 +496,7 @@ export default function ReviewFormModal({
               <button
                 type="button"
                 onClick={() => setPurchased(true)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-medium transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-colors ${
                   purchased === true
                     ? 'border-green-400 bg-green-50 text-green-700'
                     : 'border-gray-300 text-gray-600 hover:border-gray-400'
@@ -508,7 +508,7 @@ export default function ReviewFormModal({
               <button
                 type="button"
                 onClick={() => setPurchased(false)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-medium transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-colors ${
                   purchased === false
                     ? 'border-orange-400 bg-orange-50 text-orange-700'
                     : 'border-gray-300 text-gray-600 hover:border-gray-400'
@@ -522,7 +522,7 @@ export default function ReviewFormModal({
 
           {/* 3. Оценка звёздами */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
               Оценка <span className="text-red-400">*</span>
             </label>
             <div className="flex items-center gap-0.5 sm:gap-1">
@@ -563,7 +563,7 @@ export default function ReviewFormModal({
 
           {/* 4. Текст отзыва */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
               Текст отзыва <span className="text-red-400">*</span>
             </label>
             <textarea
@@ -580,7 +580,7 @@ export default function ReviewFormModal({
 
           {/* 5. Фотографии */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
               Фотографии{' '}
               <span className="text-gray-400 font-normal">
                 (необязательно, до {MAX_PHOTOS})
@@ -648,14 +648,14 @@ export default function ReviewFormModal({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 py-2 sm:py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2 sm:py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Отмена
             </button>
             <button
               onClick={handleSubmit}
               disabled={!isFormValid || submitting}
-              className="flex-1 py-2 sm:py-2.5 rounded-xl bg-violet-500 text-white text-xs sm:text-sm font-medium hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 py-2 sm:py-2.5 rounded-xl bg-violet-500 text-white text-xs sm:text-sm font-semibold hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? 'Отправка...' : 'Отправить отзыв'}
             </button>

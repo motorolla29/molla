@@ -167,7 +167,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
             <div className="flex flex-1 items-center gap-3 truncate max-w-full">
               <div className="shrink-0">{getAvatarContent()}</div>
               <div className="flex-col items-center min-w-0">
-                <span className="font-medium text-xs sm:text-sm text-neutral-700 truncate block">
+                <span className="font-semibold text-xs sm:text-sm text-neutral-700 truncate block">
                   {user?.name || 'Пользователь'}
                 </span>
                 <div className="flex items-center flex-wrap gap-1 gap-y-0 text-[10px] sm:text-xs text-gray-500 shrink-0">
@@ -198,7 +198,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
             </div>
             {review.purchased !== undefined && (
               <span
-                className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 w-fit ${
+                className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-semibold shrink-0 w-fit ${
                   review.purchased
                     ? 'bg-green-50 text-green-600 border border-green-200'
                     : 'bg-orange-50 text-orange-600 border border-orange-200'
@@ -224,7 +224,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
-                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-medium"
+                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-semibold"
               >
                 Показать полностью
               </button>

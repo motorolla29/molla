@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { getAvatarColor } from '@/utils';
+import { useToast } from '@/components/toast/toast-context';
 import ImageModal from '@/components/messenger/image-modal';
 
 interface Review {
@@ -45,6 +46,8 @@ export default function ReceivedReviewCard({
   const [modalImage, setModalImage] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
+  const [replyExpanded, setReplyExpanded] = useState(false);
+  const [isReplyClamped, setIsReplyClamped] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState(review.replyContent ?? '');
@@ -53,13 +56,14 @@ export default function ReceivedReviewCard({
   const [localReplyContent, setLocalReplyContent] = useState<string | null>(
     review.replyContent ?? null,
   );
-  const [localReplyCreatedAt, setLocalReplyCreatedAt] = useState<
-    string | null
-  >(review.replyCreatedAt ?? null);
+  const [localReplyCreatedAt, setLocalReplyCreatedAt] = useState<string | null>(
+    review.replyCreatedAt ?? null,
+  );
   const [localReplyPhotos, setLocalReplyPhotos] = useState<string[] | null>(
     review.replyPhotos ?? null,
   );
   const contentRef = useRef<HTMLParagraphElement>(null);
+  const replyContentRef = useRef<HTMLParagraphElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   interface ReplyUploadingPhoto {
@@ -72,6 +76,7 @@ export default function ReceivedReviewCard({
 
   const [replyPhotos, setReplyPhotos] = useState<ReplyUploadingPhoto[]>([]);
   const MAX_REPLY_PHOTOS = 3;
+  const toast = useToast();
 
   // Проверяем, обрезан ли текст
   useEffect(() => {
@@ -80,6 +85,14 @@ export default function ReceivedReviewCard({
       setIsClamped(el.scrollHeight > el.clientHeight);
     }
   }, [review.content]);
+
+  // Проверяем, обрезан ли текст ответа
+  useEffect(() => {
+    if (replyContentRef.current) {
+      const el = replyContentRef.current;
+      setIsReplyClamped(el.scrollHeight > el.clientHeight);
+    }
+  }, [localReplyContent, review.replyContent]);
 
   // Закрытие меню при клике вне его
   useEffect(() => {
@@ -97,7 +110,11 @@ export default function ReceivedReviewCard({
   );
 
   const handleStartReply = () => {
-    if (hasReply) return;
+    if (hasReply) {
+      toast.info('Вы уже оставили ответ на этот отзыв');
+      setMenuOpen(false);
+      return;
+    }
     setReplyError(null);
     setIsReplying(true);
     setMenuOpen(false);
@@ -149,9 +166,7 @@ export default function ReceivedReviewCard({
 
   const uploadReplyPhoto = async (item: ReplyUploadingPhoto) => {
     setReplyPhotos((prev) =>
-      prev.map((p) =>
-        p.id === item.id ? { ...p, status: 'uploading' } : p,
-      ),
+      prev.map((p) => (p.id === item.id ? { ...p, status: 'uploading' } : p)),
     );
 
     try {
@@ -179,9 +194,7 @@ export default function ReceivedReviewCard({
     } catch (err) {
       console.error('Reply photo upload error:', err);
       setReplyPhotos((prev) =>
-        prev.map((p) =>
-          p.id === item.id ? { ...p, status: 'error' } : p,
-        ),
+        prev.map((p) => (p.id === item.id ? { ...p, status: 'error' } : p)),
       );
     }
   };
@@ -281,7 +294,7 @@ export default function ReceivedReviewCard({
     if (review.user.avatar) {
       return (
         <Image
-          src={review.user.avatar}
+          src={`${review.user.avatar}?tr=w-80`}
           alt={review.user.name || 'Пользователь'}
           width={40}
           height={40}
@@ -312,7 +325,7 @@ export default function ReceivedReviewCard({
             <div className="flex flex-1 items-center gap-3 truncate max-w-full">
               <div className="shrink-0">{getAvatarContent()}</div>
               <div className="flex-col items-center min-w-0">
-                <span className="font-medium text-xs sm:text-sm text-neutral-700 truncate block">
+                <span className="font-semibold text-xs sm:text-sm text-neutral-700 truncate block">
                   {review.user.name || 'Пользователь'}
                 </span>
                 <div className="flex items-center flex-wrap gap-1 gap-y-0 text-[10px] sm:text-xs text-gray-500 shrink-0">
@@ -343,7 +356,7 @@ export default function ReceivedReviewCard({
             </div>
             {review.purchased !== undefined && (
               <span
-                className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 w-fit ${
+                className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-semibold shrink-0 w-fit ${
                   review.purchased
                     ? 'bg-green-50 text-green-600 border border-green-200'
                     : 'bg-orange-50 text-orange-600 border border-orange-200'
@@ -369,7 +382,7 @@ export default function ReceivedReviewCard({
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
-                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-medium"
+                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-semibold"
               >
                 Показать полностью
               </button>
@@ -404,7 +417,7 @@ export default function ReceivedReviewCard({
                   <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-50 text-violet-500">
                     <MessageCircleMore size={13} />
                   </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-gray-800">
+                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-800">
                     Ваш ответ
                   </span>
                   {localReplyCreatedAt && (
@@ -420,9 +433,23 @@ export default function ReceivedReviewCard({
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line">
+                <p
+                  ref={replyContentRef}
+                  className={`text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line wrap-break-word ${
+                    replyExpanded ? '' : 'line-clamp-5'
+                  }`}
+                >
                   {(localReplyContent ?? review.replyContent)?.trim()}
                 </p>
+                {isReplyClamped && !replyExpanded && (
+                  <button
+                    type="button"
+                    onClick={() => setReplyExpanded(true)}
+                    className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-semibold"
+                  >
+                    Показать полностью
+                  </button>
+                )}
                 {/* Фото в ответе */}
                 {(() => {
                   const photosToShow =
@@ -435,20 +462,22 @@ export default function ReceivedReviewCard({
                   }
                   return (
                     <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
-                      {photosToShow.slice(0, MAX_REPLY_PHOTOS).map((photo, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setModalImage(photo)}
-                          className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
-                        >
-                          <img
-                            src={`${photo}?tr=w-140`}
-                            alt={`Фото ответа ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      ))}
+                      {photosToShow
+                        .slice(0, MAX_REPLY_PHOTOS)
+                        .map((photo, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setModalImage(photo)}
+                            className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                          >
+                            <img
+                              src={`${photo}?tr=w-140`}
+                              alt={`Фото ответа ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
                     </div>
                   );
                 })()}
@@ -479,7 +508,7 @@ export default function ReceivedReviewCard({
                   onChange={(e) => setReplyText(e.target.value)}
                   rows={3}
                   maxLength={1000}
-                  className="w-full resize-none rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400/70 focus:border-violet-400 transition-shadow"
+                  className="w-full resize-none rounded-lg bg-white px-2.5 py-2 text-xs sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none ring ring-gray-200 focus:ring-violet-500/50 focus:ring-2 transition custom-scrollbar-2 scrollbar-small"
                   placeholder="Например: спасибо за отзыв! Нам очень приятно 🙂"
                 />
 
@@ -590,7 +619,7 @@ export default function ReceivedReviewCard({
           </button>
           {/* Выпадающее меню с анимацией */}
           <AnimatePresence>
-            {menuOpen && !hasReply && (
+            {menuOpen && (
               <motion.div
                 className="absolute right-0 top-full mt-1 w-52 sm:w-60 bg-white border border-gray-200 rounded-lg shadow-lg z-50 pointer-events-auto"
                 initial={{ opacity: 0, scale: 0.8, y: -10 }}

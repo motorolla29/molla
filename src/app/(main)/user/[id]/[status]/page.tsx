@@ -156,7 +156,7 @@ export default function UserProfilePage() {
                     Number(authUser.id) !== parseInt(userId) && (
                       <button
                         onClick={() => setShowReviewModal(true)}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-violet-500 text-white rounded-xl text-xs sm:text-sm font-medium hover:bg-violet-600 active:bg-violet-700 transition-colors"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-violet-500 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-violet-600 active:bg-violet-700 transition-colors"
                       >
                         <PencilSquareIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                         Оставить отзыв

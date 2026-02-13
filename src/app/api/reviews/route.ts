@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
+            avatar: true,
           },
         },
         ad: {
@@ -98,6 +99,13 @@ export async function GET(request: NextRequest) {
       whereClause = { sellerId: sellerIdNum, targetRole: 'seller' };
       includeClause = {
         user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        seller: {
           select: {
             id: true,
             name: true,

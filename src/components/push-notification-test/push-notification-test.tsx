@@ -73,7 +73,7 @@ export function PushNotificationTest() {
       {/* Статус */}
       <div className="mb-4 space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Разрешение:</span>
+          <span className="text-sm font-semibold">Разрешение:</span>
           <span
             className={`text-sm px-2 py-1 rounded ${
               permission === 'granted'
@@ -92,7 +92,7 @@ export function PushNotificationTest() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Подписка:</span>
+          <span className="text-sm font-semibold">Подписка:</span>
           <span
             className={`text-sm px-2 py-1 rounded ${
               isSubscribed
@@ -141,7 +141,7 @@ export function PushNotificationTest() {
       {/* Тестовое уведомление */}
       {isSubscribed && (
         <div className="border-t pt-4">
-          <h4 className="font-medium text-gray-900 mb-2">
+          <h4 className="font-semibold text-gray-900 mb-2">
             Отправить тестовое уведомление
           </h4>
           <div className="space-y-2">

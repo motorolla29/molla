@@ -161,7 +161,7 @@ export default function ReviewsList({
           <button
             type="button"
             onClick={() => setMobileSelectOpen(!mobileSelectOpen)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-xs font-medium text-gray-700 hover:border-violet-400 transition-colors"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-xs font-semibold text-gray-700 hover:border-violet-400 transition-colors"
           >
             <span>{currentSortLabel}</span>
             <ChevronDownIcon
@@ -187,7 +187,7 @@ export default function ReviewsList({
                 }}
                 className={`w-full text-left px-3.5 py-2.5 text-xs transition-colors ${
                   sort === value
-                    ? 'bg-violet-50 text-violet-700 font-medium'
+                    ? 'bg-violet-50 text-violet-700 font-semibold'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
