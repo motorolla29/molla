@@ -14,37 +14,11 @@ import ImageModal from '@/components/messenger/image-modal';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useConfirmationModal } from '@/components/confirmation-modal/confirmation-modal-context';
 import { useToast } from '@/components/toast/toast-context';
-import { getAvatarColor } from '@/utils';
 import { Avatar } from '@/components/avatar/avatar';
-
-interface Review {
-  id: string;
-  rating: number;
-  content: string;
-  photos?: string[];
-  purchased?: boolean;
-  createdAt: string;
-  replyContent?: string | null;
-  replyCreatedAt?: string | null;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  seller: {
-    id: number;
-    name: string | null;
-  };
-  ad: {
-    id: string;
-    title: string;
-    photos: string[];
-  };
-  replyPhotos?: string[] | null;
-}
+import type { ReviewBase } from '@/types/review';
 
 interface MyReviewCardProps {
-  review: Review;
+  review: ReviewBase;
   onDelete: (reviewId: string) => void;
 }
 
@@ -224,7 +198,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
                 >
                   <img
                     src={`${photo}?tr=w-150`}
-                    alt={`Фото ${idx + 1}`}
+                    //alt={`Фото ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>

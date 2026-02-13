@@ -4,35 +4,10 @@ import { useState, useEffect } from 'react';
 import { FidgetSpinner } from 'react-loader-spinner';
 import MyReviewCard from '@/components/my-reviews/my-review-card';
 import ReviewSkeleton from '@/components/review-skeleton/review-skeleton';
-
-interface Review {
-  id: string;
-  rating: number;
-  content: string;
-  photos?: string[];
-  purchased?: boolean;
-  createdAt: string;
-  replyContent?: string | null;
-  replyCreatedAt?: string | null;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  seller: {
-    id: number;
-    name: string | null;
-  };
-  ad: {
-    id: string;
-    title: string;
-    photos: string[];
-  };
-  replyPhotos?: string[] | null;
-}
+import type { ReviewBase } from '@/types/review';
 
 export default function MyReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<ReviewBase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);

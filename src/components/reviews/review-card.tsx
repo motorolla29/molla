@@ -2,40 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Star, ShoppingBag } from 'lucide-react';
-import { getAvatarColor } from '@/utils';
+import type { ReviewBase } from '@/types/review';
 import { Avatar } from '@/components/avatar/avatar';
 import ImageModal from '@/components/messenger/image-modal';
 
-interface Review {
-  id: string;
-  rating: number;
-  content: string;
-  photos?: string[];
-  purchased?: boolean;
-  createdAt: string;
-  replyContent?: string | null;
-  replyCreatedAt?: string | null;
-  replyPhotos?: string[] | null;
-  targetRole?: 'seller' | 'buyer' | null;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  seller?: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  } | null;
-  ad: {
-    id: string;
-    title: string;
-    photos: string[];
-  };
-}
-
 interface ReviewCardProps {
-  review: Review;
+  review: ReviewBase;
   sellerId: number; // ID продавца, чьи отзывы просматриваем
 }
 
@@ -202,7 +174,7 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
                 >
                   <img
                     src={`${photo}?tr=w-150`}
-                    alt={`Фото ${idx + 1}`}
+                    //alt={`Фото ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -268,7 +240,7 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
                         >
                           <img
                             src={`${photo}?tr=w-140`}
-                            alt={`Фото ответа ${idx + 1}`}
+                            //alt={`Фото ответа ${idx + 1}`}
                             className="w-full h-full object-cover"
                           />
                         </button>

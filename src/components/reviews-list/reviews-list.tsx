@@ -5,28 +5,7 @@ import { FidgetSpinner } from 'react-loader-spinner';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import ReviewCard from '../reviews/review-card';
 import ReviewSkeleton from '../review-skeleton/review-skeleton';
-
-interface Review {
-  id: string;
-  rating: number;
-  content: string;
-  photos?: string[];
-  purchased?: boolean;
-  createdAt: string;
-  replyContent?: string | null;
-  replyCreatedAt?: string | null;
-  replyPhotos?: string[] | null;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  ad: {
-    id: string;
-    title: string;
-    photos: string[];
-  };
-}
+import type { ReviewBase } from '@/types/review';
 
 interface ReviewsListProps {
   sellerId: number;
@@ -39,7 +18,7 @@ export default function ReviewsList({
   initialSort = 'newest',
   limit = 8,
 }: ReviewsListProps) {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<ReviewBase[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);

@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             title: true,
+            photos: true,
           },
         },
       };
@@ -284,6 +285,13 @@ export async function POST(request: NextRequest) {
       },
       include: {
         user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        seller: {
           select: {
             id: true,
             name: true,
@@ -606,6 +614,13 @@ export async function PATCH(request: NextRequest) {
       data: updateData,
       include: {
         user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        seller: {
           select: {
             id: true,
             name: true,

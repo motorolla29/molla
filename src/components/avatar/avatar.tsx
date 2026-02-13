@@ -60,7 +60,7 @@ export function Avatar({
     return (
       <Image
         src={finalSrc}
-        alt={alt}
+        alt={''}
         width={size}
         height={size}
         className={className}

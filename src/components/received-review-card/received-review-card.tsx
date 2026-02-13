@@ -9,42 +9,13 @@ import {
   Camera,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
-import { getAvatarColor } from '@/utils';
 import { Avatar } from '@/components/avatar/avatar';
 import { useToast } from '@/components/toast/toast-context';
 import ImageModal from '@/components/messenger/image-modal';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { ReviewBase } from '@/types/review';
 
-interface Review {
-  id: string;
-  rating: number;
-  content: string;
-  photos?: string[];
-  purchased?: boolean;
-  createdAt: string;
-  replyContent?: string | null;
-  replyCreatedAt?: string | null;
-  replyPhotos?: string[] | null;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  ad: {
-    id: string;
-    title: string;
-    photos: string[];
-  };
-}
-
-interface ReceivedReviewCardProps {
-  review: Review;
-}
-
-export default function ReceivedReviewCard({
-  review,
-}: ReceivedReviewCardProps) {
+export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
   const [modalImage, setModalImage] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
@@ -387,7 +358,7 @@ export default function ReceivedReviewCard({
                 >
                   <img
                     src={`${photo}?tr=w-150`}
-                    alt={`Фото ${idx + 1}`}
+                    //alt={`Фото ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -621,7 +592,7 @@ export default function ReceivedReviewCard({
                     >
                       <img
                         src={`${photo}?tr=w-140`}
-                        alt={`Фото ответа ${idx + 1}`}
+                        //alt={`Фото ответа ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />
                     </button>
