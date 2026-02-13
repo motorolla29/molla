@@ -7,31 +7,10 @@ import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { FidgetSpinner } from 'react-loader-spinner';
 import ReceivedReviewCard from '@/components/received-review-card/received-review-card';
 import ReviewSkeleton from '@/components/review-skeleton/review-skeleton';
-
-interface Review {
-  id: string;
-  rating: number;
-  content: string;
-  photos?: string[];
-  purchased?: boolean;
-  createdAt: string;
-  replyContent?: string | null;
-  replyCreatedAt?: string | null;
-  replyPhotos?: string[] | null;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  ad: {
-    id: string;
-    title: string;
-    photos: string[];
-  };
-}
+import type { ReviewBase } from '@/types/review';
 
 interface ReviewsResponse {
-  reviews: Review[];
+  reviews: ReviewBase[];
   pagination: {
     page: number;
     limit: number;
@@ -42,7 +21,7 @@ interface ReviewsResponse {
 
 export default function RatingPage() {
   const { user } = useAuthStore();
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<ReviewBase[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
