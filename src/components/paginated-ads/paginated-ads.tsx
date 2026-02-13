@@ -44,7 +44,7 @@ export default function PaginatedAds({
       params.set('limit', limit.toString());
 
       const response = await fetch(
-        `/api/users/${userId}/ads?${params.toString()}`
+        `/api/users/${userId}/ads?${params.toString()}`,
       );
       const data = await response.json();
 
@@ -96,7 +96,7 @@ export default function PaginatedAds({
     const statusText = status === 'active' ? 'активных' : 'завершенных';
     return (
       <div className="text-center py-12">
-        <div className="text-gray-500 text-sm sm:text-base mb-2 mx-6">
+        <div className="text-gray-500 text-xs sm:text-sm mb-2 mx-6">
           У пользователя нет {statusText} объявлений
         </div>
       </div>
@@ -147,7 +147,9 @@ export default function PaginatedAds({
       {/* Сообщение о конце списка */}
       {!hasMore && showEndMessage && ads.length > 0 && !isLoading && (
         <div className="text-center py-4 sm:py-6">
-          <div className="text-gray-500 text-xs sm:text-sm">Это все объявления</div>
+          <div className="text-gray-500 text-xs sm:text-sm">
+            Это все объявления
+          </div>
         </div>
       )}
     </div>

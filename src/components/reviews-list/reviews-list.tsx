@@ -119,7 +119,7 @@ export default function ReviewsList({
   if (reviews.length === 0 && !isLoading && !loadingMore) {
     return (
       <div className="text-center py-12">
-        <div className="text-gray-500 text-sm sm:text-base mb-2 mx-6">
+        <div className="text-gray-500 text-xs sm:text-sm mb-2 mx-6">
           У этого продавца пока нет отзывов
         </div>
       </div>

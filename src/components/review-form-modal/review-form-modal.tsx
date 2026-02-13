@@ -414,7 +414,7 @@ export default function ReviewFormModal({
                 {adDropdownOpen && (
                   <motion.div
                     key="ads-dropdown"
-                    className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar-2"
+                    className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar-2 scrollbar-small"
                     initial="hidden"
                     animate="visible"
                     exit="exit"
