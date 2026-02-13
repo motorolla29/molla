@@ -11,8 +11,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { getAvatarColor } from '@/utils';
+import { Avatar } from '@/components/avatar/avatar';
 import { useToast } from '@/components/toast/toast-context';
 import ImageModal from '@/components/messenger/image-modal';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface Review {
   id: string;
@@ -77,6 +79,7 @@ export default function ReceivedReviewCard({
   const [replyPhotos, setReplyPhotos] = useState<ReplyUploadingPhoto[]>([]);
   const MAX_REPLY_PHOTOS = 3;
   const toast = useToast();
+  const { user: currentUser } = useAuthStore();
 
   // Проверяем, обрезан ли текст
   useEffect(() => {
@@ -290,40 +293,23 @@ export default function ReceivedReviewCard({
     </div>
   );
 
-  const getAvatarContent = () => {
-    if (review.user.avatar) {
-      return (
-        <Image
-          src={`${review.user.avatar}?tr=w-80`}
-          alt={review.user.name || 'Пользователь'}
-          width={40}
-          height={40}
-          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-        />
-      );
-    }
-
-    const firstLetter = (review.user.name || 'П')[0].toUpperCase();
-    const bgColor = getAvatarColor(review.user.id);
-
-    return (
-      <div
-        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm"
-        style={{ backgroundColor: bgColor }}
-      >
-        {firstLetter}
-      </div>
-    );
-  };
-
   return (
     <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
       <div className="flex items-start gap-2.5 sm:gap-3">
         <div className="flex-1 min-w-0">
           {/* Шапка */}
           <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 sm:gap-3 mb-2 max-[400px]:mb-0">
-            <div className="flex flex-1 items-center gap-3 truncate max-w-full">
-              <div className="shrink-0">{getAvatarContent()}</div>
+            <div className="flex flex-1 items-center gap-3 max-w-full">
+              <div className="shrink-0">
+                <Avatar
+                  src={review.user.avatar || null}
+                  name={review.user.name || null}
+                  colorId={review.user.id}
+                  transformWidth={80}
+                  size={40}
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex items-center justify-center text-white font-semibold text-xs sm:text-sm"
+                />
+              </div>
               <div className="flex-col items-center min-w-0">
                 <span className="font-semibold text-xs sm:text-sm text-neutral-700 truncate block">
                   {review.user.name || 'Пользователь'}
@@ -406,82 +392,6 @@ export default function ReceivedReviewCard({
                   />
                 </button>
               ))}
-            </div>
-          )}
-
-          {/* Ответ на отзыв */}
-          {hasReply && (
-            <div className="mt-3 sm:mt-4">
-              <div className="relative pl-3 sm:pl-4 border-l-2 border-violet-100">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-50 text-violet-500">
-                    <MessageCircleMore size={13} />
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-800">
-                    Ваш ответ
-                  </span>
-                  {localReplyCreatedAt && (
-                    <span className="text-[10px] sm:text-[11px] text-gray-400">
-                      {new Date(localReplyCreatedAt).toLocaleDateString(
-                        'ru-RU',
-                        {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        },
-                      )}
-                    </span>
-                  )}
-                </div>
-                <p
-                  ref={replyContentRef}
-                  className={`text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line wrap-break-word ${
-                    replyExpanded ? '' : 'line-clamp-5'
-                  }`}
-                >
-                  {(localReplyContent ?? review.replyContent)?.trim()}
-                </p>
-                {isReplyClamped && !replyExpanded && (
-                  <button
-                    type="button"
-                    onClick={() => setReplyExpanded(true)}
-                    className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-semibold"
-                  >
-                    Показать полностью
-                  </button>
-                )}
-                {/* Фото в ответе */}
-                {(() => {
-                  const photosToShow =
-                    localReplyPhotos ??
-                    (Array.isArray(review.replyPhotos)
-                      ? review.replyPhotos
-                      : []);
-                  if (!photosToShow || photosToShow.length === 0) {
-                    return null;
-                  }
-                  return (
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
-                      {photosToShow
-                        .slice(0, MAX_REPLY_PHOTOS)
-                        .map((photo, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => setModalImage(photo)}
-                            className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
-                          >
-                            <img
-                              src={`${photo}?tr=w-140`}
-                              alt={`Фото ответа ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        ))}
-                    </div>
-                  );
-                })()}
-              </div>
             </div>
           )}
 
@@ -648,6 +558,80 @@ export default function ReceivedReviewCard({
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Ответ на отзыв (полная ширина под шапкой и меню) */}
+      {hasReply && (
+        <div className="mt-3 sm:mt-4">
+          <div className="relative pl-3 sm:pl-4 border-l-2 border-violet-100">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Avatar
+                src={currentUser?.avatar || null}
+                name={currentUser?.name || null}
+                colorId={currentUser?.id ?? null}
+                transformWidth={40}
+                size={32}
+                className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0 flex items-center justify-center text-white font-semibold text-[10px]"
+              />
+              <span className="text-[11px] sm:text-xs font-semibold text-neutral-800 max-w-full truncate">
+                Ваш ответ
+              </span>
+              {localReplyCreatedAt && (
+                <span className="text-[10px] sm:text-[11px] text-gray-400">
+                  {new Date(localReplyCreatedAt).toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </span>
+              )}
+            </div>
+            <p
+              ref={replyContentRef}
+              className={`text-[11px] sm:text-xs text-gray-700 leading-relaxed whitespace-pre-line wrap-break-word ${
+                replyExpanded ? '' : 'line-clamp-5'
+              }`}
+            >
+              {(localReplyContent ?? review.replyContent)?.trim()}
+            </p>
+            {isReplyClamped && !replyExpanded && (
+              <button
+                type="button"
+                onClick={() => setReplyExpanded(true)}
+                className="mt-1 text-[10px] sm:text-xs text-violet-500 hover:text-violet-600 font-semibold"
+              >
+                Показать полностью
+              </button>
+            )}
+            {/* Фото в ответе */}
+            {(() => {
+              const photosToShow =
+                localReplyPhotos ??
+                (Array.isArray(review.replyPhotos) ? review.replyPhotos : []);
+              if (!photosToShow || photosToShow.length === 0) {
+                return null;
+              }
+              return (
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
+                  {photosToShow.slice(0, MAX_REPLY_PHOTOS).map((photo, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setModalImage(photo)}
+                      className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <img
+                        src={`${photo}?tr=w-140`}
+                        alt={`Фото ответа ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* Модальное окно просмотра фото */}
       {modalImage && (

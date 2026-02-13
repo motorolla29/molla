@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Star, ShoppingBag } from 'lucide-react';
-import Image from 'next/image';
 import { getAvatarColor } from '@/utils';
+import { Avatar } from '@/components/avatar/avatar';
 import ImageModal from '@/components/messenger/image-modal';
 
 interface Review {
@@ -87,62 +87,8 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
     );
   };
 
-  // Генерируем аватар с первой буквой и цветом
-  const getAvatarContent = () => {
-    if (review.user.avatar) {
-      return (
-        <Image
-          src={`${review.user.avatar}?tr=w-80`}
-          alt={review.user.name || 'Пользователь'}
-          width={40}
-          height={40}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
-        />
-      );
-    }
-
-    // Генерируем цветной аватар с первой буквой
-    const firstLetter = (review.user.name || 'П')[0].toUpperCase();
-    const bgColor = getAvatarColor(review.user.id);
-
-    return (
-      <div
-        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm"
-        style={{ backgroundColor: bgColor }}
-      >
-        {firstLetter}
-      </div>
-    );
-  };
-
-  // Аватар продавца для блока ответа (фото или первая буква на цветном фоне)
-  const getSellerAvatarContent = () => {
-    const seller = review.seller;
-
-    if (seller?.avatar) {
-      return (
-        <Image
-          src={`${seller.avatar}?tr=w-40`}
-          alt={seller.name || 'Продавец'}
-          width={32}
-          height={32}
-          className="w-6 h-6 rounded-full object-cover"
-        />
-      );
-    }
-
-    const firstLetter = (seller?.name || 'П')[0]?.toUpperCase();
-    const bgColor = seller?.id ? getAvatarColor(seller.id) : '#6D28D9';
-
-    return (
-      <div
-        className="w-6 h-6 rounded-full flex items-center justify-center text-white font-semibold text-[10px]"
-        style={{ backgroundColor: bgColor }}
-      >
-        {firstLetter}
-      </div>
-    );
-  };
+  // Вспомогательные аватары (автор отзыва и владелец рейтинга)
+  const seller = review.seller;
 
   const answerRoleLabel =
     review.targetRole === 'buyer' ? 'Ответ покупателя' : 'Ответ продавца';
@@ -154,8 +100,17 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
         <div className="flex-1 min-w-0">
           {/* Шапка: на мобильном в колонку, на десктопе в ряд */}
           <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 sm:gap-3 mb-2 max-[400px]:mb-0">
-            <div className="flex flex-1 items-center gap-3 truncate max-w-full">
-              <div className="shrink-0">{getAvatarContent()}</div>
+            <div className="flex flex-1 items-center gap-3 max-w-full">
+              <div className="shrink-0">
+                <Avatar
+                  src={review.user.avatar || null}
+                  name={review.user.name || null}
+                  colorId={review.user.id}
+                  transformWidth={80}
+                  size={40}
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex items-center justify-center text-white font-semibold text-xs sm:text-sm"
+                />
+              </div>
               <div className="flex-col items-center min-w-0">
                 <span className="font-semibold text-xs sm:text-sm text-neutral-700 truncate block">
                   {review.user.name || 'Пользователь'}
@@ -260,9 +215,16 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
             <div className="mt-3 sm:mt-4">
               <div className="relative pl-3 sm:pl-4 border-l-2 border-violet-100">
                 <div className="flex items-center gap-2 mb-1.5">
-                  {getSellerAvatarContent()}
-                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-800">
-                    {answerRoleLabel}
+                  <Avatar
+                    src={seller?.avatar || null}
+                    name={seller?.name || null}
+                    colorId={seller?.id ?? null}
+                    transformWidth={40}
+                    size={32}
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0 flex items-center justify-center text-white font-semibold text-[10px]"
+                  />
+                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-800 max-w-full truncate">
+                    {review.seller?.name || 'Пользователь'}
                   </span>
                   {review.replyCreatedAt && (
                     <span className="text-[10px] sm:text-[11px] text-gray-400">

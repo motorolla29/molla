@@ -15,7 +15,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useConfirmationModal } from '@/components/confirmation-modal/confirmation-modal-context';
 import { useToast } from '@/components/toast/toast-context';
 import { getAvatarColor } from '@/utils';
-import Image from 'next/image';
+import { Avatar } from '@/components/avatar/avatar';
 
 interface Review {
   id: string;
@@ -108,34 +108,6 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
     );
   };
 
-  // Генерируем аватар с первой буквой и цветом
-  const getAvatarContent = () => {
-    if (user?.avatar) {
-      return (
-        <Image
-          src={user.avatar}
-          alt={user.name || 'Пользователь'}
-          width={40}
-          height={40}
-          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-        />
-      );
-    }
-
-    // Генерируем цветной аватар с первой буквой
-    const firstLetter = (user?.name || 'П')[0].toUpperCase();
-    const bgColor = user?.id ? getAvatarColor(parseInt(user.id)) : '#3B82F6';
-
-    return (
-      <div
-        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm"
-        style={{ backgroundColor: bgColor }}
-      >
-        {firstLetter}
-      </div>
-    );
-  };
-
   const handleDelete = async () => {
     confirm(
       'Вы уверены, что хотите удалить этот отзыв?',
@@ -165,7 +137,16 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
           {/* Шапка: аватар, имя и дата слева, звезды справа */}
           <div className="flex flex-row max-[400px]:flex-col items-start sm:justify-between gap-2 sm:gap-3 mb-2 max-[400px]:mb-0">
             <div className="flex flex-1 items-center gap-3 truncate max-w-full">
-              <div className="shrink-0">{getAvatarContent()}</div>
+              <div className="shrink-0">
+                <Avatar
+                  src={user?.avatar || null}
+                  name={user?.name || null}
+                  colorId={user?.id ?? null}
+                  transformWidth={80}
+                  size={40}
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex items-center justify-center text-white font-semibold text-xs sm:text-sm"
+                />
+              </div>
               <div className="flex-col items-center min-w-0">
                 <span className="font-semibold text-xs sm:text-sm text-neutral-700 truncate block">
                   {user?.name || 'Пользователь'}
