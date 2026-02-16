@@ -54,7 +54,7 @@ export default function InfiniteScrollAds({
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Получаем текущий город из стора для режима fresh
-  const { cityLabel: currentCityLabel, lat, lon } = useLocationStore();
+  const { cityLabel: currentCityLabel } = useLocationStore();
 
   // Функция для загрузки объявлений
   const fetchAds = useCallback(
@@ -107,10 +107,6 @@ export default function InfiniteScrollAds({
         // Передаем параметры города для приоритизации
         if (currentCityLabel && currentCityLabel !== 'russia') {
           params.set('cityLabel', currentCityLabel);
-        }
-        if (lat != null && lon != null) {
-          params.set('lat', lat.toString());
-          params.set('lon', lon.toString());
         }
         const url = `/api/ads/fresh?${params.toString()}`;
         try {
@@ -174,7 +170,7 @@ export default function InfiniteScrollAds({
         setLoading(false);
       }
     },
-    [cityLabel, category, searchParams, sort, limit, recommended, fresh, currentCityLabel, lat, lon]
+    [cityLabel, category, searchParams, sort, limit, recommended, fresh, currentCityLabel]
   );
 
   // Загрузка начальных данных

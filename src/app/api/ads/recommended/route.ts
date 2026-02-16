@@ -15,8 +15,6 @@ type RecommendedRow = {
   city: string;
   cityLabel: string;
   address: string | null;
-  lat: number | null;
-  lng: number | null;
   price: unknown | null;
   currency: string | null;
   datePosted: Date;
@@ -173,8 +171,6 @@ export async function GET(request: NextRequest) {
           a."city",
           a."cityLabel",
           a."address",
-          a."lat",
-          a."lng",
           a."price",
           a."currency",
           a."datePosted",
@@ -205,8 +201,6 @@ export async function GET(request: NextRequest) {
         "city",
         "cityLabel",
         "address",
-        "lat",
-        "lng",
         "price",
         "currency",
         "datePosted",
@@ -234,8 +228,6 @@ export async function GET(request: NextRequest) {
       city: r.city,
       cityLabel: r.cityLabel,
       address: r.address,
-      lat: r.lat,
-      lng: r.lng,
       price: r.price as any,
       currency: r.currency as any,
       datePosted: r.datePosted,

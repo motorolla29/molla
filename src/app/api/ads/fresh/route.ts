@@ -14,8 +14,6 @@ const adSelect = {
   city: true,
   cityLabel: true,
   address: true,
-  lat: true,
-  lng: true,
   price: true,
   currency: true,
   datePosted: true,
