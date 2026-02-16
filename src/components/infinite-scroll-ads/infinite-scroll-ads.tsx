@@ -5,6 +5,7 @@ import { AdBase } from '@/types/ad';
 import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 import AdCardsDefault from '../ad-cards-default/ad-cards-default';
 import { FidgetSpinner } from 'react-loader-spinner';
+import { getOrCreateUserToken } from '@/utils';
 
 interface InfiniteScrollAdsProps {
   // Параметры для API запроса
@@ -12,6 +13,9 @@ interface InfiniteScrollAdsProps {
   category?: string;
   searchParams?: URLSearchParams | null;
   sort?: string;
+
+  // Использовать эндпоинт умных рекомендаций (/api/ads/recommended)
+  recommended?: boolean;
 
   // Количество объявлений на странице
   limit?: number;
@@ -31,6 +35,7 @@ export default function InfiniteScrollAds({
   category,
   searchParams,
   sort,
+  recommended = false,
   limit = 24,
   viewType = 'gallery',
   className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8',
@@ -54,20 +59,50 @@ export default function InfiniteScrollAds({
         setHasMore(true);
       }
 
-      // Строим параметры запроса
-      const params = new URLSearchParams(searchParams?.toString() || '');
+      const params = new URLSearchParams();
 
-      // Добавляем базовые параметры
-      if (cityLabel) params.set('cityLabel', cityLabel);
-      if (category) params.set('category', category);
-      if (sort) params.set('sort', sort);
+      if (recommended) {
+        params.set('skip', skip.toString());
+        params.set('limit', limit.toString());
+        try {
+          const localUserToken = getOrCreateUserToken();
+          params.set('localUserToken', localUserToken);
+        } catch {
+          // localStorage недоступен (SSR)
+        }
+        const url = `/api/ads/recommended?${params.toString()}`;
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const data: AdBase[] = await res.json();
+            if (isLoadMore) {
+              setAds((prevAds) => [...prevAds, ...data]);
+            } else {
+              setAds(data);
+            }
+            setHasMore(data.length === limit);
+          } else {
+            if (!isLoadMore) setAds([]);
+          }
+        } catch (error) {
+          console.error('Error fetching recommended ads:', error);
+          if (!isLoadMore) setAds([]);
+        }
+        if (isLoadMore) setLoadingMore(false);
+        else setLoading(false);
+        return;
+      }
 
-      // Добавляем пагинацию
-      params.set('skip', skip.toString());
-      params.set('limit', limit.toString());
+      // Обычный список объявлений
+      const listParams = new URLSearchParams(searchParams?.toString() || '');
+      listParams.set('skip', skip.toString());
+      listParams.set('limit', limit.toString());
+      if (cityLabel) listParams.set('cityLabel', cityLabel);
+      if (category) listParams.set('category', category);
+      if (sort) listParams.set('sort', sort);
 
       try {
-        const res = await fetch(`/api/ads?${params.toString()}`);
+        const res = await fetch(`/api/ads?${listParams.toString()}`);
         if (res.ok) {
           const data: AdBase[] = await res.json();
 
@@ -77,7 +112,6 @@ export default function InfiniteScrollAds({
             setAds(data);
           }
 
-          // Если загружено меньше limit объявлений, значит это последняя страница
           setHasMore(data.length === limit);
         } else {
           console.error('Failed to fetch ads:', res.statusText);
@@ -98,7 +132,7 @@ export default function InfiniteScrollAds({
         setLoading(false);
       }
     },
-    [cityLabel, category, searchParams, sort, limit]
+    [cityLabel, category, searchParams, sort, limit, recommended]
   );
 
   // Загрузка начальных данных
