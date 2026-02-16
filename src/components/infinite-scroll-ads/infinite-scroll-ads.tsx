@@ -6,6 +6,7 @@ import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 import AdCardsDefault from '../ad-cards-default/ad-cards-default';
 import { FidgetSpinner } from 'react-loader-spinner';
 import { getOrCreateUserToken } from '@/utils';
+import { useLocationStore } from '@/store/useLocationStore';
 
 interface InfiniteScrollAdsProps {
   // Параметры для API запроса
@@ -16,6 +17,9 @@ interface InfiniteScrollAdsProps {
 
   // Использовать эндпоинт умных рекомендаций (/api/ads/recommended)
   recommended?: boolean;
+
+  // Использовать эндпоинт свежих объявлений с приоритизацией по городу (/api/ads/fresh)
+  fresh?: boolean;
 
   // Количество объявлений на странице
   limit?: number;
@@ -36,6 +40,7 @@ export default function InfiniteScrollAds({
   searchParams,
   sort,
   recommended = false,
+  fresh = false,
   limit = 24,
   viewType = 'gallery',
   className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8',
@@ -47,6 +52,9 @@ export default function InfiniteScrollAds({
   const [hasMore, setHasMore] = useState(true);
 
   const observerRef = useRef<HTMLDivElement>(null);
+  
+  // Получаем текущий город из стора для режима fresh
+  const { cityLabel: currentCityLabel, lat, lon } = useLocationStore();
 
   // Функция для загрузки объявлений
   const fetchAds = useCallback(
@@ -93,6 +101,40 @@ export default function InfiniteScrollAds({
         return;
       }
 
+      if (fresh) {
+        params.set('skip', skip.toString());
+        params.set('limit', limit.toString());
+        // Передаем параметры города для приоритизации
+        if (currentCityLabel && currentCityLabel !== 'russia') {
+          params.set('cityLabel', currentCityLabel);
+        }
+        if (lat != null && lon != null) {
+          params.set('lat', lat.toString());
+          params.set('lon', lon.toString());
+        }
+        const url = `/api/ads/fresh?${params.toString()}`;
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const data: AdBase[] = await res.json();
+            if (isLoadMore) {
+              setAds((prevAds) => [...prevAds, ...data]);
+            } else {
+              setAds(data);
+            }
+            setHasMore(data.length === limit);
+          } else {
+            if (!isLoadMore) setAds([]);
+          }
+        } catch (error) {
+          console.error('Error fetching fresh ads:', error);
+          if (!isLoadMore) setAds([]);
+        }
+        if (isLoadMore) setLoadingMore(false);
+        else setLoading(false);
+        return;
+      }
+
       // Обычный список объявлений
       const listParams = new URLSearchParams(searchParams?.toString() || '');
       listParams.set('skip', skip.toString());
@@ -132,7 +174,7 @@ export default function InfiniteScrollAds({
         setLoading(false);
       }
     },
-    [cityLabel, category, searchParams, sort, limit, recommended]
+    [cityLabel, category, searchParams, sort, limit, recommended, fresh, currentCityLabel, lat, lon]
   );
 
   // Загрузка начальных данных

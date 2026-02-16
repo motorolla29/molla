@@ -2,9 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/jwt';
 import { convertToAdBase } from '@/utils';
+import { Prisma } from '@prisma/client';
 
 const DEFAULT_LIMIT = 24;
 const MAX_CANDIDATES = 1000;
+
+type RecommendedRow = {
+  id: string;
+  category: string;
+  title: string;
+  description: string | null;
+  city: string;
+  cityLabel: string;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  price: unknown | null;
+  currency: string | null;
+  datePosted: Date;
+  photos: string[];
+  details: string | null;
+  status: 'active' | 'archived';
+  showPhone: boolean;
+  showEmail: boolean;
+  sellerId: number;
+  seller_name: string;
+  seller_avatar: string | null;
+  seller_rating: number;
+  seller_phone: string | null;
+  seller_email: string | null;
+};
 
 /**
  * GET /api/ads/recommended
@@ -17,7 +44,7 @@ export async function GET(request: NextRequest) {
     const skip = Math.max(0, parseInt(searchParams.get('skip') || '0'));
 
     // Ограничиваем limit до 50 за один запрос
-    const limit = Math.min(
+    const requestedLimit = Math.min(
       50,
       parseInt(searchParams.get('limit') || String(DEFAULT_LIMIT)),
     );
@@ -45,18 +72,18 @@ export async function GET(request: NextRequest) {
               ? { sellerId: userId }
               : { localUserToken: localUserToken! }),
           },
-          include: { ad: true },
+          include: { ad: { select: { category: true, cityLabel: true } } },
         }),
         prisma.userView.findMany({
           where: userId ? { userId } : { localUserToken: localUserToken! },
-          include: { ad: true },
+          include: { ad: { select: { category: true, cityLabel: true } } },
           orderBy: { viewedAt: 'desc' },
           take: 100,
         }),
         userId
           ? prisma.chat.findMany({
               where: { buyerId: userId, adId: { not: null } },
-              include: { ad: true },
+              include: { ad: { select: { category: true, cityLabel: true } } },
             })
           : [],
       ]);
@@ -86,12 +113,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const needPersonalized =
-      preferredCategories.length > 0 || preferredCityLabels.length > 0;
-
-    // Берем максимум 1000 объявлений для полного охвата рекомендованных и остальных
-    const takeCandidates = MAX_CANDIDATES;
-
     const where: {
       status: 'active';
       sellerId?: { not: number };
@@ -100,62 +121,141 @@ export async function GET(request: NextRequest) {
       where.sellerId = { not: userId };
     }
 
-    const candidates = await prisma.ad.findMany({
-      where,
-      include: {
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            rating: true,
-            phone: true,
-            email: true,
-          },
-        },
-        _count: {
-          select: { favorites: true, userViews: true },
-        },
-        userViews: {
-          where: {
-            viewedAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            },
-          },
-          select: { id: true },
-        },
-      },
-      orderBy: { datePosted: 'desc' },
-      take: takeCandidates,
-    });
-
-    // Сортировка: сначала рекомендованные (совпадение категории/города), затем остальные
-    let ordered = candidates;
-    if (needPersonalized && preferredCategories.length > 0) {
-      const catSet = new Set(preferredCategories);
-      const citySet = new Set(preferredCityLabels);
-      ordered = [...candidates].sort((a, b) => {
-        // Вычисляем скор: совпадение категории = 2 балла, совпадение города = 1 балл
-        const scoreA =
-          (catSet.has(a.category) ? 2 : 0) + (citySet.has(a.cityLabel) ? 1 : 0);
-        const scoreB =
-          (catSet.has(b.category) ? 2 : 0) + (citySet.has(b.cityLabel) ? 1 : 0);
-
-        // Сначала идут объявления с большим скором (рекомендованные)
-        if (scoreB !== scoreA) return scoreB - scoreA;
-
-        // Внутри одной группы сортируем по дате (новые сверху)
-        return (
-          new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime()
-        );
-      });
+    // Общий потолок выдачи: максимум 1000 объявлений через пагинацию
+    if (skip >= MAX_CANDIDATES) {
+      return NextResponse.json([]);
+    }
+    const limit = Math.min(requestedLimit, MAX_CANDIDATES - skip);
+    if (limit <= 0) {
+      return NextResponse.json([]);
     }
 
-    // Применяем пагинацию к отсортированному списку
-    const slice = ordered.slice(skip, skip + limit);
-    const converted = slice.map((ad) => convertToAdBase(ad));
+    const cats = Array.from(new Set(preferredCategories));
+    const cities = Array.from(new Set(preferredCityLabels));
 
-    return NextResponse.json(converted);
+    const hasCats = cats.length > 0;
+    const hasCities = cities.length > 0;
+
+    // CASE score полностью эквивалентен прежней логике (3/2/1/0),
+    // но ранжирование и топ-1000 делаются целиком в Postgres.
+    const condBoth =
+      hasCats && hasCities
+        ? Prisma.sql`a."category"::text IN (${Prisma.join(
+            cats,
+          )}) AND a."cityLabel" IN (${Prisma.join(cities)})`
+        : Prisma.sql`FALSE`;
+    const condCat = hasCats
+      ? Prisma.sql`a."category"::text IN (${Prisma.join(cats)})`
+      : Prisma.sql`FALSE`;
+    const condCity = hasCities
+      ? Prisma.sql`a."cityLabel" IN (${Prisma.join(cities)})`
+      : Prisma.sql`FALSE`;
+
+    const scoreSql = Prisma.sql`
+      CASE
+        WHEN ${condBoth} THEN 3
+        WHEN ${condCat} THEN 2
+        WHEN ${condCity} THEN 1
+        ELSE 0
+      END
+    `;
+
+    const sellerFilterSql =
+      userId != null ? Prisma.sql`AND a."sellerId" <> ${userId}` : Prisma.empty;
+
+    const rows = (await prisma.$queryRaw<RecommendedRow[]>(Prisma.sql`
+      WITH ranked AS (
+        SELECT
+          a."id",
+          a."category",
+          a."title",
+          a."description",
+          a."city",
+          a."cityLabel",
+          a."address",
+          a."lat",
+          a."lng",
+          a."price",
+          a."currency",
+          a."datePosted",
+          a."photos",
+          a."details",
+          a."status",
+          a."showPhone",
+          a."showEmail",
+          a."sellerId",
+          s."name"  AS "seller_name",
+          s."avatar" AS "seller_avatar",
+          s."rating" AS "seller_rating",
+          s."phone" AS "seller_phone",
+          s."email" AS "seller_email",
+          ${scoreSql} AS "score"
+        FROM "ads" a
+        JOIN "sellers" s ON s."id" = a."sellerId"
+        WHERE a."status" = 'active'
+        ${sellerFilterSql}
+        ORDER BY "score" DESC, a."datePosted" DESC
+        LIMIT ${MAX_CANDIDATES}
+      )
+      SELECT
+        "id",
+        "category",
+        "title",
+        "description",
+        "city",
+        "cityLabel",
+        "address",
+        "lat",
+        "lng",
+        "price",
+        "currency",
+        "datePosted",
+        "photos",
+        "details",
+        "status",
+        "showPhone",
+        "showEmail",
+        "sellerId",
+        "seller_name",
+        "seller_avatar",
+        "seller_rating",
+        "seller_phone",
+        "seller_email"
+      FROM ranked
+      OFFSET ${skip}
+      LIMIT ${limit}
+    `)) ?? [];
+
+    const adsLike = rows.map((r) => ({
+      id: r.id,
+      category: r.category,
+      title: r.title,
+      description: r.description,
+      city: r.city,
+      cityLabel: r.cityLabel,
+      address: r.address,
+      lat: r.lat,
+      lng: r.lng,
+      price: r.price as any,
+      currency: r.currency as any,
+      datePosted: r.datePosted,
+      photos: r.photos,
+      details: r.details,
+      status: r.status,
+      showPhone: r.showPhone,
+      showEmail: r.showEmail,
+      sellerId: r.sellerId,
+      seller: {
+        id: r.sellerId,
+        name: r.seller_name,
+        avatar: r.seller_avatar,
+        rating: r.seller_rating,
+        phone: r.seller_phone,
+        email: r.seller_email,
+      },
+    }));
+
+    return NextResponse.json(adsLike.map(convertToAdBase));
   } catch (error) {
     console.error('❌ Error fetching recommended ads:', error);
     return NextResponse.json(
