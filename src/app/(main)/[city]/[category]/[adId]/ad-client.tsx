@@ -23,6 +23,8 @@ import { useConfirmationModal } from '@/components/confirmation-modal/confirmati
 import { useToast } from '@/components/toast/toast-context';
 import { getOrCreateUserToken } from '@/utils';
 import SellerContacts from './components/seller-contacts';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
+import { getCloudImageVariantUrl } from '@/utils/cloud-image';
 
 interface AdClientProps {
   ad: AdBase;
@@ -314,12 +316,16 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                 !isAuthChecking && isArchived && !isOwner ? 'opacity-50' : ''
               }
             >
-              <PhotoSlider
-                images={photos.map(
+              {/* было: images={photos.map(
                   (src) =>
                     `https://ik.imagekit.io/motorolla29/molla/mock-photos/${
                       src || 'default.jpg'
                     }`,
+                )} */}
+              <PhotoSlider
+                images={photos.map(
+                  (src) =>
+                    `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/molla/mock-photos/${src || 'default.jpg'}`,
                 )}
               />
             </div>
@@ -353,7 +359,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               </div>
             )}
 
-              <div className="p-4 border border-amber-300 rounded-md">
+            <div className="p-4 border border-amber-300 rounded-md">
               <h3 className="text-lg sm:text-xl font-semibold mb-2">
                 Продавец
               </h3>
@@ -363,8 +369,9 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
                   className="w-12 h-12 rounded-lg overflow-hidden shrink-0 hover:opacity-90 transition-opacity"
                 >
                   {ad.seller.avatar ? (
-                    <img
-                      src={`${ad.seller.avatar}?tr=w-60`}
+                    <CloudImage
+                      src={ad.seller.avatar}
+                      variant="sm"
                       alt="Аватар продавца"
                       className="w-full h-full object-cover"
                     />

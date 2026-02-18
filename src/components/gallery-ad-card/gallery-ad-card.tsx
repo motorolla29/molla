@@ -2,6 +2,7 @@ import { getCurrencySymbol, formatAdDateGallery } from '@/utils';
 import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import FavoriteButton from '../favorite-button/favorite-button';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 interface GalleryAdCardProps {
   ad: AdBase;
 }
@@ -16,14 +17,18 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
       className="flex flex-col w-full overflow-hidden h-full min-w-0"
     >
       <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg bg-gray-200/25">
-        <img
+        {/* <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'
           }?tr=w-350`}
-          //alt={ad.title}
           className={`w-full h-full object-cover ${
             isArchived ? 'opacity-50' : ''
           }`}
+        /> */}
+        <CloudImage
+          src={`molla/mock-photos/${ad.photos[0] || 'default.jpg'}`}
+          variant="md"
+          className={`w-full h-full object-cover ${isArchived ? 'opacity-50' : ''}`}
         />
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-2 right-2" />

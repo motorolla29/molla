@@ -5,6 +5,7 @@ import { Star, ShoppingBag } from 'lucide-react';
 import type { ReviewBase } from '@/types/review';
 import { Avatar } from '@/components/avatar/avatar';
 import ImageModal from '@/components/messenger/image-modal';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface ReviewCardProps {
   review: ReviewBase;
@@ -172,9 +173,13 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
                   onClick={() => setModalImage(photo)}
                   className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  <img
+                  {/* было: <img
                     src={`${photo}?tr=w-150`}
-                    //alt={`Фото ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  /> */}
+                  <CloudImage
+                    src={photo}
+                    variant="sm"
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -240,9 +245,13 @@ export default function ReviewCard({ review, sellerId }: ReviewCardProps) {
                           onClick={() => setModalImage(photo)}
                           className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
                         >
-                          <img
+                          {/* было: <img
                             src={`${photo}?tr=w-140`}
-                            //alt={`Фото ответа ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          /> */}
+                          <CloudImage
+                            src={photo}
+                            variant="sm"
                             className="w-full h-full object-cover"
                           />
                         </button>

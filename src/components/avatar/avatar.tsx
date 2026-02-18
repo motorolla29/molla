@@ -1,7 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { getAvatarColor } from '@/utils';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
+import type { CloudImageVariant } from '@/utils/cloud-image';
 
 interface AvatarProps {
   /**
@@ -17,23 +18,28 @@ interface AvatarProps {
    */
   colorId?: number | string | null;
   /**
-   * Ширина для ImageKit-трансформации (?tr=w-XX)
+   * Ширина для варианта (раньше ImageKit ?tr=w-XX): маппится в xs/sm/md
    */
   transformWidth?: number;
   /**
-   * Tailwind-классы для контейнера (применяются и к <Image>, и к fallback <div>)
-   * Например: "w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+   * Tailwind-классы для контейнера (применяются и к изображению, и к fallback <div>)
    */
   className: string;
   /**
-   * Размер изображения в пикселях (width/height пропсы для <Image>)
+   * Размер изображения в пикселях (для layout)
    */
   size: number;
 }
 
+function widthToVariant(w: number): CloudImageVariant {
+  if (w <= 80) return 'xs';
+  if (w <= 200) return 'sm';
+  return 'md';
+}
+
 /**
  * Универсальный компонент аватара:
- * - если есть src — рисует <Image> (с учётом ?tr=w-XX, если передан transformWidth)
+ * - если есть src — рисует CloudImage (вариант по transformWidth: ≤80→xs, ≤200→sm, иначе md)
  * - иначе — кружок с первой буквой имени на цветном фоне
  */
 export function Avatar({
@@ -45,7 +51,6 @@ export function Avatar({
   size,
 }: AvatarProps) {
   const hasAvatar = Boolean(src);
-  const alt = name || 'Пользователь';
   const initial = (name || 'П').charAt(0).toUpperCase();
 
   const backgroundColor =
@@ -53,17 +58,32 @@ export function Avatar({
       ? getAvatarColor(colorId)
       : '#8E51FF';
 
-  const finalSrc =
-    src && transformWidth ? `${src}?tr=w-${transformWidth}` : src || undefined;
+  // const finalSrc =
+  // src && transformWidth ? `${src}?tr=w-${transformWidth}` : src || undefined;
 
-  if (hasAvatar && finalSrc) {
+  //  if (hasAvatar && finalSrc) {
+  //    return (
+  //      <Image
+  //        src={finalSrc}
+  //        alt={''}
+  //        width={size}
+  //        height={size}
+  //        className={className}
+  //      />
+  //    );
+  //  }
+
+  const variant = transformWidth ? widthToVariant(transformWidth) : 'orig';
+
+  if (hasAvatar && src) {
     return (
-      <Image
-        src={finalSrc}
-        alt={''}
+      <CloudImage
+        src={src}
+        variant={variant}
+        alt=""
+        className={className}
         width={size}
         height={size}
-        className={className}
       />
     );
   }

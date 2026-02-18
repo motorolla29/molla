@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CategoryKey } from '@/types/ad';
 import { categoryOptions } from '@/const';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface AdCategorySelectorProps {
   value: CategoryKey | '';
@@ -75,8 +76,14 @@ export default function AdCategorySelector({
         <div className="flex items-center">
           {selectedCategory ? (
             <>
-              <img
+              {/* было: <img
                 src={`https://ik.imagekit.io/motorolla29/molla/icons/${selectedCategory.key}.png?tr=w-48`}
+                alt="cat-icon"
+                className="w-5 h-5 mr-2"
+              /> */}
+              <CloudImage
+                src={`molla/icons/${selectedCategory.key}.png`}
+                variant="xs"
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
               />
@@ -136,8 +143,14 @@ export default function AdCategorySelector({
                   ease: 'easeOut',
                 }}
               >
-                <img
+                {/* было: <img
                   src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
+                  alt="cat-icon"
+                  className="w-5 h-5 mr-2"
+                /> */}
+                <CloudImage
+                  src={`molla/icons/${opt.key}.png`}
+                  variant="xs"
                   alt="cat-icon"
                   className="w-5 h-5 mr-2"
                 />

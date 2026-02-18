@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface UploadedPhoto {
   id: string;
@@ -77,7 +78,7 @@ export default function AdPhotoUploader({
       reader.onload = (e) => {
         const previewUrl = e.target?.result as string;
         setPhotos((prev) =>
-          prev.map((p) => (p.id === item.id ? { ...p, previewUrl } : p))
+          prev.map((p) => (p.id === item.id ? { ...p, previewUrl } : p)),
         );
       };
       reader.readAsDataURL(item.file);
@@ -90,7 +91,7 @@ export default function AdPhotoUploader({
 
   const uploadPhoto = async (item: UploadedPhoto) => {
     setPhotos((prev) =>
-      prev.map((p) => (p.id === item.id ? { ...p, status: 'uploading' } : p))
+      prev.map((p) => (p.id === item.id ? { ...p, status: 'uploading' } : p)),
     );
 
     try {
@@ -98,8 +99,15 @@ export default function AdPhotoUploader({
       formData.append('file', item.file);
       formData.append('fileName', item.file.name);
       formData.append('folder', '/molla/mock-photos');
+      // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
+      formData.append('variants', 'xs,sm,md');
 
-      const res = await fetch('/api/upload-image', {
+      // const res = await fetch('/api/upload-image', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
+
+      const res = await fetch('/api/cloud-upload-photo', {
         method: 'POST',
         body: formData,
       });
@@ -114,13 +122,13 @@ export default function AdPhotoUploader({
         prev.map((p) =>
           p.id === item.id
             ? { ...p, status: 'done', url: data.name as string }
-            : p
-        )
+            : p,
+        ),
       );
     } catch (err) {
       console.error(err);
       setPhotos((prev) =>
-        prev.map((p) => (p.id === item.id ? { ...p, status: 'error' } : p))
+        prev.map((p) => (p.id === item.id ? { ...p, status: 'error' } : p)),
       );
     }
   };
@@ -161,16 +169,30 @@ export default function AdPhotoUploader({
               className="relative group rounded-lg overflow-hidden border border-gray-200 bg-gray-50"
             >
               {p.previewUrl || p.url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={
-                    p.previewUrl ||
-                    `https://ik.imagekit.io/motorolla29/molla/mock-photos/${p.url}?tr=w-200`
-                  }
-                  alt={p.file.name}
-                  className="w-full h-24 object-cover"
-                />
+                p.previewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.previewUrl}
+                    alt={p.file.name}
+                    className="w-full h-24 object-cover"
+                  />
+                ) : (
+                  <CloudImage
+                    src={`molla/mock-photos/${p.url}`}
+                    variant="sm"
+                    alt={p.file.name}
+                    className="w-full h-24 object-cover"
+                  />
+                )
               ) : (
+                // было: <img
+                //   src={
+                //     p.previewUrl ||
+                //     `https://ik.imagekit.io/motorolla29/molla/mock-photos/${p.url}?tr=w-200`
+                //   }
+                //   alt={p.file.name}
+                //   className="w-full h-24 object-cover"
+                // />
                 <div className="w-full h-24 flex items-center justify-center text-xs sm:text-sm text-gray-400">
                   {p.status === 'uploading' ? 'Загрузка...' : p.file.name}
                 </div>

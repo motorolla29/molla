@@ -6,6 +6,7 @@ import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 import AdCardsDefault from '../ad-cards-default/ad-cards-default';
 import { FidgetSpinner } from 'react-loader-spinner';
 import { getOrCreateUserToken } from '@/utils';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useLocationStore } from '@/store/useLocationStore';
 
 interface InfiniteScrollAdsProps {
@@ -52,7 +53,7 @@ export default function InfiniteScrollAds({
   const [hasMore, setHasMore] = useState(true);
 
   const observerRef = useRef<HTMLDivElement>(null);
-  
+
   // Получаем текущий город из стора для режима fresh
   const { cityLabel: currentCityLabel } = useLocationStore();
 
@@ -170,7 +171,16 @@ export default function InfiniteScrollAds({
         setLoading(false);
       }
     },
-    [cityLabel, category, searchParams, sort, limit, recommended, fresh, currentCityLabel]
+    [
+      cityLabel,
+      category,
+      searchParams,
+      sort,
+      limit,
+      recommended,
+      fresh,
+      currentCityLabel,
+    ],
   );
 
   // Загрузка начальных данных
@@ -186,7 +196,7 @@ export default function InfiniteScrollAds({
           fetchAds(true, ads.length);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (observerRef.current) {
@@ -229,17 +239,23 @@ export default function InfiniteScrollAds({
               </div>
             ) : (
               <AdCardsDefault key={ad.id} ads={[ad]} />
-            )
+            ),
           )}
         </div>
       ) : (
         !loading && (
           <div className="w-full flex flex-col justify-center items-center text-neutral-500">
             <div className="flex flex-col justify-center items-center max-w-75 my-6 sm:my-10">
-              <img
+              {/* было: <img
                 className="w-16 sm:w-20"
                 src="https://ik.imagekit.io/motorolla29/molla/icons/%D0%BD%D0%B8%D1%87%D0%B5%D0%B3%D0%BE-%D0%BD%D0%B5-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BE-100.png"
                 alt="nothing-found"
+              /> */}
+              <CloudImage
+                src="molla/icons/ничего-не-найдено-100.png"
+                variant="orig"
+                alt="nothing-found"
+                className="w-16 sm:w-20"
               />
               <p className="text-sm sm:text-base text-center">
                 Нет объявлений по выбранным параметрам.

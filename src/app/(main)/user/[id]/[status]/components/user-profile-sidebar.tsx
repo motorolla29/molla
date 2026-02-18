@@ -2,6 +2,7 @@ import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import SellerContacts from '@/app/(main)/[city]/[category]/[adId]/components/seller-contacts';
 import { formatReviewCount, getAvatarColor } from '@/utils';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface UserProfile {
   id: string;
@@ -48,8 +49,15 @@ export default function UserProfileSidebar({
       <div className="flex flex-col items-center text-center mb-6">
         <div className="w-20 h-20 mb-4 rounded-full overflow-hidden">
           {user.avatar ? (
-            <img
-              src={`${user.avatar}?tr=w-100`}
+            //   <img
+            //   src={`${user.avatar}?tr=w-100`}
+            //   alt={`Аватар ${user.name}`}
+            //   className="w-full h-full object-cover cursor-pointer"
+            //   onClick={onAvatarClick}
+            // />
+            <CloudImage
+              src={user.avatar}
+              variant="sm"
               alt={`Аватар ${user.name}`}
               className="w-full h-full object-cover cursor-pointer"
               onClick={onAvatarClick}

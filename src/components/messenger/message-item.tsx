@@ -3,6 +3,7 @@
 import { memo, Fragment, useState, useCallback } from 'react';
 import { Check, CheckCheck } from 'lucide-react';
 import { getAvatarColor } from '@/utils';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface Message {
   id: string;
@@ -151,8 +152,14 @@ const MessageItem = memo(
                 }}
               >
                 {chat?.otherUserAvatar ? (
-                  <img
-                    src={`${chat.otherUserAvatar}?tr=w-40`}
+                  // <img
+                  // src={`${chat.otherUserAvatar}?tr=w-40`}
+                  // alt={chat?.otherUserName}
+                  // className="w-full h-full object-cover"
+                  // />
+                  <CloudImage
+                    src={chat.otherUserAvatar}
+                    variant="xs"
                     alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />
@@ -200,7 +207,72 @@ const MessageItem = memo(
                     key={attachment.id}
                     className="relative aspect-square max-w-full w-36 min-[320px]:w-48 min-[390px]:w-56 sm:w-[350px] bg-gray-300/25 rounded-lg overflow-hidden"
                   >
-                    <img
+                    {attachment.fileUrl.startsWith('blob:') ||
+                    (message.senderId === currentUserId &&
+                      attachment.blobUrl) ? (
+                      <img
+                        src={
+                          message.senderId === currentUserId &&
+                          attachment.blobUrl
+                            ? attachment.blobUrl
+                            : attachment.fileUrl
+                        }
+                        alt={attachment.fileName}
+                        className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${
+                          loadedImages[attachment.id]
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                        }`}
+                        onClick={() =>
+                          openImageModal(
+                            message.senderId === currentUserId &&
+                              attachment.blobUrl &&
+                              loadedImages[attachment.id]
+                              ? attachment.blobUrl
+                              : attachment.fileUrl,
+                            attachment.fileName,
+                          )
+                        }
+                        onLoad={() => {
+                          updateLoadedImage(attachment.id, true);
+                          setTimeout(() => {
+                            if (isNearBottomRef.current) {
+                              const container = messagesContainerRef.current;
+                              if (container)
+                                container.scrollTop = container.scrollHeight;
+                            }
+                          }, 100);
+                        }}
+                      />
+                    ) : (
+                      <CloudImage
+                        src={attachment.fileUrl}
+                        variant="md"
+                        alt={attachment.fileName}
+                        className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${
+                          loadedImages[attachment.id]
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                        }`}
+                        onClick={() =>
+                          openImageModal(
+                            attachment.fileUrl,
+                            attachment.fileName,
+                          )
+                        }
+                        onLoad={() => {
+                          updateLoadedImage(attachment.id, true);
+                          setTimeout(() => {
+                            if (isNearBottomRef.current) {
+                              const container = messagesContainerRef.current;
+                              if (container)
+                                container.scrollTop = container.scrollHeight;
+                            }
+                          }, 100);
+                        }}
+                      />
+                    )}
+                    {/* было: <img
                       src={
                         message.senderId === currentUserId
                           ? // Логика для отправителя с blobUrl
@@ -245,7 +317,7 @@ const MessageItem = memo(
                           }
                         }, 100);
                       }}
-                    />
+                    /> */}
                     {message.senderId === currentUserId &&
                       attachment.blobUrl &&
                       (!loadedImages[attachment.id] ||

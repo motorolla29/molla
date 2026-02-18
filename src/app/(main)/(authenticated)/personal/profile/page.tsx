@@ -9,6 +9,7 @@ import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-modal';
 import ImageModal from '@/components/messenger/image-modal';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuthStore();
@@ -48,8 +49,15 @@ export default function Profile() {
       formData.append('file', file);
       formData.append('fileName', file.name);
       formData.append('folder', '/molla/user-avatars');
+      // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
+      formData.append('variants', 'xs,sm');
 
-      const uploadRes = await fetch('/api/upload-image', {
+      // const uploadRes = await fetch('/api/upload-image', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
+
+      const uploadRes = await fetch('/api/cloud-upload-photo', {
         method: 'POST',
         body: formData,
       });
@@ -73,7 +81,7 @@ export default function Profile() {
         error instanceof Error ? error.message : 'Ошибка при загрузке аватара',
         {
           type: 'error',
-        }
+        },
       );
     } finally {
       setIsAvatarUploading(false);
@@ -99,16 +107,23 @@ export default function Profile() {
       <div className="flex flex-col min-[320px]:flex-row items-center mb-8 sm:mb-12">
         <div className="relative shrink-0 min-w-16 sm:min-w-20">
           {user.avatar ? (
-            <img
+            <>
+              {/* <img
               src={
                 user.avatar
                   ? `${user.avatar}?tr=w-100`
                   : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
               }
-              //alt={user.name}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg cursor-pointer"
               onClick={() => setShowAvatarModal(true)}
-            />
+              /> */}
+              <CloudImage
+                src={user.avatar}
+                variant="sm"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg cursor-pointer"
+                onClick={() => setShowAvatarModal(true)}
+              />
+            </>
           ) : (
             <div
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg select-none"
@@ -178,7 +193,7 @@ export default function Profile() {
                   const starPos = idx + 1;
                   const fillPercent = Math.min(
                     Math.max((user.rating - (starPos - 1)) * 100, 0),
-                    100
+                    100,
                   );
                   return (
                     <div key={idx} className="relative w-4 h-4">

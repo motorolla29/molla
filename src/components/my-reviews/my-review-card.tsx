@@ -16,6 +16,7 @@ import { useConfirmationModal } from '@/components/confirmation-modal/confirmati
 import { useToast } from '@/components/toast/toast-context';
 import { Avatar } from '@/components/avatar/avatar';
 import type { ReviewBase } from '@/types/review';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface MyReviewCardProps {
   review: ReviewBase;
@@ -196,9 +197,13 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
                   onClick={() => setModalImage(photo)}
                   className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  <img
+                  {/* <img
                     src={`${photo}?tr=w-150`}
-                    //alt={`Фото ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  /> */}
+                  <CloudImage
+                    src={photo}
+                    variant="sm"
                     className="w-full h-full object-cover"
                   />
                 </button>

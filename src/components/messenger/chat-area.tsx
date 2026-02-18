@@ -8,6 +8,7 @@ import MessageInput from './message-input';
 import MessageItem from './message-item';
 import type { Message, Chat } from './message-item';
 import { getAvatarColor } from '@/utils';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface ChatAreaProps {
   chat: Chat | null;
@@ -452,9 +453,13 @@ export default function ChatArea({
                     target="blank"
                   >
                     {chat.adPhoto ? (
-                      <img
-                        src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
-                        //alt={chat.adTitle}
+                      // <img
+                      //   src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
+                      //   className="w-full h-full object-cover cursor-pointer transition-opacity"
+                      // />
+                      <CloudImage
+                        src={`molla/mock-photos/${chat.adPhoto}`}
+                        variant="sm"
                         className="w-full h-full object-cover cursor-pointer transition-opacity"
                       />
                     ) : (
@@ -499,9 +504,13 @@ export default function ChatArea({
             <Link href={`/user/${chat?.otherUserId}/active`} target="blank">
               <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
                 {chat?.otherUserAvatar ? (
-                  <img
-                    src={`${chat.otherUserAvatar}?tr=w-40`}
-                    //alt={chat.otherUserName}
+                  // <img
+                  // src={`${chat.otherUserAvatar}?tr=w-40`}
+                  // className="w-full h-full object-cover"
+                  // />
+                  <CloudImage
+                    src={chat.otherUserAvatar}
+                    variant="xs"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -538,7 +547,9 @@ export default function ChatArea({
                     <div className="shrink-0 w-2 h-2 bg-emerald-500 rounded-full" />
                   ) : (
                     <span className="items-center gap-2 text-xs text-gray-500 shrink-0 hidden sm:flex">
-                      {!isLoading && otherUserLastSeen && formatLastSeen(otherUserLastSeen)}
+                      {!isLoading &&
+                        otherUserLastSeen &&
+                        formatLastSeen(otherUserLastSeen)}
                     </span>
                   )}
                 </div>
@@ -655,9 +666,13 @@ export default function ChatArea({
                     }}
                   >
                     {chat?.otherUserAvatar ? (
-                      <img
-                        src={`${chat.otherUserAvatar}?tr=w-40`}
-                        //alt={chat?.otherUserName}
+                      // <img
+                      // src={`${chat.otherUserAvatar}?tr=w-40`}
+                      // className="w-full h-full object-cover"
+                      // />
+                      <CloudImage
+                        src={chat.otherUserAvatar}
+                        variant="xs"
                         className="w-full h-full object-cover"
                       />
                     ) : (

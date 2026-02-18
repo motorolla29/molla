@@ -3,6 +3,7 @@ import Footer from '@/components/footer/footer';
 import Header from '@/components/header/header';
 import HeaderMobile from '@/components/header-mobile/header-mobile';
 import Link from 'next/link';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 export default function NotFound() {
   return (
@@ -10,10 +11,16 @@ export default function NotFound() {
       <Header />
       <HeaderMobile />
       <div className="h-screen flex flex-col items-center justify-center text-neutral-600">
-        <img
+        {/* было: <img
           className="w-20 sm:w-24 mb-2 "
           src="https://ik.imagekit.io/motorolla29/molla/icons/oshibka_404.svg"
           alt="404"
+        /> */}
+        <CloudImage
+          src="molla/icons/oshibka_404.svg"
+          variant="orig"
+          alt="404"
+          className="w-20 sm:w-24 mb-2"
         />
         <h1 className="text-sm sm:text-base mb-5">Тут ничего нет.</h1>
         <Link

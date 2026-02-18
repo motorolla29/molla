@@ -5,6 +5,7 @@ import { YMaps, Map, Placemark, Clusterer } from '@pbe/react-yandex-maps';
 import { useLocationStore } from '@/store/useLocationStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { getCloudImageVariantUrl } from '@/utils/cloud-image';
 
 interface MapMarker {
   id: string;
@@ -72,7 +73,7 @@ export default function MapGl({
   const targetZoom = clampZoom(
     (cityLabel && lat && lon) || (storeLat && storeLon)
       ? CITY_ZOOM
-      : DEFAULT_ZOOM
+      : DEFAULT_ZOOM,
   );
 
   const [mapState, setMapState] = useState<{
@@ -155,7 +156,7 @@ export default function MapGl({
         setLoadingMarkers(false);
       }
     },
-    [cityLabel, category]
+    [cityLabel, category],
   );
 
   // Дебаунсинг для viewport changes
@@ -169,7 +170,7 @@ export default function MapGl({
         loadMarkersForViewport(bounds);
       }, 400); // 400ms дебаунс
     },
-    [loadMarkersForViewport]
+    [loadMarkersForViewport],
   );
 
   // Обработчик загрузки карты
@@ -186,14 +187,14 @@ export default function MapGl({
               setInitialLoadDone(true);
             } else {
               console.warn(
-                '❌ Map instance not available or missing getBounds method'
+                '❌ Map instance not available or missing getBounds method',
               );
             }
           }
         }, 100);
       }
     },
-    [ads.length, loadMarkersForViewport, initialLoadDone]
+    [ads.length, loadMarkersForViewport, initialLoadDone],
   );
 
   // Перезагружаем маркеры при изменении фильтров
@@ -244,7 +245,7 @@ export default function MapGl({
       },
       details: '',
     }),
-    [cityLabel]
+    [cityLabel],
   );
 
   const handlePin = useCallback((ad: AdBase) => onPinClick?.(ad), [onPinClick]);
@@ -259,7 +260,7 @@ export default function MapGl({
       const geoObjects = target.getGeoObjects();
 
       const ids: string[] = geoObjects.map((o: any) =>
-        o.properties.get('adId')
+        o.properties.get('adId'),
       );
 
       // Если используются статические ads, фильтруем их
@@ -269,13 +270,13 @@ export default function MapGl({
       } else {
         // Если используются динамические маркеры, конвертируем их в AdBase
         const markersInCluster = displayMarkers.filter((m) =>
-          ids.includes(m.id)
+          ids.includes(m.id),
         );
         const adsInCluster = markersInCluster.map(convertMarkerToAd);
         onClusterClick(adsInCluster);
       }
     },
-    [ads, displayMarkers, onClusterClick, convertMarkerToAd]
+    [ads, displayMarkers, onClusterClick, convertMarkerToAd],
   );
 
   // Обработчик изменения viewport (move/zoom)
@@ -300,7 +301,7 @@ export default function MapGl({
       initialLoadDone,
       markers.length,
       loadMarkersForViewport,
-    ]
+    ],
   );
 
   return (
@@ -351,7 +352,11 @@ export default function MapGl({
                   }}
                   options={{
                     iconLayout: 'default#image',
-                    iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${marker.category}-map-marker.png?tr=w-150`,
+                    // было: iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${marker.category}-map-marker.png?tr=w-150`,
+                    iconImageHref: getCloudImageVariantUrl(
+                      `molla/icons/${marker.category}-map-marker.png`,
+                      'sm',
+                    ),
                     iconImageSize: [iconWidth, iconHeight],
                     iconImageOffset: [iconOffsetX, iconOffsetY],
                   }}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import type { EmblaOptionsType } from 'embla-carousel';
 import Image from 'next/image';
+import { getCloudImageVariantUrl } from '@/utils/cloud-image';
 
 type PhotoSliderProps = {
   images: string[];
@@ -26,11 +27,15 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
     loop: true,
   });
 
-  const lowResImages = useMemo(() => {
-    return images.map((src) =>
-      src.includes('?') ? `${src}&tr=w-200` : `${src}?tr=w-200`,
-    );
-  }, [images]);
+  // const lowResImages = useMemo(() => {
+  //   return images.map((src) =>
+  //     src.includes('?') ? `${src}&tr=w-200` : `${src}?tr=w-200`,
+  //   );
+  // }, [images]);
+  const lowResImages = useMemo(
+    () => images.map((src) => getCloudImageVariantUrl(src, 'sm')),
+    [images],
+  );
 
   const onThumbClick = useCallback(
     (index: number) => {

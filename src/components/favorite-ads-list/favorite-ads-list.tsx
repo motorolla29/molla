@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AdBase } from '@/types/ad';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import GalleryAdCard from '../gallery-ad-card/gallery-ad-card';
 
 interface FavoriteAdsListProps {
@@ -41,10 +42,16 @@ const FavoriteAdsList = ({ ads, isLoading = false }: FavoriteAdsListProps) => {
         </div>
       ) : ads.length === 0 ? (
         <div className="flex flex-col items-center justify-center w-full mt-30 px-4 text-gray-600">
-          <img
+          {/* было: <img
             className="w-20 sm:w-30 opacity-75"
             src="https://ik.imagekit.io/motorolla29/molla/icons/empty-favs-image.svg"
             alt="favs-empty"
+          /> */}
+          <CloudImage
+            src="molla/icons/empty-favs-image.svg"
+            variant="orig"
+            alt="favs-empty"
+            className="w-20 sm:w-30 opacity-75"
           />
           <p className="text-sm sm:text-base text-center max-w-100">
             У вас ещё нет избранных объявлений. Если вы нашли что-то интересное,

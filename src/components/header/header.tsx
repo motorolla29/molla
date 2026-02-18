@@ -5,14 +5,15 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 import { useNotificationsStore } from '@/store/useNotificationsStore';
 import { getAvatarColor } from '@/utils';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 export default function Header() {
   const { isLoggedIn, user, logout } = useAuthStore();
   const totalUnreadCount = useUnreadMessagesStore(
-    (state) => state.totalUnreadCount
+    (state) => state.totalUnreadCount,
   );
   const unreadNotifications = useNotificationsStore(
-    (state) => state.unreadCount
+    (state) => state.unreadCount,
   );
 
   return (
@@ -74,9 +75,13 @@ export default function Header() {
               className="flex items-center ml-1 hover:opacity-80 transition-opacity"
             >
               {user.avatar ? (
-                <img
-                  src={`${user.avatar}?tr=w-45`}
-                  //alt={user.name}
+                //   <img
+                //   src={`${user.avatar}?tr=w-45`}
+                //   className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm overflow-hidden"
+                //   />
+                <CloudImage
+                  src={user.avatar}
+                  variant="xs"
                   className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm overflow-hidden"
                 />
               ) : (

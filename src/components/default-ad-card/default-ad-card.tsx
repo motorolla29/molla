@@ -4,6 +4,7 @@ import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { AdBase } from '@/types/ad';
 import FavoriteButton from '../favorite-button/favorite-button';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface DefaultAdCardProps {
   ad: AdBase;
@@ -21,11 +22,15 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
         target="blank"
       >
-        <img
+        {/* было: <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
             ad.photos[0] || 'default.jpg'
           }?tr=w-250`}
-          //alt={ad.title}
+          className="w-full h-full object-cover"
+        /> */}
+        <CloudImage
+          src={`molla/mock-photos/${ad.photos[0] || 'default.jpg'}`}
+          variant="md"
           className="w-full h-full object-cover"
         />
       </Link>
@@ -80,14 +85,20 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
         className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
       >
         <div className="w-18 h-18 rounded-lg mb-2 bg-gray-200/25 overflow-hidden">
-          <img
+          {/* было: <img
             className="w-full h-full object-cover"
             src={
               ad.seller.avatar
                 ? `${ad.seller.avatar}?tr=w-100`
                 : 'https://ik.imagekit.io/motorolla29/molla/user-avatars/765-default-avatar.png?tr=w-100'
             }
-            //alt="avatar"
+          /> */}
+          <CloudImage
+            src={
+              ad.seller.avatar || 'molla/user-avatars/765-default-avatar.png'
+            }
+            variant="sm"
+            className="w-full h-full object-cover"
           />
         </div>
         <span className="text-xs sm:text-sm font-semibold pr-1 max-w-full inline-block truncate wrap-break-words">

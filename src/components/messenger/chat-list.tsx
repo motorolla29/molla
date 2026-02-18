@@ -3,6 +3,7 @@
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 import { Check, CheckCheck } from 'lucide-react';
 import { getAvatarColor } from '@/utils';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useRef, useEffect, useCallback } from 'react';
 
 interface Chat {
@@ -61,7 +62,7 @@ export default function ChatList({
           onLoadMoreChats();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(trigger);
@@ -154,10 +155,14 @@ export default function ChatList({
             <div className="relative shrink-0">
               {/* Фото товара */}
               <div className="w-18 h-18 rounded-xl overflow-hidden bg-gray-100">
+                {/* было: <img
+                  src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
+                  className="w-full h-full object-cover"
+                /> */}
                 {chat.adPhoto ? (
-                  <img
-                    src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
-                    //alt={chat.adTitle}
+                  <CloudImage
+                    src={`molla/mock-photos/${chat.adPhoto}`}
+                    variant="sm"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -182,9 +187,13 @@ export default function ChatList({
               {/* Аватар собеседника в левом верхнем углу */}
               <div className="absolute -top-1.5 -left-1.5 w-9 h-9 rounded-full border-2 border-white overflow-hidden bg-white">
                 {chat.otherUserAvatar ? (
-                  <img
-                    src={`${chat.otherUserAvatar}?tr=w-40`}
-                    //alt={chat.otherUserName}
+                  // <img
+                  // src={`${chat.otherUserAvatar}?tr=w-40`}
+                  // className="w-full h-full object-cover"
+                  // />
+                  <CloudImage
+                    src={chat.otherUserAvatar}
+                    variant="xs"
                     className="w-full h-full object-cover"
                   />
                 ) : (

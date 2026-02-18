@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar } from '@/components/avatar/avatar';
 import { useToast } from '@/components/toast/toast-context';
 import ImageModal from '@/components/messenger/image-modal';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useAuthStore } from '@/store/useAuthStore';
 import type { ReviewBase } from '@/types/review';
 
@@ -148,8 +149,15 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
       formData.append('file', item.file);
       formData.append('fileName', item.file.name);
       formData.append('folder', '/molla/review-replies');
+      // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
+      formData.append('variants', 'sm');
 
-      const res = await fetch('/api/upload-image', {
+      // const res = await fetch('/api/upload-image', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
+
+      const res = await fetch('/api/cloud-upload-photo', {
         method: 'POST',
         body: formData,
       });
@@ -356,9 +364,13 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
                   onClick={() => setModalImage(photo)}
                   className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  <img
+                  {/* <img
                     src={`${photo}?tr=w-150`}
-                    //alt={`Фото ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  /> */}
+                  <CloudImage
+                    src={photo}
+                    variant="sm"
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -407,11 +419,25 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
                         className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden border border-gray-200 bg-gray-50"
                       >
                         {p.previewUrl || p.url ? (
-                          <img
-                            src={p.previewUrl || `${p.url}?tr=w-140`}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
+                          // <img
+                          //   src={p.previewUrl || `${p.url}?tr=w-140`}
+                          //   alt=""
+                          //   className="w-full h-full object-cover"
+                          // />
+                          p.previewUrl ? (
+                            <img
+                              src={p.previewUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <CloudImage
+                              src={p.url!}
+                              variant="sm"
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          )
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">
                             {p.status === 'uploading' ? '...' : ''}
@@ -590,9 +616,13 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
                       onClick={() => setModalImage(photo)}
                       className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200/25 rounded-lg overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
                     >
-                      <img
+                      {/* <img
                         src={`${photo}?tr=w-140`}
-                        //alt={`Фото ответа ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      /> */}
+                      <CloudImage
+                        src={photo}
+                        variant="sm"
                         className="w-full h-full object-cover"
                       />
                     </button>

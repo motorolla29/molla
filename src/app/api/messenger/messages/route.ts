@@ -1,6 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import crypto from 'crypto';
+
+export const runtime = 'nodejs';
+
+const cloudKeyId = process.env.CLOUD_KEY_ID;
+const cloudKeySecret = process.env.CLOUD_KEY_SECRET;
+const cloudEndpoint = process.env.CLOUD_S3_ENDPOINT;
+const cloudRegion = process.env.CLOUD_REGION || 'ru-1';
+const cloudBucket = process.env.CLOUD_BUCKET_NAME;
+const cloudPublicBaseUrl = process.env.CLOUD_PUBLIC_BASE_URL;
+
+let s3Client: S3Client | null = null;
+
+function getS3Client() {
+  if (!cloudKeyId || !cloudKeySecret || !cloudEndpoint) {
+    throw new Error('Cloud storage credentials are not fully configured');
+  }
+  if (!s3Client) {
+    s3Client = new S3Client({
+      region: cloudRegion,
+      endpoint: cloudEndpoint,
+      credentials: {
+        accessKeyId: cloudKeyId,
+        secretAccessKey: cloudKeySecret,
+      },
+      forcePathStyle: true,
+    });
+  }
+  return s3Client;
+}
+
+function buildPublicUrl(key: string) {
+  const base = (cloudPublicBaseUrl || '').replace(/\/+$/, '');
+  return `${base}/${key.replace(/^\/+/, '')}`;
+}
+
+function safeExtFromName(name: string) {
+  const lower = (name || '').toLowerCase();
+  const dot = lower.lastIndexOf('.');
+  const ext = dot !== -1 ? lower.slice(dot) : '';
+  if (
+    ext === '.jpg' ||
+    ext === '.jpeg' ||
+    ext === '.png' ||
+    ext === '.webp' ||
+    ext === '.gif' ||
+    ext === '.avif'
+  ) {
+    return ext;
+  }
+  return '.jpg';
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +76,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const chatId = formData.get('chatId') as string;
     const content = formData.get('content') as string;
-    const attachments = formData.getAll('attachments') as File[];
+    const attachments = (formData.getAll('attachments') as File[]).slice(0, 6);
 
     if (!chatId) {
       return NextResponse.json(
@@ -60,7 +113,9 @@ export async function POST(request: NextRequest) {
 
     // Обрабатываем вложения (до 6 фото)
     if (attachments.length > 0) {
-      // Получаем ключи ImageKit
+      /*
+       * Старый вариант (ImageKit) оставлен для отката:
+       // Получаем ключи ImageKit
       const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
       const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
       const endpoint =
@@ -114,8 +169,46 @@ export async function POST(request: NextRequest) {
           fileType: attachment.type,
         };
       });
+       */
 
-      // Ждем завершения всех загрузок
+      if (!cloudBucket || !cloudPublicBaseUrl) {
+        console.error('Cloud bucket/public base URL is not configured');
+        return NextResponse.json(
+          { error: 'Image upload is not configured' },
+          { status: 500 },
+        );
+      }
+
+      const client = getS3Client();
+
+      // Загружаем все вложения в cloud.ru параллельно
+      const uploadPromises = attachments.map(async (attachment) => {
+        const ext = safeExtFromName(attachment.name);
+        const uuid = crypto.randomUUID();
+        const objectKey = `molla/chat-attachments/chat-attachment-${uuid}${ext}`;
+
+        const arrayBuffer = await attachment.arrayBuffer();
+        const body = Buffer.from(arrayBuffer);
+        const contentType =
+          (attachment as any).type || 'application/octet-stream';
+
+        await client.send(
+          new PutObjectCommand({
+            Bucket: cloudBucket,
+            Key: objectKey,
+            Body: body,
+            ContentType: contentType,
+          }),
+        );
+
+        return {
+          fileUrl: buildPublicUrl(objectKey), // Публичный URL из cloud.ru
+          fileName: attachment.name,
+          fileSize: attachment.size,
+          fileType: attachment.type,
+        };
+      });
+
       const uploadedFiles = await Promise.all(uploadPromises);
 
       // Создаем записи в базе данных для всех вложений

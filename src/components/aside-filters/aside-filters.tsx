@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocationStore } from '@/store/useLocationStore';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import LocationModal from '../location-modal/location-modal';
@@ -38,11 +39,11 @@ export default function AsideFilters({
 
   // Локальное состояние для фильтров - инициализируем из пропов страницы
   const [cityLabel, setCityLabel] = useState<string | null>(
-    pageCityLabel ?? null
+    pageCityLabel ?? null,
   );
   const [cityName, setCityName] = useState<string | null>(pageCityName ?? null);
   const [cityPrep, setCityPrep] = useState<string | null>(
-    pageCityNamePrep ?? null
+    pageCityNamePrep ?? null,
   );
   const [lat, setLat] = useState<number | null>(pageLat ?? null);
   const [lon, setLon] = useState<number | null>(pageLon ?? null);
@@ -126,7 +127,7 @@ export default function AsideFilters({
       cityLabel: string | null;
       categoryKey: string | null;
       searchTerm: string;
-    }>
+    }>,
   ) => {
     const params = new URLSearchParams(searchParams?.toString() ?? '');
     const nextMinPrice = overrides?.minPrice ?? minPrice;
@@ -272,8 +273,14 @@ export default function AsideFilters({
                     : 'bg-white border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                <img
+                {/* было: <img
                   src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
+                  alt={opt.label}
+                  className="w-5 h-5 mr-2"
+                /> */}
+                <CloudImage
+                  src={`molla/icons/${opt.key}.png`}
+                  variant="xs"
                   alt={opt.label}
                   className="w-5 h-5 mr-2"
                 />

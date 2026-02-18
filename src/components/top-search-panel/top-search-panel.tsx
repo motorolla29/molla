@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { categoryOptions } from '@/const';
 import Link from 'next/link';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useLocationStore } from '@/store/useLocationStore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MapPinIcon } from '@heroicons/react/24/outline';
@@ -127,9 +128,13 @@ export default function TopSearchPanel({
                         className="flex w-full items-center"
                         href={`/${cityLabel}/${opt.key}`}
                       >
-                        <img
+                        {/* было: <img
                           src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
-                          //alt="cat-icon"
+                          className="w-6 h-6 aspect-auto mr-1"
+                        /> */}
+                        <CloudImage
+                          src={`molla/icons/${opt.key}.png`}
+                          variant="xs"
                           className="w-6 h-6 aspect-auto mr-1"
                         />
                         <span className="flex grow items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">

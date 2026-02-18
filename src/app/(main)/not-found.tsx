@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useEffect } from 'react';
 
 export default function NotFound() {
@@ -11,10 +12,16 @@ export default function NotFound() {
   return (
     <div className="min-h-[calc(100vh-48px-48px)] lg:min-h-[calc(100vh-60px)] flex flex-col items-center justify-center text-neutral-600">
       {/* 48px - header mobile height, 48px - mobile bottom panel height, 60px - header desktop height */}
-      <img
+      {/* было: <img
         className="w-20 sm:w-24 mb-2 "
         src="https://ik.imagekit.io/motorolla29/molla/icons/oshibka_404.svg"
         alt="404"
+      /> */}
+      <CloudImage
+        src="molla/icons/oshibka_404.svg"
+        variant="orig"
+        alt="404"
+        className="w-20 sm:w-24 mb-2"
       />
       <h1 className="text-sm sm:text-base mb-5">Тут ничего нет.</h1>
       <Link

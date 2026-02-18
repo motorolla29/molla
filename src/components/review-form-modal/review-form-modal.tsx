@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
 import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 import Link from 'next/link';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface SellerAd {
   id: string;
@@ -229,8 +230,15 @@ export default function ReviewFormModal({
       formData.append('file', item.file);
       formData.append('fileName', item.file.name);
       formData.append('folder', '/molla/reviews-photo');
+      // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
+      formData.append('variants', 'sm');
 
-      const res = await fetch('/api/upload-image', {
+      // const res = await fetch('/api/upload-image', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
+
+      const res = await fetch('/api/cloud-upload-photo', {
         method: 'POST',
         body: formData,
       });
@@ -380,9 +388,16 @@ export default function ReviewFormModal({
               >
                 {selectedAd ? (
                   <>
-                    <img
+                    {/* было: <img
                       key={selectedAd.id}
                       src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${selectedAd.photos?.[0] || 'default.jpg'}?tr=w-80`}
+                      alt=""
+                      className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
+                    /> */}
+                    <CloudImage
+                      key={selectedAd.id}
+                      src={`molla/mock-photos/${selectedAd.photos?.[0] || 'default.jpg'}`}
+                      variant="xs"
                       alt=""
                       className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
                     />
@@ -452,8 +467,14 @@ export default function ReviewFormModal({
                                 : 'text-gray-700'
                             }`}
                           >
-                            <img
+                            {/* было: <img
                               src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${ad.photos?.[0] || 'default.jpg'}?tr=w-80`}
+                              alt=""
+                              className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
+                            /> */}
+                            <CloudImage
+                              src={`molla/mock-photos/${ad.photos?.[0] || 'default.jpg'}`}
+                              variant="xs"
                               alt=""
                               className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
                             />
@@ -594,11 +615,25 @@ export default function ReviewFormModal({
                   className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 bg-gray-50"
                 >
                   {p.previewUrl || p.url ? (
-                    <img
-                      src={p.previewUrl || `${p.url}?tr=w-200`}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
+                    // <img
+                    // src={p.previewUrl || `${p.url}?tr=w-200`}
+                    // alt=""
+                    // className="w-full h-full object-cover"
+                    // />
+                    p.previewUrl ? (
+                      <img
+                        src={p.previewUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <CloudImage
+                        src={p.url!}
+                        variant="sm"
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    )
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">
                       {p.status === 'uploading' ? '...' : ''}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocationStore } from '@/store/useLocationStore';
 import LocationModal from '../location-modal/location-modal';
@@ -36,7 +37,7 @@ export default function FiltersMobile({
   const searchParams = useSearchParams();
   const hasUrlFilters = searchParams
     ? ['minPrice', 'maxPrice', 'vip', 'time'].some((key) =>
-        searchParams.has(key)
+        searchParams.has(key),
       )
     : false;
   const {
@@ -50,11 +51,11 @@ export default function FiltersMobile({
 
   // Локальное состояние фильтров - инициализируем из пропов страницы:
   const [cityLabel, setCityLabel] = useState<string | null>(
-    pageCityLabel ?? null
+    pageCityLabel ?? null,
   );
   const [cityName, setCityName] = useState<string | null>(pageCityName ?? null);
   const [cityPrep, setCityPrep] = useState<string | null>(
-    pageCityNamePrep ?? null
+    pageCityNamePrep ?? null,
   );
   const [lat, setLat] = useState<number | null>(pageLat ?? null);
   const [lon, setLon] = useState<number | null>(pageLon ?? null);
@@ -263,8 +264,14 @@ export default function FiltersMobile({
                             : 'bg-white border-gray-300 hover:bg-gray-50'
                         }`}
                       >
-                        <img
+                        {/* <img
                           src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
+                          alt={opt.label}
+                          className="w-5 h-5 mr-2"
+                        /> */}
+                        <CloudImage
+                          src={`molla/icons/${opt.key}.png`}
+                          variant="xs"
                           alt={opt.label}
                           className="w-5 h-5 mr-2"
                         />
