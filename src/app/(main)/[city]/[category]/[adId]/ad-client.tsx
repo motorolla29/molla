@@ -250,7 +250,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           <div className="flex-1 space-y-6 lg:max-w-2xl">
             <div className="flex items-start justify-between gap-4 mb-4">
               <h1
-                className={`text-2xl sm:text-3xl font-semibold line-clamp-2 flex-1 min-w-0 overflow-hidden wrap-break-word ${
+                className={`text-2xl sm:text-3xl font-semibold line-clamp-2 leading-normal flex-1 min-w-0 wrap-break-word ${
                   !isAuthChecking && isArchived && !isOwner
                     ? 'text-neutral-500'
                     : 'text-neutral-700'

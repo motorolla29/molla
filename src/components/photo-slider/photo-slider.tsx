@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import type { EmblaOptionsType } from 'embla-carousel';
 import Image from 'next/image';
-import { getCloudImageVariantUrl } from '@/utils/cloud-image';
+import { CloudImage } from '../cloud-image/cloud-image';
 
 type PhotoSliderProps = {
   images: string[];
@@ -32,10 +32,6 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
   //     src.includes('?') ? `${src}&tr=w-200` : `${src}?tr=w-200`,
   //   );
   // }, [images]);
-  const lowResImages = useMemo(
-    () => images.map((src) => getCloudImageVariantUrl(src, 'sm')),
-    [images],
-  );
 
   const onThumbClick = useCallback(
     (index: number) => {
@@ -96,27 +92,24 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
         >
           <div className="flex">
             {images.map((src, idx) => (
-              <div className="flex-[0_0_100%] px-1" key={idx}>
+              <div className="flex-[0_0_100%]" key={idx}>
                 <div
                   onClick={() => setIsZoomOpen(true)}
                   className="relative w-full aspect-4/3 overflow-hidden rounded-md bg-gray-100"
                 >
                   {/* Фоновое размытие */}
-                  <Image
-                    src={lowResImages[idx]}
+                  <CloudImage
+                    src={src}
+                    variant="xs"
                     alt=""
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-50"
                     aria-hidden="true"
                   />
                   {/* Плавный переход появления главного фото */}
-                  <Image
+                  <img
                     src={src}
                     alt={`Фото ${idx + 1}`}
                     loading="lazy"
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="relative w-full h-full object-contain transition-opacity duration-500"
                     style={{ opacity: 1 }}
                   />
@@ -166,8 +159,8 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
 
         {/* Thumbnails */}
         <div className="mt-4 overflow-hidden" ref={emblaThumbsRef}>
-          <div className="flex gap-1 xs:gap-2 sm:gap-3 px-1 pb-2">
-            {lowResImages.map((thumbSrc, idx) => (
+          <div className="flex gap-1 xs:gap-2 sm:gap-3">
+            {images.map((src, idx) => (
               <button
                 key={idx}
                 onClick={() => onThumbClick(idx)}
@@ -177,11 +170,10 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                     : 'border-neutral-100'
                 }`}
               >
-                <Image
-                  src={thumbSrc}
+                <CloudImage
+                  src={src}
+                  variant="xs"
                   alt={`Миниатюра ${idx + 1}`}
-                  fill
-                  sizes="(max-width: 640px) 64px, (max-width: 768px) 72px, 80px"
                   className="w-full h-full object-cover"
                 />
               </button>
