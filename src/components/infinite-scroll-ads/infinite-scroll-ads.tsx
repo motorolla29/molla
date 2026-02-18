@@ -252,7 +252,7 @@ export default function InfiniteScrollAds({
                 alt="nothing-found"
               /> */}
               <CloudImage
-                src="molla/icons/ничего-не-найдено-100.png"
+                src="icons/ничего-не-найдено-100.png"
                 variant="orig"
                 alt="nothing-found"
                 className="w-16 sm:w-20"

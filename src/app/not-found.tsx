@@ -17,7 +17,7 @@ export default function NotFound() {
           alt="404"
         /> */}
         <CloudImage
-          src="molla/icons/oshibka_404.svg"
+          src="icons/oshibka_404.svg"
           variant="orig"
           alt="404"
           className="w-20 sm:w-24 mb-2"

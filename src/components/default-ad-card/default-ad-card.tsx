@@ -94,9 +94,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
             }
           /> */}
           <CloudImage
-            src={
-              ad.seller.avatar || 'molla/user-avatars/765-default-avatar.png'
-            }
+            src={ad.seller.avatar || 'user-avatars/765-default-avatar.png'}
             variant="sm"
             className="w-full h-full object-cover"
           />

@@ -48,7 +48,7 @@ const FavoriteAdsList = ({ ads, isLoading = false }: FavoriteAdsListProps) => {
             alt="favs-empty"
           /> */}
           <CloudImage
-            src="molla/icons/empty-favs-image.svg"
+            src="icons/empty-favs-image.svg"
             variant="orig"
             alt="favs-empty"
             className="w-20 sm:w-30 opacity-75"
