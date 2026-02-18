@@ -325,7 +325,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               <PhotoSlider
                 images={photos.map(
                   (src) =>
-                    `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/molla/mock-photos/${src || 'default.jpg'}`,
+                    `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/ad-photos/${src || 'default.jpg'}`,
                 )}
               />
             </div>

@@ -172,7 +172,7 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
                         iconLayout: 'default#image',
                         // было: iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${ad.category}-map-marker.png?tr=w-150`
                         iconImageHref: getCloudImageVariantUrl(
-                          `molla/icons/${ad.category}-map-marker.png`,
+                          `icons/${ad.category}-map-marker.png`,
                           'sm',
                         ),
                         iconImageSize: [iconWidth, iconHeight],

@@ -82,7 +82,7 @@ export default function AdCategorySelector({
                 className="w-5 h-5 mr-2"
               /> */}
               <CloudImage
-                src={`molla/icons/${selectedCategory.key}.png`}
+                src={`icons/${selectedCategory.key}.png`}
                 variant="xs"
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
@@ -149,7 +149,7 @@ export default function AdCategorySelector({
                   className="w-5 h-5 mr-2"
                 /> */}
                 <CloudImage
-                  src={`molla/icons/${opt.key}.png`}
+                  src={`icons/${opt.key}.png`}
                   variant="xs"
                   alt="cat-icon"
                   className="w-5 h-5 mr-2"

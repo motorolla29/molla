@@ -458,7 +458,7 @@ export default function ChatArea({
                       //   className="w-full h-full object-cover cursor-pointer transition-opacity"
                       // />
                       <CloudImage
-                        src={`molla/mock-photos/${chat.adPhoto}`}
+                        src={`ad-photos/${chat.adPhoto}`}
                         variant="sm"
                         className="w-full h-full object-cover cursor-pointer transition-opacity"
                       />

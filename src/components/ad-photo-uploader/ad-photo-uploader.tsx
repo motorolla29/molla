@@ -98,7 +98,8 @@ export default function AdPhotoUploader({
       const formData = new FormData();
       formData.append('file', item.file);
       formData.append('fileName', item.file.name);
-      formData.append('folder', '/molla/mock-photos');
+      //formData.append('folder', '/molla/mock-photos');
+      formData.append('folder', '/ad-photos');
       // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
       formData.append('variants', 'xs,sm,md');
 
@@ -178,7 +179,7 @@ export default function AdPhotoUploader({
                   />
                 ) : (
                   <CloudImage
-                    src={`molla/mock-photos/${p.url}`}
+                    src={`ad-photos/${p.url}`}
                     variant="sm"
                     alt={p.file.name}
                     className="w-full h-24 object-cover"

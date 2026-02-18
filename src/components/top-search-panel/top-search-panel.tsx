@@ -133,7 +133,7 @@ export default function TopSearchPanel({
                           className="w-6 h-6 aspect-auto mr-1"
                         /> */}
                         <CloudImage
-                          src={`molla/icons/${opt.key}.png`}
+                          src={`icons/${opt.key}.png`}
                           variant="xs"
                           className="w-6 h-6 aspect-auto mr-1"
                         />

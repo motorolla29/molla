@@ -48,7 +48,8 @@ export default function Profile() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('fileName', file.name);
-      formData.append('folder', '/molla/user-avatars');
+      //formData.append('folder', '/molla/user-avatars');
+      formData.append('folder', '/user-avatars');
       // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
       formData.append('variants', 'xs,sm');
 

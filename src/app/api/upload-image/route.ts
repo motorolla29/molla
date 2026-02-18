@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,10 +31,10 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get('file');
-    const folder =
-      (formData.get('folder') as string | null) || '/molla/mock-photos';
+    const folder = (formData.get('folder') as string | null) || '/photos';
     const fileName =
-      (formData.get('fileName') as string | null) || 'ad-image-' + Date.now();
+      (formData.get('fileName') as string | null) ||
+      `image-${crypto.randomUUID()}`;
 
     if (!(file instanceof Blob)) {
       return NextResponse.json(

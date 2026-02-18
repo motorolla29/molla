@@ -354,7 +354,7 @@ export default function MapGl({
                     iconLayout: 'default#image',
                     // было: iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${marker.category}-map-marker.png?tr=w-150`,
                     iconImageHref: getCloudImageVariantUrl(
-                      `molla/icons/${marker.category}-map-marker.png`,
+                      `icons/${marker.category}-map-marker.png`,
                       'sm',
                     ),
                     iconImageSize: [iconWidth, iconHeight],

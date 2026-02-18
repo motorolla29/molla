@@ -229,7 +229,8 @@ export default function ReviewFormModal({
       const formData = new FormData();
       formData.append('file', item.file);
       formData.append('fileName', item.file.name);
-      formData.append('folder', '/molla/reviews-photo');
+      //formData.append('folder', '/molla/reviews-photo');
+      formData.append('folder', '/reviews-photo');
       // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
       formData.append('variants', 'sm');
 
@@ -396,7 +397,7 @@ export default function ReviewFormModal({
                     /> */}
                     <CloudImage
                       key={selectedAd.id}
-                      src={`molla/mock-photos/${selectedAd.photos?.[0] || 'default.jpg'}`}
+                      src={`ad-photos/${selectedAd.photos?.[0] || 'default.jpg'}`}
                       variant="xs"
                       alt=""
                       className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
@@ -473,7 +474,7 @@ export default function ReviewFormModal({
                               className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
                             /> */}
                             <CloudImage
-                              src={`molla/mock-photos/${ad.photos?.[0] || 'default.jpg'}`}
+                              src={`ad-photos/${ad.photos?.[0] || 'default.jpg'}`}
                               variant="xs"
                               alt=""
                               className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"

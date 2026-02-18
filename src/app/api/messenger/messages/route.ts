@@ -1,42 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
+import { uploadImageToCloud } from '@/lib/cloud/upload-image';
 
 export const runtime = 'nodejs';
-
-const cloudKeyId = process.env.CLOUD_KEY_ID;
-const cloudKeySecret = process.env.CLOUD_KEY_SECRET;
-const cloudEndpoint = process.env.CLOUD_S3_ENDPOINT;
-const cloudRegion = process.env.CLOUD_REGION || 'ru-1';
-const cloudBucket = process.env.CLOUD_BUCKET_NAME;
-const cloudPublicBaseUrl = process.env.CLOUD_PUBLIC_BASE_URL;
-
-let s3Client: S3Client | null = null;
-
-function getS3Client() {
-  if (!cloudKeyId || !cloudKeySecret || !cloudEndpoint) {
-    throw new Error('Cloud storage credentials are not fully configured');
-  }
-  if (!s3Client) {
-    s3Client = new S3Client({
-      region: cloudRegion,
-      endpoint: cloudEndpoint,
-      credentials: {
-        accessKeyId: cloudKeyId,
-        secretAccessKey: cloudKeySecret,
-      },
-      forcePathStyle: true,
-    });
-  }
-  return s3Client;
-}
-
-function buildPublicUrl(key: string) {
-  const base = (cloudPublicBaseUrl || '').replace(/\/+$/, '');
-  return `${base}/${key.replace(/^\/+/, '')}`;
-}
 
 function safeExtFromName(name: string) {
   const lower = (name || '').toLowerCase();
@@ -171,39 +139,24 @@ export async function POST(request: NextRequest) {
       });
        */
 
-      if (!cloudBucket || !cloudPublicBaseUrl) {
-        console.error('Cloud bucket/public base URL is not configured');
-        return NextResponse.json(
-          { error: 'Image upload is not configured' },
-          { status: 500 },
-        );
-      }
-
-      const client = getS3Client();
-
       // Загружаем все вложения в cloud.ru параллельно
       const uploadPromises = attachments.map(async (attachment) => {
         const ext = safeExtFromName(attachment.name);
         const uuid = crypto.randomUUID();
-        const objectKey = `molla/chat-attachments/chat-attachment-${uuid}${ext}`;
+        const fileName = `${uuid}${ext}`;
 
-        const arrayBuffer = await attachment.arrayBuffer();
-        const body = Buffer.from(arrayBuffer);
-        const contentType =
-          (attachment as any).type || 'application/octet-stream';
-
-        await client.send(
-          new PutObjectCommand({
-            Bucket: cloudBucket,
-            Key: objectKey,
-            Body: body,
-            ContentType: contentType,
-          }),
-        );
+        const uploaded = await uploadImageToCloud({
+          file: attachment,
+          folder: '/chat-attachments',
+          fileName,
+          // Для чата: md для ленты + оригинал для модалки
+          variants: ['md'],
+        });
 
         return {
-          fileUrl: buildPublicUrl(objectKey), // Публичный URL из cloud.ru
-          fileName: attachment.name,
+          fileUrl: uploaded.url, // Публичный URL из cloud.ru (оригинал)
+          // В БД сохраняем то же имя, что и в хранилище
+          fileName,
           fileSize: attachment.size,
           fileType: attachment.type,
         };

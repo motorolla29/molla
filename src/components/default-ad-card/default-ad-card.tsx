@@ -29,7 +29,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
           className="w-full h-full object-cover"
         /> */}
         <CloudImage
-          src={`molla/mock-photos/${ad.photos[0] || 'default.jpg'}`}
+          src={`ad-photos/${ad.photos[0] || 'default.jpg'}`}
           variant="md"
           className="w-full h-full object-cover"
         />

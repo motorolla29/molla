@@ -148,7 +148,8 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
       const formData = new FormData();
       formData.append('file', item.file);
       formData.append('fileName', item.file.name);
-      formData.append('folder', '/molla/review-replies');
+      //formData.append('folder', '/molla/review-replies');
+      formData.append('folder', '/review-replies');
       // formData.append('variants', 'xs'); или 'xs,sm,md'. Не передавать — только оригинал.
       formData.append('variants', 'sm');
 

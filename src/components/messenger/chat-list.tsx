@@ -161,7 +161,7 @@ export default function ChatList({
                 /> */}
                 {chat.adPhoto ? (
                   <CloudImage
-                    src={`molla/mock-photos/${chat.adPhoto}`}
+                    src={`ad-photos/${chat.adPhoto}`}
                     variant="sm"
                     className="w-full h-full object-cover"
                   />

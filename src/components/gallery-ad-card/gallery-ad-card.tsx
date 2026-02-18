@@ -26,7 +26,7 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
           }`}
         /> */}
         <CloudImage
-          src={`molla/mock-photos/${ad.photos[0] || 'default.jpg'}`}
+          src={`ad-photos/${ad.photos[0] || 'default.jpg'}`}
           variant="md"
           className={`w-full h-full object-cover ${isArchived ? 'opacity-50' : ''}`}
         />

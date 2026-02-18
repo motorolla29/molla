@@ -279,7 +279,7 @@ export default function AsideFilters({
                   className="w-5 h-5 mr-2"
                 /> */}
                 <CloudImage
-                  src={`molla/icons/${opt.key}.png`}
+                  src={`icons/${opt.key}.png`}
                   variant="xs"
                   alt={opt.label}
                   className="w-5 h-5 mr-2"
