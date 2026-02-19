@@ -1,5 +1,11 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import sharp from 'sharp';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export type CloudImageVariant = 'xs' | 'sm' | 'md';
 
@@ -9,6 +15,8 @@ const cloudEndpoint = process.env.CLOUD_S3_ENDPOINT;
 const cloudRegion = process.env.CLOUD_REGION || 'ru-1';
 const cloudBucket = process.env.CLOUD_BUCKET_NAME;
 const cloudPublicBaseUrl = process.env.CLOUD_PUBLIC_BASE_URL;
+/** Путь к watermark: локальный файл (public/logo/...) или ключ в cloud (icons/...) */
+const watermarkPath = process.env.WATERMARK_PATH ?? 'logo/watermark.png';
 
 let s3Client: S3Client | null = null;
 
@@ -90,6 +98,182 @@ const VARIANT_WIDTH: Record<CloudImageVariant, number> = {
 /** Макс. сторона оригинала (px). Уменьшает 4000×3000 → ~2560 без потери качества для веба */
 const MAX_ORIGINAL_SIDE = 2560;
 
+/** Размер watermark относительно меньшей стороны изображения (0.1 = 10%) */
+const WATERMARK_SIZE_RATIO = 0.15;
+/** Отступ watermark от края как доля minSide (например, 0.02 = 2%) */
+const WATERMARK_PADDING_RATIO = 0.02;
+/** Минимальный/максимальный отступ watermark (px) */
+const WATERMARK_PADDING_MIN = 6;
+const WATERMARK_PADDING_MAX = 32;
+/**
+ * Watermark будет PNG с alpha (встроенной прозрачностью),
+ * поэтому отдельная обработка opacity не нужна.
+ */
+
+let watermarkCache: Buffer | null | undefined;
+
+/**
+ * Загружает watermark из локального файла или cloud storage
+ */
+async function loadWatermark(): Promise<Buffer | null> {
+  if (!watermarkPath) {
+    console.log('[watermark] WATERMARK_PATH не задан, пропускаем');
+    return null;
+  }
+
+  if (watermarkCache !== undefined) return watermarkCache;
+
+  console.log('[watermark] загрузка watermark, путь:', watermarkPath);
+
+  try {
+    // Cloud storage: ключ вида icons/watermark.png
+    if (
+      cloudBucket &&
+      (watermarkPath.startsWith('icons/') ||
+        watermarkPath.startsWith('ad-photos/'))
+    ) {
+      console.log('[watermark] попытка загрузки из cloud:', watermarkPath);
+      const client = getS3Client();
+      const response = await client.send(
+        new GetObjectCommand({
+          Bucket: cloudBucket,
+          Key: watermarkPath,
+        }),
+      );
+      if (response.Body) {
+        const chunks: Uint8Array[] = [];
+        for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+          chunks.push(chunk);
+        }
+        const buf = Buffer.concat(chunks);
+        console.log('[watermark] загружено из cloud, размер:', buf.length);
+        watermarkCache = buf;
+        return watermarkCache;
+      }
+      console.warn('[watermark] cloud объект пуст');
+      watermarkCache = null;
+      return watermarkCache;
+    }
+
+    // Локальный файл: public/logo/... или абсолютный путь
+    const isAbsolute =
+      watermarkPath.startsWith('/') && watermarkPath.length > 1;
+    const filePath = isAbsolute
+      ? watermarkPath
+      : join(process.cwd(), 'public', watermarkPath);
+
+    console.log('[watermark] читаем локальный файл:', filePath);
+    const buf = readFileSync(filePath);
+    console.log('[watermark] загружено локально, размер:', buf.length);
+    watermarkCache = buf;
+    return watermarkCache;
+  } catch (error) {
+    console.warn('[watermark] failed to load watermark:', error);
+    watermarkCache = null;
+    return watermarkCache;
+  }
+}
+
+/**
+ * Накладывает watermark на изображение через Sharp composite
+ */
+async function applyWatermark(
+  imageBuffer: Buffer,
+  imageWidth: number,
+  imageHeight: number,
+): Promise<Buffer> {
+  const watermarkBuffer = await loadWatermark();
+  if (!watermarkBuffer) {
+    console.log('[watermark] watermark не загружен, пропускаем наложение');
+    return imageBuffer;
+  }
+
+  try {
+    // Вычисляем размер watermark (10% от меньшей стороны)
+    const minSide = Math.min(imageWidth, imageHeight);
+    const targetSize = Math.max(
+      Math.floor(minSide * WATERMARK_SIZE_RATIO),
+      50, // минимум 50px
+    );
+    const padding = Math.max(
+      WATERMARK_PADDING_MIN,
+      Math.min(
+        WATERMARK_PADDING_MAX,
+        Math.round(minSide * WATERMARK_PADDING_RATIO),
+      ),
+    );
+
+    const watermarkMeta = await sharp(watermarkBuffer).metadata();
+    let wWidth = watermarkMeta.width;
+    let wHeight = watermarkMeta.height;
+    const isSvg = watermarkBuffer.toString('utf8', 0, 100).includes('<svg');
+    if ((!wWidth || !wHeight) && isSvg) {
+      // SVG: рендерим и берём размеры
+      const rendered = await sharp(watermarkBuffer)
+        .resize(targetSize)
+        .png()
+        .toBuffer();
+      const meta = await sharp(rendered).metadata();
+      wWidth = meta.width;
+      wHeight = meta.height;
+    }
+    if (!wWidth || !wHeight) {
+      console.warn(
+        '[watermark] не удалось получить размеры watermark',
+        watermarkMeta,
+      );
+      return imageBuffer;
+    }
+    console.log(
+      '[watermark] наложение на',
+      imageWidth,
+      'x',
+      imageHeight,
+      ', watermark',
+      wWidth,
+      'x',
+      wHeight,
+    );
+
+    // Масштабируем watermark, сохраняя пропорции
+    // Для прозрачности: если watermark PNG с alpha каналом, Sharp автоматически использует его
+    // Для непрозрачных форматов добавляем alpha канал
+    let watermarkResized = await sharp(watermarkBuffer)
+      .resize(targetSize, targetSize, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .ensureAlpha()
+      .toBuffer();
+
+    const watermarkMetaResized = await sharp(watermarkResized).metadata();
+    if (!watermarkMetaResized.width || !watermarkMetaResized.height) {
+      return imageBuffer;
+    }
+
+    // Позиция: правый нижний угол с отступом
+    const left = imageWidth - watermarkMetaResized.width - padding;
+    const top = imageHeight - watermarkMetaResized.height - padding;
+
+    // Накладываем watermark через composite
+    const result = await sharp(imageBuffer)
+      .composite([
+        {
+          input: watermarkResized,
+          left: Math.max(0, left),
+          top: Math.max(0, top),
+          blend: 'over',
+        },
+      ])
+      .toBuffer();
+    console.log('[watermark] успешно наложен');
+    return result;
+  } catch (error) {
+    console.warn('[watermark] applyWatermark failed:', error);
+    return imageBuffer;
+  }
+}
+
 async function optimizeBuffer(
   input: Buffer,
   ext: string,
@@ -97,33 +281,52 @@ async function optimizeBuffer(
   const format = extToFormat(ext);
   try {
     // rotate() без аргументов применяет EXIF Orientation — исправляет "вертикальное стало горизонтальным"
-    const pipeline = sharp(input)
+    let pipeline = sharp(input)
       .rotate()
       .resize(MAX_ORIGINAL_SIDE, MAX_ORIGINAL_SIDE, {
         fit: 'inside',
         withoutEnlargement: true,
       });
+
+    // Конвертируем в буфер
+    let processedBuffer: Buffer;
     if (format === 'png') {
-      return {
-        buffer: await pipeline.png({ compressionLevel: 9 }).toBuffer(),
-        contentType: 'image/png',
-      };
+      processedBuffer = await pipeline.png({ compressionLevel: 9 }).toBuffer();
+    } else if (format === 'webp') {
+      processedBuffer = await pipeline.webp({ quality: 90 }).toBuffer();
+    } else if (format === 'avif') {
+      processedBuffer = await pipeline.avif({ quality: 55 }).toBuffer();
+    } else {
+      processedBuffer = await pipeline
+        .jpeg({ quality: 90, mozjpeg: true })
+        .toBuffer();
     }
-    if (format === 'webp') {
-      return {
-        buffer: await pipeline.webp({ quality: 90 }).toBuffer(),
-        contentType: 'image/webp',
-      };
+
+    // Размеры берём из финального буфера (после resize!), иначе watermark уходит за границы
+    const { width, height } = await sharp(processedBuffer).metadata();
+
+    // Накладываем watermark на обработанное изображение
+    const withWatermark = await applyWatermark(
+      processedBuffer,
+      width || 0,
+      height || 0,
+    );
+
+    // Определяем contentType на основе формата
+    let contentType: string;
+    if (format === 'png') {
+      contentType = 'image/png';
+    } else if (format === 'webp') {
+      contentType = 'image/webp';
+    } else if (format === 'avif') {
+      contentType = 'image/avif';
+    } else {
+      contentType = 'image/jpeg';
     }
-    if (format === 'avif') {
-      return {
-        buffer: await pipeline.avif({ quality: 55 }).toBuffer(),
-        contentType: 'image/avif',
-      };
-    }
+
     return {
-      buffer: await pipeline.jpeg({ quality: 90, mozjpeg: true }).toBuffer(),
-      contentType: 'image/jpeg',
+      buffer: withWatermark,
+      contentType,
     };
   } catch {
     // Если оптимизация не удалась — возвращаем как есть
@@ -185,6 +388,14 @@ async function generateAndUploadVariantsInBackground(params: {
         outContentType = 'image/jpeg';
       }
 
+      // Накладываем watermark на варианты (только для md и sm). Размеры — из финального буфера!
+      const outMeta = await sharp(out).metadata();
+      const variantWidth = outMeta.width || width;
+      const variantHeight = outMeta.height || 0;
+      if (variant !== 'xs' && variantHeight > 100) {
+        out = await applyWatermark(out, variantWidth, variantHeight);
+      }
+
       await client.send(
         new PutObjectCommand({
           Bucket: cloudBucket,
@@ -209,6 +420,13 @@ export async function uploadImageToCloud(params: {
 
   const folder = normalizeFolder(params.folder || '/photos');
   const objectKey = `${folder ? `${folder}/` : ''}${params.fileName}`;
+
+  console.log(
+    '[cloud-upload] загрузка:',
+    objectKey,
+    '| WATERMARK_PATH:',
+    watermarkPath || '(не задан)',
+  );
 
   const arrayBuffer = await params.file.arrayBuffer();
   const originalBuffer = Buffer.from(arrayBuffer);
