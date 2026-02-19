@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocationStore } from '@/store/useLocationStore';
 import LocationModal from '../location-modal/location-modal';
@@ -269,9 +268,8 @@ export default function FiltersMobile({
                           alt={opt.label}
                           className="w-5 h-5 mr-2"
                         /> */}
-                        <CloudImage
-                          src={`icons/${opt.key}.png`}
-                          variant="xs"
+                        <img
+                          src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${opt.key}.png`}
                           alt={opt.label}
                           className="w-5 h-5 mr-2"
                         />

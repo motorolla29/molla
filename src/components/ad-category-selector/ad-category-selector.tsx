@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CategoryKey } from '@/types/ad';
 import { categoryOptions } from '@/const';
-import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface AdCategorySelectorProps {
   value: CategoryKey | '';
@@ -81,9 +80,8 @@ export default function AdCategorySelector({
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
               /> */}
-              <CloudImage
-                src={`icons/${selectedCategory.key}.png`}
-                variant="xs"
+              <img
+                src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${selectedCategory.key}.png`}
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
               />
@@ -148,9 +146,8 @@ export default function AdCategorySelector({
                   alt="cat-icon"
                   className="w-5 h-5 mr-2"
                 /> */}
-                <CloudImage
-                  src={`icons/${opt.key}.png`}
-                  variant="xs"
+                <img
+                  src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${opt.key}.png`}
                   alt="cat-icon"
                   className="w-5 h-5 mr-2"
                 />

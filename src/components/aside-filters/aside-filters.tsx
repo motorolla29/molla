@@ -1,7 +1,6 @@
 'use client';
 
 import { useLocationStore } from '@/store/useLocationStore';
-import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import LocationModal from '../location-modal/location-modal';
@@ -278,9 +277,8 @@ export default function AsideFilters({
                   alt={opt.label}
                   className="w-5 h-5 mr-2"
                 /> */}
-                <CloudImage
-                  src={`icons/${opt.key}.png`}
-                  variant="xs"
+                <img
+                  src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${opt.key}.png`}
                   alt={opt.label}
                   className="w-5 h-5 mr-2"
                 />

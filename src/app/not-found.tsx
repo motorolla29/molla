@@ -3,7 +3,6 @@ import Footer from '@/components/footer/footer';
 import Header from '@/components/header/header';
 import HeaderMobile from '@/components/header-mobile/header-mobile';
 import Link from 'next/link';
-import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 export default function NotFound() {
   return (
@@ -16,9 +15,8 @@ export default function NotFound() {
           src="https://ik.imagekit.io/motorolla29/molla/icons/oshibka_404.svg"
           alt="404"
         /> */}
-        <CloudImage
-          src="icons/oshibka_404.svg"
-          variant="orig"
+        <img
+          src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/oshibka_404.svg`}
           alt="404"
           className="w-20 sm:w-24 mb-2"
         />
