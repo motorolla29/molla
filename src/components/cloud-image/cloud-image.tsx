@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   getCloudImageVariantUrl,
   type CloudImageVariant,
@@ -23,6 +23,13 @@ export function CloudImage({
   ...rest
 }: CloudImageProps) {
   const [useOriginal, setUseOriginal] = useState(false);
+  const [forceKey, setForceKey] = useState(0);
+
+  // Сбрасываем состояние при изменении src или variant
+  useEffect(() => {
+    setUseOriginal(false);
+    setForceKey((prev) => prev + 1);
+  }, [src, variant]);
 
   const handleError = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -30,18 +37,22 @@ export function CloudImage({
         onError?.(e);
         return;
       }
+      // Переключаемся на оригинал
       setUseOriginal(true);
-      onError?.(e);
+      setForceKey((prev) => prev + 1);
     },
-    [variant, useOriginal, onError]
+    [src, variant, useOriginal, onError]
   );
 
   const displaySrc = getCloudImageVariantUrl(src, useOriginal ? 'orig' : variant);
+  // Используем key для принудительного перерендера при изменении src/variant или переключении на оригинал
+  const imgKey = `${src}-${variant}-${useOriginal}-${forceKey}`;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       {...rest}
+      key={imgKey}
       src={displaySrc}
       alt={alt}
       className={className}

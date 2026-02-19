@@ -100,7 +100,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                   {/* Фоновое размытие */}
                   <CloudImage
                     src={src}
-                    variant="xs"
+                    variant="sm"
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-50"
                     aria-hidden="true"
@@ -172,7 +172,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
               >
                 <CloudImage
                   src={src}
-                  variant="xs"
+                  variant="sm"
                   alt={`Миниатюра ${idx + 1}`}
                   className="w-full h-full object-cover"
                 />

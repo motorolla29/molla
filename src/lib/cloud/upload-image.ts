@@ -87,13 +87,22 @@ const VARIANT_WIDTH: Record<CloudImageVariant, number> = {
   md: 350,
 };
 
+/** Макс. сторона оригинала (px). Уменьшает 4000×3000 → ~2560 без потери качества для веба */
+const MAX_ORIGINAL_SIDE = 2560;
+
 async function optimizeBuffer(
   input: Buffer,
   ext: string,
 ): Promise<{ buffer: Buffer; contentType: string }> {
   const format = extToFormat(ext);
   try {
-    const pipeline = sharp(input);
+    // rotate() без аргументов применяет EXIF Orientation — исправляет "вертикальное стало горизонтальным"
+    const pipeline = sharp(input)
+      .rotate()
+      .resize(MAX_ORIGINAL_SIDE, MAX_ORIGINAL_SIDE, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
     if (format === 'png') {
       return {
         buffer: await pipeline.png({ compressionLevel: 9 }).toBuffer(),
@@ -113,7 +122,7 @@ async function optimizeBuffer(
       };
     }
     return {
-      buffer: await pipeline.jpeg({ quality: 92, mozjpeg: true }).toBuffer(),
+      buffer: await pipeline.jpeg({ quality: 90, mozjpeg: true }).toBuffer(),
       contentType: 'image/jpeg',
     };
   } catch {
@@ -152,10 +161,12 @@ async function generateAndUploadVariantsInBackground(params: {
       const width = VARIANT_WIDTH[variant];
       const variantKey = `${folder}${variant}__${fileName}${ext}`;
 
-      const resized = sharp(params.originalBuffer).resize(width, undefined, {
-        withoutEnlargement: true,
-        fit: 'inside',
-      });
+      const resized = sharp(params.originalBuffer)
+        .rotate()
+        .resize(width, undefined, {
+          withoutEnlargement: true,
+          fit: 'inside',
+        });
 
       let out: Buffer;
       let outContentType = params.contentType;
