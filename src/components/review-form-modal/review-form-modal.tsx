@@ -391,13 +391,13 @@ export default function ReviewFormModal({
                   <>
                     {/* было: <img
                       key={selectedAd.id}
-                      src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${selectedAd.photos?.[0] || 'default.jpg'}?tr=w-80`}
+                      src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${selectedAd.photos?.[0] || 'default.svg'}?tr=w-80`}
                       alt=""
                       className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
                     /> */}
                     <CloudImage
                       key={selectedAd.id}
-                      src={`ad-photos/${selectedAd.photos?.[0] || 'default.jpg'}`}
+                      src={`ad-photos/${selectedAd.photos?.[0] || 'default.svg'}`}
                       variant="xs"
                       alt=""
                       className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
@@ -469,12 +469,12 @@ export default function ReviewFormModal({
                             }`}
                           >
                             {/* было: <img
-                              src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${ad.photos?.[0] || 'default.jpg'}?tr=w-80`}
+                              src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${ad.photos?.[0] || 'default.svg'}?tr=w-80`}
                               alt=""
                               className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"
                             /> */}
                             <CloudImage
-                              src={`ad-photos/${ad.photos?.[0] || 'default.jpg'}`}
+                              src={`ad-photos/${ad.photos?.[0] || 'default.svg'}`}
                               variant="xs"
                               alt=""
                               className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200/25 rounded-lg object-cover shrink-0"

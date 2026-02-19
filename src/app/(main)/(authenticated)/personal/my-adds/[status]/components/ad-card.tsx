@@ -37,12 +37,12 @@ export default function AdCard({
           <div className="w-16 h-16 bg-gray-200/25 sm:w-20 sm:h-20 shrink-0 bg-grey-100 flex items-center justify-center rounded-xl overflow-hidden">
             {/* было: <img
               src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
-                ad.photos[0] || 'default.jpg'
+                ad.photos[0] || 'default.svg'
               }?tr=w-200`}
               className="w-full h-full object-cover"
             /> */}
             <CloudImage
-              src={`ad-photos/${ad.photos[0] || 'default.jpg'}`}
+              src={`ad-photos/${ad.photos[0] || 'default.svg'}`}
               variant="sm"
               className="w-full h-full object-cover"
             />

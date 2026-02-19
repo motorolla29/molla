@@ -31,7 +31,7 @@ interface AdClientProps {
 }
 
 export default function AdClient({ ad, similarAds }: AdClientProps) {
-  const photos = ad.photos.length > 0 ? ad.photos : ['default.jpg'];
+  const photos = ad.photos.length > 0 ? ad.photos : ['default.svg'];
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const isArchived = ad.status === 'archived';
   const toast = useToast();
@@ -318,13 +318,13 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               {/* было: images={photos.map(
                   (src) =>
                     `https://ik.imagekit.io/motorolla29/molla/mock-photos/${
-                      src || 'default.jpg'
+                      src || 'default.svg'
                     }`,
                 )} */}
               <PhotoSlider
                 images={photos.map(
                   (src) =>
-                    `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/ad-photos/${src || 'default.jpg'}`,
+                    `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/ad-photos/${src || 'default.svg'}`,
                 )}
               />
             </div>
