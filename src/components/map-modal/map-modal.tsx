@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { AdBase } from '@/types/ad';
 import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
-import { getCloudImageVariantUrl } from '@/utils/cloud-image';
 import { lockScroll, unlockScroll } from '@/utils/scroll-lock';
 
 // Варианты анимации для модального окна карты
@@ -171,10 +170,7 @@ export default function MapModal({ isOpen, onClose, ad }: MapModalProps) {
                       options={{
                         iconLayout: 'default#image',
                         // было: iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${ad.category}-map-marker.png?tr=w-150`
-                        iconImageHref: getCloudImageVariantUrl(
-                          `icons/${ad.category}-map-marker.png`,
-                          'sm',
-                        ),
+                        iconImageHref: `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${ad.category}-map-marker.png`,
                         iconImageSize: [iconWidth, iconHeight],
                         iconImageOffset: [iconOffsetX, iconOffsetY],
                       }}

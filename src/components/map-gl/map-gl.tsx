@@ -5,7 +5,6 @@ import { YMaps, Map, Placemark, Clusterer } from '@pbe/react-yandex-maps';
 import { useLocationStore } from '@/store/useLocationStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getCloudImageVariantUrl } from '@/utils/cloud-image';
 
 interface MapMarker {
   id: string;
@@ -353,10 +352,7 @@ export default function MapGl({
                   options={{
                     iconLayout: 'default#image',
                     // было: iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${marker.category}-map-marker.png?tr=w-150`,
-                    iconImageHref: getCloudImageVariantUrl(
-                      `icons/${marker.category}-map-marker.png`,
-                      'sm',
-                    ),
+                    iconImageHref: `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${marker.category}-map-marker.png`,
                     iconImageSize: [iconWidth, iconHeight],
                     iconImageOffset: [iconOffsetX, iconOffsetY],
                   }}

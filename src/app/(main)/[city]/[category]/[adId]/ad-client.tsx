@@ -24,7 +24,6 @@ import { useToast } from '@/components/toast/toast-context';
 import { getOrCreateUserToken } from '@/utils';
 import SellerContacts from './components/seller-contacts';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
-import { getCloudImageVariantUrl } from '@/utils/cloud-image';
 
 interface AdClientProps {
   ad: AdBase;
