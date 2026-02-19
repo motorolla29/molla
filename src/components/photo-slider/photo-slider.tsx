@@ -196,12 +196,11 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                   className="flex-[0_0_100%] flex justify-center items-center"
                   key={idx}
                 >
-                  <div className="relative max-w-[1200px] w-full h-[75vh] max-h-screen">
-                    <Image
+                  <div className="relative max-w-[1200px] w-full h-[75vh] max-h-screen flex items-center justify-center">
+                    <img
                       src={src}
                       alt={`Увеличенное фото ${idx + 1}`}
-                      fill
-                      className="object-contain"
+                      className="max-w-full max-h-full object-contain"
                     />
                   </div>
                 </div>
