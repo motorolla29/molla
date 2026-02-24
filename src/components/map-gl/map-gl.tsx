@@ -154,12 +154,17 @@ export default function MapGl({
         const maxPrice = searchParams?.get('maxPrice');
         const vip = searchParams?.get('vip');
         const time = searchParams?.get('time');
+        const search = searchParams?.get('search');
 
         if (category) params.set('category', category);
         if (minPrice) params.set('minPrice', minPrice);
         if (maxPrice) params.set('maxPrice', maxPrice);
         if (vip) params.set('vip', vip);
         if (time) params.set('time', time);
+        if (search) params.set('search', search);
+        if (cityLabel && cityLabel !== 'russia') {
+          params.set('cityLabel', cityLabel);
+        }
 
         const response = await fetch(`/api/map-markers?${params.toString()}`);
         if (response.ok) {

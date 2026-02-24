@@ -25,11 +25,13 @@ export async function GET(request: NextRequest) {
     const west = searchParams.get('west');
 
     // Параметры фильтрации
+    const cityLabel = searchParams.get('cityLabel');
     const category = searchParams.get('category');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const isVip = searchParams.get('vip') === '1';
     const timeFilter = searchParams.get('time');
+    const search = searchParams.get('search');
 
     // Валидация обязательных параметров
     if (!north || !south || !east || !west) {
@@ -61,6 +63,11 @@ export async function GET(request: NextRequest) {
       gte: bounds.west, // >= западной границы
       lte: bounds.east, // <= восточной границы
     };
+
+    // Фильтр по городу
+    if (cityLabel && cityLabel !== 'russia') {
+      where.cityLabel = cityLabel;
+    }
 
     // Фильтр по категории
     if (category) {
@@ -100,6 +107,16 @@ export async function GET(request: NextRequest) {
       where.datePosted = {
         gte: dateFilter,
       };
+    }
+
+    // Фильтр по поисковому запросу (заголовок/описание/детали),
+    // чтобы маркеры соответствовали выдаче списка объявлений
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { details: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
     // Запрашиваем объявления с примененными фильтрами
