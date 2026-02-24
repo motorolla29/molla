@@ -83,8 +83,20 @@ export default function MapGl({
     zoom: targetZoom,
   });
 
+  // Обновляем центр/зум только когда они реально меняются,
+  // чтобы не триггерить лишние обновления карты
   useEffect(() => {
-    setMapState({ center: targetCenter, zoom: targetZoom });
+    setMapState((prev) => {
+      const sameCenter =
+        prev.center[0] === targetCenter[0] &&
+        prev.center[1] === targetCenter[1];
+      const sameZoom = prev.zoom === targetZoom;
+      if (sameCenter && sameZoom) return prev;
+      return {
+        center: targetCenter,
+        zoom: targetZoom,
+      };
+    });
   }, [targetCenter, targetZoom]);
 
   // Если переданы статические ads, используем их, иначе загружаем динамически
@@ -109,6 +121,13 @@ export default function MapGl({
 
   const mapRef = useRef<any>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
+  const lastBoundsRef = useRef<any | null>(null);
+  const markerLayoutRef = useRef<any | null>(null);
+
+  const iconBaseUrl =
+    process.env.CLOUD_PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL ||
+    'https://molla.s3.cloud.ru';
 
   const ORIGINAL_SIZE: [number, number] = [399, 548];
   const MAX_WIDTH = 50;
@@ -175,6 +194,13 @@ export default function MapGl({
   // Обработчик загрузки карты
   const handleMapLoad = useCallback(
     (ymaps: any) => {
+      // Создаём кастомный layout для иконок один раз
+      if (!markerLayoutRef.current && ymaps?.templateLayoutFactory) {
+        markerLayoutRef.current = ymaps.templateLayoutFactory.createClass(
+          '<div class="molla-map-marker molla-map-marker--appear" style="background-image:url($[properties.iconUrl]);"></div>',
+        );
+      }
+
       if (ads.length === 0 && !initialLoadDone) {
         // Добавляем небольшую задержку, чтобы карта полностью инициализировалась
         setTimeout(() => {
@@ -196,27 +222,20 @@ export default function MapGl({
     [ads.length, loadMarkersForViewport, initialLoadDone],
   );
 
-  // Перезагружаем маркеры при изменении фильтров
+  // Перезагружаем маркеры при изменении фильтров, не очищая текущие
   useEffect(() => {
-    if (initialLoadDone) {
-      // Очищаем старые маркеры перед загрузкой новых
-      setMarkers([]);
-      if (mapRef.current) {
-        const map = mapRef.current;
-        if (typeof map.getBounds === 'function') {
-          const bounds = map.getBounds();
-          loadMarkersForViewport(bounds);
-        }
-      }
-    }
+    if (!initialLoadDone) return;
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+    if (typeof map.getBounds !== 'function') return;
+    const bounds = map.getBounds();
+    loadMarkersForViewport(bounds);
   }, [searchParams, loadMarkersForViewport, initialLoadDone]);
 
-  // Вычисляем пропорциональную высоту и смещение
+  // Вычисляем пропорциональную высоту (используется в iconShape)
   const aspectRatio = ORIGINAL_SIZE[1] / ORIGINAL_SIZE[0];
   const iconWidth = MAX_WIDTH;
   const iconHeight = Math.round(MAX_WIDTH * aspectRatio);
-  const iconOffsetX = -iconWidth / 2;
-  const iconOffsetY = -iconHeight;
 
   // Преобразование маркера в AdBase для обратной совместимости
   const convertMarkerToAd = useCallback(
@@ -247,7 +266,12 @@ export default function MapGl({
     [cityLabel],
   );
 
-  const handlePin = useCallback((ad: AdBase) => onPinClick?.(ad), [onPinClick]);
+  const handlePin = useCallback(
+    (ad: AdBase) => {
+      onPinClick?.(ad);
+    },
+    [onPinClick],
+  );
 
   const handleCluster = useCallback(
     (e: any) => {
@@ -283,6 +307,20 @@ export default function MapGl({
     (e: any) => {
       if (ads.length === 0) {
         const newBounds = e.get('target').getBounds();
+        if (!newBounds) return;
+
+        // Пропускаем событие, если границы реально не изменились
+        const prev = lastBoundsRef.current;
+        if (
+          prev &&
+          prev[0][0] === newBounds[0][0] &&
+          prev[0][1] === newBounds[0][1] &&
+          prev[1][0] === newBounds[1][0] &&
+          prev[1][1] === newBounds[1][1]
+        ) {
+          return;
+        }
+        lastBoundsRef.current = newBounds;
 
         // Если это первый bounds change и мы еще не загружали маркеры, делаем это
         if (!initialLoadDone && markers.length === 0) {
@@ -314,6 +352,8 @@ export default function MapGl({
         <Map
           options={{
             suppressMapOpenBlock: true,
+            // Отключаем взаимодействие и попапы встроенных POI (метро, организации и т.д.)
+            yandexMapDisablePoiInteractivity: true,
             minZoom,
             maxZoom,
           }}
@@ -336,6 +376,7 @@ export default function MapGl({
             onClick={handleCluster}
           >
             {displayMarkers.map((marker) => {
+              const iconUrl = `${iconBaseUrl}/icons/${marker.category}-map-marker.png`;
               const ad =
                 ads.length > 0
                   ? ads.find((a) => a.id === marker.id) ||
@@ -348,13 +389,28 @@ export default function MapGl({
                   properties={{
                     balloonContentHeader: marker.title,
                     adId: marker.id,
+                    iconUrl,
                   }}
                   options={{
-                    iconLayout: 'default#image',
-                    // было: iconImageHref: `https://ik.imagekit.io/motorolla29/molla/icons/${marker.category}-map-marker.png?tr=w-150`,
-                    iconImageHref: `${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${marker.category}-map-marker.png`,
+                    iconLayout: markerLayoutRef.current || 'default#image',
+                    // При кастомном layout iconImageHref игнорируется, но оставляем
+                    // его для fallback, если layout по какой-то причине не инициализировался.
+                    iconImageHref: iconUrl,
                     iconImageSize: [iconWidth, iconHeight],
-                    iconImageOffset: [iconOffsetX, iconOffsetY],
+                    // Определяем форму клика: прямоугольник вокруг визуальной иконки
+                    iconShape: {
+                      type: 'Rectangle',
+                      // @ts-expect-error: типы IGeometryJson в @pbe/react-yandex-maps
+                      // не описывают coordinates для iconShape, но для Яндекс.Карт
+                      // это валидное поле (см. документацию JS API).
+                      coordinates: [
+                        [-iconWidth / 2, -iconHeight],
+                        [iconWidth / 2, 0],
+                      ],
+                    },
+                    hasBalloon: false,
+                    hasHint: false,
+                    hideIconOnBalloonOpen: false,
                   }}
                   onClick={() => handlePin(ad)}
                 />

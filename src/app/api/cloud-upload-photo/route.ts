@@ -10,22 +10,18 @@ export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('[cloud-upload-photo] incoming request');
-
     const token = request.cookies.get('token')?.value;
     if (!token) {
-      console.warn('[cloud-upload-photo] no auth token cookie');
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
     const payload = verifyToken(token);
     if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
-      console.warn('[cloud-upload-photo] invalid token payload', { payload });
       return NextResponse.json({ error: 'Неверный токен' }, { status: 401 });
     }
 
     const formData = await request.formData();
-    console.log('[cloud-upload-photo] formData received');
+
     const file = formData.get('file');
     const folder = (formData.get('folder') as string | null) || '/photos';
 
@@ -52,14 +48,7 @@ export async function POST(request: NextRequest) {
     const lower = originalName.toLowerCase();
     const dot = lower.lastIndexOf('.');
     const extRaw = dot !== -1 ? lower.slice(dot) : '';
-    const allowedExts = [
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.webp',
-      '.gif',
-      '.avif',
-    ];
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
     const ext = allowedExts.includes(extRaw) ? extRaw : '.jpg';
     const fileName = `${crypto.randomUUID()}${ext}`;
 

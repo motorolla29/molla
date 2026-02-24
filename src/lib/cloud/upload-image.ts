@@ -117,13 +117,10 @@ let watermarkCache: Buffer | null | undefined;
  */
 async function loadWatermark(): Promise<Buffer | null> {
   if (!watermarkPath) {
-    console.log('[watermark] WATERMARK_PATH не задан, пропускаем');
     return null;
   }
 
   if (watermarkCache !== undefined) return watermarkCache;
-
-  console.log('[watermark] загрузка watermark, путь:', watermarkPath);
 
   try {
     // Cloud storage: ключ вида icons/watermark.png
@@ -132,7 +129,6 @@ async function loadWatermark(): Promise<Buffer | null> {
       (watermarkPath.startsWith('icons/') ||
         watermarkPath.startsWith('ad-photos/'))
     ) {
-      console.log('[watermark] попытка загрузки из cloud:', watermarkPath);
       const client = getS3Client();
       const response = await client.send(
         new GetObjectCommand({
@@ -146,7 +142,6 @@ async function loadWatermark(): Promise<Buffer | null> {
           chunks.push(chunk);
         }
         const buf = Buffer.concat(chunks);
-        console.log('[watermark] загружено из cloud, размер:', buf.length);
         watermarkCache = buf;
         return watermarkCache;
       }
@@ -162,9 +157,7 @@ async function loadWatermark(): Promise<Buffer | null> {
       ? watermarkPath
       : join(process.cwd(), 'public', watermarkPath);
 
-    console.log('[watermark] читаем локальный файл:', filePath);
     const buf = readFileSync(filePath);
-    console.log('[watermark] загружено локально, размер:', buf.length);
     watermarkCache = buf;
     return watermarkCache;
   } catch (error) {
@@ -184,7 +177,6 @@ async function applyWatermark(
 ): Promise<Buffer> {
   const watermarkBuffer = await loadWatermark();
   if (!watermarkBuffer) {
-    console.log('[watermark] watermark не загружен, пропускаем наложение');
     return imageBuffer;
   }
 
@@ -224,16 +216,6 @@ async function applyWatermark(
       );
       return imageBuffer;
     }
-    console.log(
-      '[watermark] наложение на',
-      imageWidth,
-      'x',
-      imageHeight,
-      ', watermark',
-      wWidth,
-      'x',
-      wHeight,
-    );
 
     // Масштабируем watermark, сохраняя пропорции
     // Для прозрачности: если watermark PNG с alpha каналом, Sharp автоматически использует его
@@ -266,7 +248,6 @@ async function applyWatermark(
         },
       ])
       .toBuffer();
-    console.log('[watermark] успешно наложен');
     return result;
   } catch (error) {
     console.warn('[watermark] applyWatermark failed:', error);
@@ -420,13 +401,6 @@ export async function uploadImageToCloud(params: {
 
   const folder = normalizeFolder(params.folder || '/photos');
   const objectKey = `${folder ? `${folder}/` : ''}${params.fileName}`;
-
-  console.log(
-    '[cloud-upload] загрузка:',
-    objectKey,
-    '| WATERMARK_PATH:',
-    watermarkPath || '(не задан)',
-  );
 
   const arrayBuffer = await params.file.arrayBuffer();
   const originalBuffer = Buffer.from(arrayBuffer);
