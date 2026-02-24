@@ -4,6 +4,7 @@ import {
   uploadImageToCloud,
   type CloudImageVariant,
 } from '@/lib/cloud/upload-image';
+import crypto from 'crypto';
 
 export const runtime = 'nodejs';
 
@@ -27,9 +28,7 @@ export async function POST(request: NextRequest) {
     console.log('[cloud-upload-photo] formData received');
     const file = formData.get('file');
     const folder = (formData.get('folder') as string | null) || '/photos';
-    const fileName =
-      (formData.get('fileName') as string | null) || 'ad-image-' + Date.now();
-    
+
     // Не передали variants — только оригинал; передали "xs" или "xs,sm,md" — оригинал + эти варианты.
     const variantsParam = (formData.get('variants') as string | null) ?? '';
     const requestedVariants = variantsParam
@@ -43,6 +42,26 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    // Генерируем безопасное уникальное имя файла на сервере
+    const originalName =
+      (formData.get('fileName') as string | null) ||
+      (file as File).name ||
+      'image.jpg';
+
+    const lower = originalName.toLowerCase();
+    const dot = lower.lastIndexOf('.');
+    const extRaw = dot !== -1 ? lower.slice(dot) : '';
+    const allowedExts = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      '.gif',
+      '.avif',
+    ];
+    const ext = allowedExts.includes(extRaw) ? extRaw : '.jpg';
+    const fileName = `${crypto.randomUUID()}${ext}`;
 
     const uploaded = await uploadImageToCloud({
       file,

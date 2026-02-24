@@ -89,7 +89,7 @@ function guessContentType(fileType: string | undefined, fileName: string) {
   return 'application/octet-stream';
 }
 
-const VARIANT_WIDTH: Record<CloudImageVariant, number> = {
+const VARIANT_MIN_SIDE: Record<Exclude<CloudImageVariant, 'orig'>, number> = {
   xs: 80,
   sm: 200,
   md: 350,
@@ -361,15 +361,15 @@ async function generateAndUploadVariantsInBackground(params: {
 
   await Promise.all(
     params.variants.map(async (variant) => {
-      const width = VARIANT_WIDTH[variant];
+      const size = VARIANT_MIN_SIDE[variant];
       const variantKey = `${folder}${variant}__${fileName}${ext}`;
 
-      const resized = sharp(params.originalBuffer)
-        .rotate()
-        .resize(width, undefined, {
-          withoutEnlargement: true,
-          fit: 'inside',
-        });
+      // fit: 'outside' + квадрат size×size → обе стороны >= size (если исходник больше),
+      // withoutEnlargement: true не даёт увеличивать маленькие изображения.
+      const resized = sharp(params.originalBuffer).rotate().resize(size, size, {
+        fit: 'outside',
+        withoutEnlargement: true,
+      });
 
       let out: Buffer;
       let outContentType = params.contentType;
@@ -390,7 +390,7 @@ async function generateAndUploadVariantsInBackground(params: {
 
       // Накладываем watermark на варианты (только для md и sm). Размеры — из финального буфера!
       const outMeta = await sharp(out).metadata();
-      const variantWidth = outMeta.width || width;
+      const variantWidth = outMeta.width || size;
       const variantHeight = outMeta.height || 0;
       if (variant !== 'xs' && variantHeight > 100) {
         out = await applyWatermark(out, variantWidth, variantHeight);

@@ -200,7 +200,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                     <img
                       src={src}
                       alt={`Увеличенное фото ${idx + 1}`}
-                      className="max-w-full max-h-full object-contain"
+                      className="w-full h-full max-w-full max-h-full object-contain"
                     />
                   </div>
                 </div>
