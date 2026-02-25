@@ -21,6 +21,7 @@ interface Message {
     blobUrl: string;
     fileName: string;
     fileType: string;
+    isError?: boolean;
     isLoading?: boolean; // Для отслеживания загрузки серверного изображения
   }>;
 }
@@ -235,13 +236,6 @@ const MessageItem = memo(
                         }
                         onLoad={() => {
                           updateLoadedImage(attachment.id, true);
-                          setTimeout(() => {
-                            if (isNearBottomRef.current) {
-                              const container = messagesContainerRef.current;
-                              if (container)
-                                container.scrollTop = container.scrollHeight;
-                            }
-                          }, 100);
                         }}
                       />
                     ) : (
@@ -262,13 +256,6 @@ const MessageItem = memo(
                         }
                         onLoad={() => {
                           updateLoadedImage(attachment.id, true);
-                          setTimeout(() => {
-                            if (isNearBottomRef.current) {
-                              const container = messagesContainerRef.current;
-                              if (container)
-                                container.scrollTop = container.scrollHeight;
-                            }
-                          }, 100);
                         }}
                       />
                     )}
@@ -320,6 +307,16 @@ const MessageItem = memo(
                     /> */}
                     {message.senderId === currentUserId &&
                       attachment.blobUrl &&
+                      attachment.isError && (
+                        <div className="absolute inset-0 bg-red-500/50 rounded-lg flex items-center justify-center">
+                          <span className="text-xs sm:text-sm font-semibold text-white">
+                            Ошибка отправки
+                          </span>
+                        </div>
+                      )}
+                    {message.senderId === currentUserId &&
+                      attachment.blobUrl &&
+                      !attachment.isError &&
                       (!loadedImages[attachment.id] ||
                         attachment.fileUrl.startsWith('blob:')) && (
                         <div className="absolute inset-0 bg-white/25 rounded-lg flex items-center justify-center">

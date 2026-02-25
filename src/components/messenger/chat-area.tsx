@@ -113,7 +113,44 @@ export default function ChatArea({
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
     const prevLength = prevMessagesLengthRef.current;
-    setLocalMessages(initialMessages);
+
+    // Мерджим серверные сообщения с локальными,
+    // но добавляем только локальные сообщения с ошибкой (status === 'error'),
+    // чтобы не дублировать успешно отправленные сообщения.
+    setLocalMessages((prev) => {
+      const byId = new Map<string, Message>();
+
+      // Сначала кладём серверные сообщения (они считаются источником истины)
+      for (const msg of initialMessages) {
+        byId.set(msg.id, msg);
+      }
+
+      // Затем добавляем локальные, которых нет на сервере и которые в статусе error
+      for (const msg of prev) {
+        if (!byId.has(msg.id) && msg.status === 'error') {
+          byId.set(msg.id, msg);
+        }
+      }
+
+      const merged = Array.from(byId.values());
+
+      // Сортируем по времени отправки по возрастанию,
+      // чтобы локальные сообщения с ошибкой оставались на своей хронологической позиции.
+      merged.sort((a, b) => {
+        const ta =
+          typeof a.timestamp === 'string'
+            ? new Date(a.timestamp).getTime()
+            : a.timestamp.getTime();
+        const tb =
+          typeof b.timestamp === 'string'
+            ? new Date(b.timestamp).getTime()
+            : b.timestamp.getTime();
+        return ta - tb;
+      });
+
+      return merged;
+    });
+
     prevMessagesLengthRef.current = initialMessages.length;
 
     // Скроллим вниз только при первой загрузке сообщений (когда массив был пустой)
@@ -284,18 +321,32 @@ export default function ChatArea({
       }
     }
     // 2) Добавление новых сообщений в конец (append):
-    // длина увеличилась и изменился id последнего сообщения
+    // либо длина увеличилась, либо изменился id последнего сообщения
+    // (например, temp-id локального сообщения заменился на серверный id)
+    // Скроллим ТОЛЬКО если пользователь реально находится внизу (isNearBottom),
+    // чтобы не дергать тех, кто читает старую историю.
     else if (
-      currentLength > prevLength &&
+      (currentLength > prevLength || currentLastId !== prevLastId) &&
       currentLastId &&
-      currentLastId !== prevLastId &&
-      (isNearBottom || isLastFromCurrentUser || isLastFromOtherUser)
+      isNearBottom
     ) {
       const container = messagesContainerRef.current;
       if (container) {
-        setTimeout(() => {
-          container.scrollTop = container.scrollHeight;
-        }, 50);
+        const lastMessageElement = container.querySelector<HTMLElement>(
+          `[data-message-id="${currentLastId}"]`,
+        );
+
+        if (lastMessageElement) {
+          const scrollOnce = () => {
+            lastMessageElement.scrollIntoView({
+              block: 'end',
+            });
+          };
+
+          scrollOnce();
+          setTimeout(scrollOnce, 100);
+          setTimeout(scrollOnce, 300);
+        }
       }
     }
 
@@ -304,17 +355,23 @@ export default function ChatArea({
     prevLastMessageIdRef.current = currentLastId;
   }, [localMessages, isNearBottom]);
 
-  // Прокрутка при появлении индикатора печати
+  // Прокрутка при появлении индикатора печати:
+  // если пользователь уже внизу (isNearBottom === true),
+  // дотягиваем скролл к низу, чтобы индикатор и новые сообщения
+  // оказывались в зоне видимости. Если пользователь читает историю
+  // (isNearBottom === false), вообще не трогаем скролл.
   useEffect(() => {
-    if (isTyping && isNearBottom) {
-      const container = messagesContainerRef.current;
-      if (container) {
-        // Прокручиваем вниз при появлении индикатора печати
-        setTimeout(() => {
-          container.scrollTop = container.scrollHeight;
-        }, 50);
-      }
-    }
+    if (!isTyping || !isNearBottom) return;
+
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const scrollToBottom = () => {
+      container.scrollTop = container.scrollHeight;
+    };
+
+    // Небольшая задержка, чтобы индикатор успел отрендериться.
+    setTimeout(scrollToBottom, 50);
   }, [isTyping, isNearBottom]);
 
   const formatLastSeen = (value?: string | null) => {
@@ -367,6 +424,22 @@ export default function ChatArea({
     return { id: tempMessage.id, attachments: tempMessage.attachments };
   };
 
+  const markLocalMessageAttachmentsError = (messageId: string) => {
+    setLocalMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId && msg.attachments
+          ? {
+              ...msg,
+              attachments: msg.attachments.map((att) => ({
+                ...att,
+                isError: true,
+              })),
+            }
+          : msg,
+      ),
+    );
+  };
+
   const updateMessageStatus = (
     messageId: string,
     status: Message['status'],
@@ -394,20 +467,19 @@ export default function ChatArea({
       addLocalMessage(content, attachments);
 
     try {
-      // Отправляем на сервер
-      const result = await onSendMessage(
+      // Отправляем на сервер / через сокет (реализация в page.tsx),
+      // дальше всё обновляется через socket события.
+      await onSendMessage(
         content,
         attachments,
         tempMessageId,
         localAttachments,
       );
-
-      // Все обновления происходят через socket события (message_saved, message_delivered)
-      // Не делаем локальных обновлений, чтобы избежать конфликтов
-      // Для текстовых сообщений обновление происходит через socket message_saved
     } catch (error) {
-      // При ошибке показываем ошибку
+      // При ошибке помечаем сообщение и вложения как ошибочные —
+      // текст/фото остаются на месте, но пользователь видит "Ошибка отправки".
       updateMessageStatus(tempMessageId, 'error');
+      markLocalMessageAttachmentsError(tempMessageId);
       console.error('Error sending message:', error);
     }
   };

@@ -24,6 +24,10 @@ function safeExtFromName(name: string) {
 }
 
 export async function POST(request: NextRequest) {
+  let createdMessageId: string | null = null;
+  let hadAttachments = false;
+  let hasTextContent = false;
+
   try {
     // Получаем токен из cookies
     const token = request.cookies.get('token')?.value;
@@ -45,6 +49,8 @@ export async function POST(request: NextRequest) {
     const chatId = formData.get('chatId') as string;
     const content = formData.get('content') as string;
     const attachments = (formData.getAll('attachments') as File[]).slice(0, 6);
+    hadAttachments = attachments.length > 0;
+    hasTextContent = !!(content && content.trim());
 
     if (!chatId) {
       return NextResponse.json(
@@ -78,67 +84,10 @@ export async function POST(request: NextRequest) {
         status: 'sent', // Will be updated to delivered after sending
       },
     });
+    createdMessageId = message.id;
 
     // Обрабатываем вложения (до 6 фото)
     if (attachments.length > 0) {
-      /*
-       * Старый вариант (ImageKit) оставлен для отката:
-       // Получаем ключи ImageKit
-      const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
-      const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
-      const endpoint =
-        process.env.IMAGEKIT_UPLOAD_ENDPOINT ||
-        'https://upload.imagekit.io/api/v1/files/upload';
-
-      if (!privateKey || !publicKey) {
-        console.error('IMAGEKIT keys are not configured');
-        return NextResponse.json(
-          { error: 'Image upload is not configured' },
-          { status: 500 },
-        );
-      }
-
-      // Загружаем все вложения в ImageKit параллельно
-      const uploadPromises = attachments.map(async (attachment) => {
-        const uploadForm = new FormData();
-        uploadForm.append('file', attachment);
-        uploadForm.append('fileName', attachment.name);
-        uploadForm.append('folder', '/molla/chat-attachments');
-        uploadForm.append('useUniqueFileName', 'true');
-
-        // ImageKit авторизация
-        const authHeader =
-          'Basic ' + Buffer.from(`${privateKey}:`).toString('base64');
-
-        const imageKitRes = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            Authorization: authHeader,
-          },
-          body: uploadForm,
-        });
-
-        const imageKitData = await imageKitRes.json();
-
-        if (!imageKitRes.ok) {
-          console.error(
-            'ImageKit upload error for',
-            attachment.name,
-            ':',
-            imageKitData,
-          );
-          throw new Error(`Failed to upload ${attachment.name}`);
-        }
-
-        return {
-          fileUrl: imageKitData.url, // Полный URL из ImageKit
-          fileName: attachment.name,
-          fileSize: attachment.size,
-          fileType: attachment.type,
-        };
-      });
-       */
-
       // Загружаем все вложения в cloud.ru параллельно
       const uploadPromises = attachments.map(async (attachment) => {
         const ext = safeExtFromName(attachment.name);
@@ -229,6 +178,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error sending message:', error);
+
+    // Если сообщение уже создано и ожидались вложения,
+    // но что-то пошло не так при их загрузке, удаляем сообщение,
+    // чтобы оно не висело пустым в истории.
+    try {
+      if (createdMessageId && hadAttachments && !hasTextContent) {
+        await prisma.message.delete({ where: { id: createdMessageId } });
+      }
+    } catch {
+      // Игнорируем ошибки удаления, чтобы не перекрывать основную ошибку
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },
