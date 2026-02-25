@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { useCallback } from 'react';
+import { ChatHeader } from './chat-header';
 import MessageInput from './message-input';
 import MessageItem from './message-item';
 import type { Message, Chat } from './message-item';
+import { useChatMessages } from './use-chat-messages';
+import { useChatScroll } from './use-chat-scroll';
 import { getAvatarColor } from '@/utils';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
 
@@ -50,332 +50,29 @@ export default function ChatArea({
   showBackButton = false,
   onImageModalOpen,
 }: ChatAreaProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const [localMessages, setLocalMessages] =
-    useState<Message[]>(initialMessages);
-  const hasInitiallyScrolledRef = useRef(false);
+  const {
+    localMessages,
+    processedMessages,
+    addLocalMessage,
+    updateMessageStatus,
+    markLocalMessageAttachmentsError,
+  } = useChatMessages(initialMessages, currentUserId, hasMoreMessages);
 
-  const isSameDay = (d1: Date, d2: Date) => {
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  };
-
-  // Мемоизируем обработанные сообщения для предотвращения лишних вычислений
-  const processedMessages = useMemo(() => {
-    return localMessages.map((message, index) => {
-      const prevMessage = localMessages[index - 1];
-      const currentDate =
-        typeof message.timestamp === 'string'
-          ? new Date(message.timestamp)
-          : message.timestamp;
-      const prevDate: Date | null = prevMessage
-        ? typeof prevMessage.timestamp === 'string'
-          ? new Date(prevMessage.timestamp)
-          : prevMessage.timestamp
-        : null;
-
-      // Не показываем divider для первого сообщения, если есть еще сообщения для подгрузки
-      const shouldShowDateDivider =
-        (!prevDate || !isSameDay(currentDate, prevDate)) &&
-        !(index === 0 && hasMoreMessages);
-
-      return {
-        message,
-        showDateDivider: shouldShowDateDivider,
-        isFirstInGroup:
-          prevMessage && prevMessage.senderId !== message.senderId,
-      };
-    });
-  }, [localMessages, hasMoreMessages]);
-  const prevMessagesLengthRef = useRef(initialMessages.length);
-  const prevLastMessageIdRef = useRef<string | null>(
-    initialMessages[initialMessages.length - 1]?.id ?? null,
-  );
-
-  // Состояние для отслеживания положения скролла
-  const [isNearBottom, setIsNearBottom] = useState(true);
-  const isNearBottomRef = useRef(isNearBottom);
-  const isLoadingMoreLocalRef = useRef(false);
-
-  // Защита от множественных загрузок с помощью RAF и debounce
-  const scrollRafRef = useRef<number | null>(null);
-  const loadMoreTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Синхронизируем ref с состоянием
-  useEffect(() => {
-    isNearBottomRef.current = isNearBottom;
-  }, [isNearBottom]);
-
-  // Синхронизируем локальные сообщения с пропсами
-  useEffect(() => {
-    const prevLength = prevMessagesLengthRef.current;
-
-    // Мерджим серверные сообщения с локальными,
-    // но добавляем только локальные сообщения с ошибкой (status === 'error'),
-    // чтобы не дублировать успешно отправленные сообщения.
-    setLocalMessages((prev) => {
-      const byId = new Map<string, Message>();
-
-      // Сначала кладём серверные сообщения (они считаются источником истины)
-      for (const msg of initialMessages) {
-        byId.set(msg.id, msg);
-      }
-
-      // Затем добавляем локальные, которых нет на сервере и которые в статусе error
-      for (const msg of prev) {
-        if (!byId.has(msg.id) && msg.status === 'error') {
-          byId.set(msg.id, msg);
-        }
-      }
-
-      const merged = Array.from(byId.values());
-
-      // Сортируем по времени отправки по возрастанию,
-      // чтобы локальные сообщения с ошибкой оставались на своей хронологической позиции.
-      merged.sort((a, b) => {
-        const ta =
-          typeof a.timestamp === 'string'
-            ? new Date(a.timestamp).getTime()
-            : a.timestamp.getTime();
-        const tb =
-          typeof b.timestamp === 'string'
-            ? new Date(b.timestamp).getTime()
-            : b.timestamp.getTime();
-        return ta - tb;
-      });
-
-      return merged;
-    });
-
-    prevMessagesLengthRef.current = initialMessages.length;
-
-    // Скроллим вниз только при первой загрузке сообщений (когда массив был пустой)
-    // Не скроллим при подгрузке дополнительных сообщений
-    if (
-      !hasInitiallyScrolledRef.current &&
-      initialMessages.length > 0 &&
-      prevLength === 0
-    ) {
-      hasInitiallyScrolledRef.current = true;
-
-      // Скроллим вниз после загрузки сообщений для компенсации загрузки изображений
-      const scrollToBottom = () => {
-        if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTop =
-            messagesContainerRef.current.scrollHeight;
-        }
-      };
-
-      setTimeout(scrollToBottom, 200);
-      setTimeout(scrollToBottom, 400);
-      setTimeout(scrollToBottom, 800);
-    }
-  }, [initialMessages]);
-
-  // Оптимизированный обработчик скролла с debounce для предотвращения множественных загрузок
-  const handleScroll = useCallback(() => {
-    // Отменяем предыдущий RAF если он был
-    if (scrollRafRef.current) {
-      cancelAnimationFrame(scrollRafRef.current);
-    }
-
-    // Используем RAF для оптимизации производительности
-    scrollRafRef.current = requestAnimationFrame(() => {
-      const container = messagesContainerRef.current;
-      if (!container) return;
-
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      const newIsNearBottom = distanceFromBottom < 100;
-
-      // Обновляем только если состояние изменилось
-      setIsNearBottom((prev) => {
-        if (prev !== newIsNearBottom) {
-          return newIsNearBottom;
-        }
-        return prev;
-      });
-
-      // Проверяем условия для подгрузки с debounce
-      const shouldLoadMore =
-        scrollTop <= 50 &&
-        !isLoading &&
-        hasMoreMessages &&
-        !isLoadingMoreMessages &&
-        onLoadMoreMessages &&
-        !isLoadingMoreLocalRef.current;
-
-      if (shouldLoadMore) {
-        // Очищаем предыдущий таймаут если был
-        if (loadMoreTimeoutRef.current) {
-          clearTimeout(loadMoreTimeoutRef.current);
-        }
-
-        // Debounce: ждем 300мс пока скролл остановится
-        loadMoreTimeoutRef.current = setTimeout(() => {
-          // Повторная проверка условий после debounce
-          const currentContainer = messagesContainerRef.current;
-          if (!currentContainer || isLoadingMoreLocalRef.current) return;
-
-          const currentScrollTop = currentContainer.scrollTop;
-          if (currentScrollTop > 50) return; // Проверяем что все еще у верха
-
-          // Очищаем таймаут так как начинаем загрузку
-          if (loadMoreTimeoutRef.current) {
-            clearTimeout(loadMoreTimeoutRef.current);
-            loadMoreTimeoutRef.current = null;
-          }
-
-          isLoadingMoreLocalRef.current = true;
-
-          // Сохраняем текущую позицию скролла и высоту перед подгрузкой
-          const prevScrollTop = currentScrollTop;
-          const prevScrollHeight = currentContainer.scrollHeight;
-
-          Promise.resolve(onLoadMoreMessages()).finally(() => {
-            // После подгрузки восстанавливаем позицию скролла относительно нижнего края
-            const restoreScrollPosition = () => {
-              const updatedContainer = messagesContainerRef.current;
-              if (!updatedContainer) {
-                isLoadingMoreLocalRef.current = false;
-                return;
-              }
-
-              const newScrollHeight = updatedContainer.scrollHeight;
-              const heightIncrease = newScrollHeight - prevScrollHeight;
-
-              // Новая позиция скролла: старая позиция + прирост высоты
-              const newScrollTop = prevScrollTop + heightIncrease;
-
-              // Проверяем разумность позиции
-              if (
-                newScrollTop >= 0 &&
-                newScrollTop <= newScrollHeight - updatedContainer.clientHeight
-              ) {
-                updatedContainer.scrollTop = newScrollTop;
-              }
-
-              isLoadingMoreLocalRef.current = false;
-            };
-
-            // Даем время на обновление DOM
-            requestAnimationFrame(() => {
-              restoreScrollPosition();
-              setTimeout(restoreScrollPosition, 100);
-            });
-          });
-        }, 150); // 150ms debounce
-      }
-    });
-  }, [hasMoreMessages, isLoadingMoreMessages, onLoadMoreMessages, isLoading]);
-
-  // Обработчик скролла для определения положения пользователя
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    // Используем passive listener для лучшей производительности
-    container.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      // Очищаем таймауты и RAF при размонтировании
-      if (scrollRafRef.current) {
-        cancelAnimationFrame(scrollRafRef.current);
-      }
-      if (loadMoreTimeoutRef.current) {
-        clearTimeout(loadMoreTimeoutRef.current);
-      }
-    };
-  }, [handleScroll]);
-
-  // Умная автопрокрутка:
-  // - при добавлении новых сообщений ВНИЗ (append) скроллим вниз,
-  //   но только если пользователь уже внизу или сообщение от текущего пользователя;
-  // - при подгрузке старых сообщений ВВЕРХ (prepend) позицию НЕ меняем.
-  useEffect(() => {
-    const currentLength = localMessages.length;
-    const currentLastId = localMessages[localMessages.length - 1]?.id ?? null;
-
-    const lastMessage = localMessages[localMessages.length - 1];
-    const isLastFromCurrentUser =
-      lastMessage && lastMessage.senderId === currentUserId;
-    const isLastFromOtherUser =
-      lastMessage && lastMessage.senderId !== currentUserId;
-
-    const prevLength = prevMessagesLengthRef.current;
-    const prevLastId = prevLastMessageIdRef.current;
-
-    // 1) Инициализация: с 0 до N сообщений — всегда скроллим вниз
-    if (prevLength === 0 && currentLength > 0) {
-      const container = messagesContainerRef.current;
-      if (container) {
-        // Небольшая задержка для учета изменений высоты при загрузке изображений
-        setTimeout(() => {
-          container.scrollTop = container.scrollHeight;
-        }, 50);
-      }
-    }
-    // 2) Добавление новых сообщений в конец (append):
-    // либо длина увеличилась, либо изменился id последнего сообщения
-    // (например, temp-id локального сообщения заменился на серверный id)
-    // Скроллим, если:
-    // - пользователь реально находится внизу (isNearBottom), ИЛИ
-    // - последнее сообщение отправлено текущим пользователем
-    //   (в этом случае мы всегда хотим показать ему его же отправку,
-    //    даже если он был чуть выше).
-    else if (
-      (currentLength > prevLength || currentLastId !== prevLastId) &&
-      currentLastId &&
-      (isNearBottom || isLastFromCurrentUser)
-    ) {
-      const container = messagesContainerRef.current;
-      if (container) {
-        const lastMessageElement = container.querySelector<HTMLElement>(
-          `[data-message-id="${currentLastId}"]`,
-        );
-
-        if (lastMessageElement) {
-          const scrollOnce = () => {
-            lastMessageElement.scrollIntoView({
-              block: 'end',
-            });
-          };
-
-          scrollOnce();
-          setTimeout(scrollOnce, 100);
-          setTimeout(scrollOnce, 300);
-        }
-      }
-    }
-
-    // Обновляем данные для следующего сравнения
-    prevMessagesLengthRef.current = currentLength;
-    prevLastMessageIdRef.current = currentLastId;
-  }, [localMessages, isNearBottom]);
-
-  // Прокрутка при появлении индикатора печати:
-  // если пользователь уже внизу (isNearBottom === true),
-  // дотягиваем скролл к низу, чтобы индикатор и новые сообщения
-  // оказывались в зоне видимости. Если пользователь читает историю
-  // (isNearBottom === false), вообще не трогаем скролл.
-  useEffect(() => {
-    if (!isTyping || !isNearBottom) return;
-
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    const scrollToBottom = () => {
-      container.scrollTop = container.scrollHeight;
-    };
-
-    // Небольшая задержка, чтобы индикатор успел отрендериться.
-    setTimeout(scrollToBottom, 50);
-  }, [isTyping, isNearBottom]);
+  const {
+    messagesContainerRef,
+    messagesEndRef,
+    isNearBottom,
+    isNearBottomRef,
+  } = useChatScroll({
+    localMessages,
+    initialMessages,
+    currentUserId,
+    isLoading,
+    hasMoreMessages,
+    isLoadingMoreMessages,
+    onLoadMoreMessages,
+    isTyping,
+  });
 
   const formatLastSeen = (value?: string | null) => {
     if (!value) return 'был(а) в сети давно';
@@ -401,55 +98,6 @@ export default function ChatArea({
       hour: '2-digit',
       minute: '2-digit',
     })}`;
-  };
-
-  const addLocalMessage = (content: string, attachments?: File[]) => {
-    const stableId = `stable-${Date.now()}-${Math.random()}`;
-    const tempMessage: Message = {
-      id: `temp-${Date.now()}`,
-      stableId: stableId,
-      content: content,
-      senderId: currentUserId,
-      senderName: 'Вы',
-      timestamp: new Date(),
-      type: attachments && attachments.length > 0 ? 'image' : 'text',
-      status: 'sending',
-      attachments: attachments?.map((file, index) => ({
-        id: `temp-attachment-${index}`,
-        fileUrl: URL.createObjectURL(file),
-        blobUrl: URL.createObjectURL(file),
-        fileName: file.name,
-        fileType: file.type,
-      })),
-    };
-
-    setLocalMessages((prev) => [...prev, tempMessage]);
-    return { id: tempMessage.id, attachments: tempMessage.attachments };
-  };
-
-  const markLocalMessageAttachmentsError = (messageId: string) => {
-    setLocalMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId && msg.attachments
-          ? {
-              ...msg,
-              attachments: msg.attachments.map((att) => ({
-                ...att,
-                isError: true,
-              })),
-            }
-          : msg,
-      ),
-    );
-  };
-
-  const updateMessageStatus = (
-    messageId: string,
-    status: Message['status'],
-  ) => {
-    setLocalMessages((prev) =>
-      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg)),
-    );
   };
 
   // Обработчики для модального окна изображений
@@ -489,166 +137,14 @@ export default function ChatArea({
 
   return (
     <div className="fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:h-[calc(100dvh-105px)] lg:top-auto">
-      <div className=" bg-white p-4 border-b border-gray-200 shrink-0 sticky top-12 z-1 lg:static">
-        <div className="flex items-center space-x-4">
-          {/* Кнопка назад */}
-          {showBackButton && (
-            <Link
-              href="/personal/messenger"
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors shrink-0"
-            >
-              <ArrowLeft size={20} />
-            </Link>
-          )}
-
-          {/* Визуализация товара с аватаром */}
-          <div className="relative shrink-0">
-            {/* Фото товара */}
-            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
-              {chat ? (
-                chat.isAdDeleted ? (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center opacity-50">
-                    <svg
-                      className="w-6 h-6 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                ) : (
-                  <Link
-                    href={`/${chat.adCityLabel}/${chat.adCategory}/${chat.adId}`}
-                    target="blank"
-                  >
-                    {chat.adPhoto ? (
-                      // <img
-                      //   src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
-                      //   className="w-full h-full object-cover cursor-pointer transition-opacity"
-                      // />
-                      <CloudImage
-                        src={`ad-photos/${chat.adPhoto}`}
-                        variant="sm"
-                        className="w-full h-full object-cover cursor-pointer transition-opacity"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </Link>
-                )
-              ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <svg
-                    className="w-6 h-6 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-              )}
-            </div>
-
-            {/* Аватар собеседника в левом верхнем углу */}
-            <Link href={`/user/${chat?.otherUserId}/active`} target="blank">
-              <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
-                {chat?.otherUserAvatar ? (
-                  // <img
-                  // src={`${chat.otherUserAvatar}?tr=w-40`}
-                  // className="w-full h-full object-cover"
-                  // />
-                  <CloudImage
-                    src={chat.otherUserAvatar}
-                    variant="xs"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{
-                      backgroundColor: chat?.otherUserId
-                        ? getAvatarColor(chat.otherUserId)
-                        : 'rgba(209, 213, 219, 0.2)',
-                    }}
-                  >
-                    <span className="text-white font-semibold text-xs">
-                      {chat?.otherUserName?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </Link>
-          </div>
-
-          {/* Информация о чате */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <Link
-                href={`/user/${chat?.otherUserId}/active`}
-                className="flex-1 min-w-0 max-w-fit"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 truncate cursor-pointer hover:opacity-90 transition-colors">
-                    {chat?.otherUserName || 'Загрузка...'}
-                  </h3>
-                  {/* Онлайн индикатор возле имени */}
-                  {isOtherUserOnline ? (
-                    <div className="shrink-0 w-2 h-2 bg-emerald-500 rounded-full" />
-                  ) : (
-                    <span className="items-center gap-2 text-xs text-gray-500 shrink-0 hidden sm:flex">
-                      {!isLoading &&
-                        otherUserLastSeen &&
-                        formatLastSeen(otherUserLastSeen)}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            </div>
-
-            <p className="text-xs text-gray-600 truncate">
-              {chat?.isAdDeleted ? (
-                <span className="text-gray-500 italic">Объявление удалено</span>
-              ) : (
-                <>
-                  {chat?.adTitle || 'Загрузка товара...'}
-                  {chat?.adPrice && <span className="mx-1">·</span>}
-                  {chat?.adPrice && (
-                    <span className="text-xs text-gray-900">
-                      {chat?.adPrice}
-                    </span>
-                  )}
-                </>
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
+      <ChatHeader
+        chat={chat}
+        showBackButton={showBackButton}
+        isOtherUserOnline={isOtherUserOnline}
+        otherUserLastSeen={otherUserLastSeen}
+        isLoading={isLoading}
+        formatLastSeen={formatLastSeen}
+      />
 
       {/* Область сообщений - растянута на всё оставшееся место */}
       <div
@@ -741,10 +237,6 @@ export default function ChatArea({
                     }}
                   >
                     {chat?.otherUserAvatar ? (
-                      // <img
-                      // src={`${chat.otherUserAvatar}?tr=w-40`}
-                      // className="w-full h-full object-cover"
-                      // />
                       <CloudImage
                         src={chat.otherUserAvatar}
                         variant="xs"
