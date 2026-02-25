@@ -323,12 +323,15 @@ export default function ChatArea({
     // 2) Добавление новых сообщений в конец (append):
     // либо длина увеличилась, либо изменился id последнего сообщения
     // (например, temp-id локального сообщения заменился на серверный id)
-    // Скроллим ТОЛЬКО если пользователь реально находится внизу (isNearBottom),
-    // чтобы не дергать тех, кто читает старую историю.
+    // Скроллим, если:
+    // - пользователь реально находится внизу (isNearBottom), ИЛИ
+    // - последнее сообщение отправлено текущим пользователем
+    //   (в этом случае мы всегда хотим показать ему его же отправку,
+    //    даже если он был чуть выше).
     else if (
       (currentLength > prevLength || currentLastId !== prevLastId) &&
       currentLastId &&
-      isNearBottom
+      (isNearBottom || isLastFromCurrentUser)
     ) {
       const container = messagesContainerRef.current;
       if (container) {
