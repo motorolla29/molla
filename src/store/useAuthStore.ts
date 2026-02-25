@@ -65,10 +65,28 @@ export const useAuthStore = create<AuthState>()(
                 });
             }
           } else {
-            set({ isLoggedIn: false, user: null, isAuthChecking: false });
+            // Явная неавторизованность / отсутствующий пользователь — считаем токен недействительным
+            if ([401, 403, 404].includes(response.status)) {
+              try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+              } catch {
+                // игнорируем ошибки логаута
+              }
+
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('auth-storage');
+                localStorage.removeItem('favorites-storage');
+              }
+
+              set({ isLoggedIn: false, user: null, isAuthChecking: false });
+            } else {
+              // Для 5xx и прочих ошибок авторизации токен не трогаем
+              set({ isAuthChecking: false });
+            }
           }
         } catch (error) {
-          set({ isLoggedIn: false, user: null, isAuthChecking: false });
+          // Сетевые/неожиданные ошибки — не считаем токен битым, просто завершаем проверку
+          set({ isAuthChecking: false });
         }
       },
       logout: async () => {

@@ -329,6 +329,16 @@ export default function AuthPage() {
                   </p>
                 )}
               </div>
+              {mode === 'login' && (
+                <div className="">
+                  <Link
+                    href="/reset-password"
+                    className="block text-xs sm:text-sm text-violet-500 hover:text-violet-600 text-center font-medium"
+                  >
+                    Забыли пароль?
+                  </Link>
+                </div>
+              )}
               {mode === 'register' && (
                 <div>
                   <label className="block text-xs sm:text-sm">
@@ -360,8 +370,8 @@ export default function AuthPage() {
                 {isLoading
                   ? 'Загрузка...'
                   : mode === 'login'
-                  ? 'Войти'
-                  : 'Зарегистрироваться'}
+                    ? 'Войти'
+                    : 'Зарегистрироваться'}
               </button>
             </form>
           ) : (
@@ -384,7 +394,7 @@ export default function AuthPage() {
                   value={verificationCode}
                   onChange={(e) =>
                     setVerificationCode(
-                      e.target.value.replace(/\D/g, '').slice(0, 6)
+                      e.target.value.replace(/\D/g, '').slice(0, 6),
                     )
                   }
                   onKeyDown={(e) => {

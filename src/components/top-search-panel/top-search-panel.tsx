@@ -191,7 +191,7 @@ export default function TopSearchPanel({
           className="ml-2 text-md flex items-center font-semibold text-neutral-500 hover:opacity-80 cursor-pointer"
         >
           <MapPinIcon className="size-6" />
-          <span className="ml-1 leading-none line-clamp-2 min-w-0 max-w-[200px]">
+          <span className="ml-1 leading-normal line-clamp-2 min-w-0 max-w-[200px]">
             {cityName}
           </span>
         </button>

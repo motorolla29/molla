@@ -191,7 +191,14 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        // Новое устройство — сохраняем и создаём in-app уведомление
+        // Проверяем, есть ли уже другие устройства у пользователя
+        const anyOtherDevice = await prisma.loginDevice.findFirst({
+          where: {
+            userId: user.id,
+          },
+        });
+
+        // Новое устройство — сохраняем
         const newDevice = await prisma.loginDevice.create({
           data: {
             userId: user.id,
@@ -200,6 +207,11 @@ export async function POST(request: NextRequest) {
             ip: ip ?? undefined,
           },
         });
+
+        // Если это первое устройство пользователя — не шлем "подозрительное" уведомление
+        if (!anyOtherDevice) {
+          return;
+        }
 
         // Готовим человекочитаемое описание устройства
         const deviceDescription = await createDeviceDescription(
