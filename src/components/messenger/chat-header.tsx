@@ -107,7 +107,7 @@ export function ChatHeader({
           </div>
 
           {/* Аватар собеседника в левом верхнем углу */}
-          <Link href={`/user/${chat?.otherUserId}/active`} target="blank">
+          <Link href={`/user/${chat?.otherUserId}/active`}>
             <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
               {chat?.otherUserAvatar ? (
                 <CloudImage
@@ -166,9 +166,7 @@ export function ChatHeader({
                 {chat?.adTitle || 'Загрузка товара...'}
                 {chat?.adPrice && <span className="mx-1">·</span>}
                 {chat?.adPrice && (
-                  <span className="text-xs text-gray-900">
-                    {chat?.adPrice}
-                  </span>
+                  <span className="text-xs text-gray-900">{chat?.adPrice}</span>
                 )}
               </>
             )}
@@ -178,4 +176,3 @@ export function ChatHeader({
     </div>
   );
 }
-

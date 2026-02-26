@@ -61,6 +61,7 @@ export async function GET(request: NextRequest) {
         userId = payload.userId as number;
       }
     }
+    const localUserToken = searchParams.get('localUserToken') || undefined;
 
     const where: {
       status: 'active';
@@ -88,7 +89,29 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
       });
-      return NextResponse.json(ads.map(convertToAdBase));
+      let viewedIds = new Set<string>();
+      if ((userId != null || localUserToken) && ads.length > 0) {
+        const views = await prisma.userView.findMany({
+          where: {
+            adId: { in: ads.map((a) => a.id) },
+            OR: [
+              userId ? { userId } : undefined,
+              localUserToken ? { localUserToken } : undefined,
+            ].filter(Boolean) as any[],
+          },
+          select: { adId: true },
+        });
+        viewedIds = new Set(
+          views.map((v) => v.adId).filter((id): id is string => Boolean(id)),
+        );
+      }
+
+      const withViewed = ads.map((ad) => ({
+        ...ad,
+        isViewed: viewedIds.has(ad.id),
+      }));
+
+      return NextResponse.json(withViewed.map(convertToAdBase));
     }
 
     // Порядок: 1) текущий город, 2) остальные. Внутри — datePosted desc.
@@ -137,7 +160,29 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(result.map(convertToAdBase));
+    let viewedIds = new Set<string>();
+    if ((userId != null || localUserToken) && result.length > 0) {
+      const views = await prisma.userView.findMany({
+        where: {
+          adId: { in: result.map((a) => a.id) },
+          OR: [
+            userId ? { userId } : undefined,
+            localUserToken ? { localUserToken } : undefined,
+          ].filter(Boolean) as any[],
+        },
+        select: { adId: true },
+      });
+      viewedIds = new Set(
+        views.map((v) => v.adId).filter((id): id is string => Boolean(id)),
+      );
+    }
+
+    const withViewed = result.map((ad) => ({
+      ...ad,
+      isViewed: viewedIds.has(ad.id),
+    }));
+
+    return NextResponse.json(withViewed.map(convertToAdBase));
   } catch (error) {
     console.error('❌ Error fetching fresh ads:', error);
     return NextResponse.json(

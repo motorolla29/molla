@@ -22,6 +22,16 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'datePosted';
     const skip = parseInt(searchParams.get('skip') || '0');
     const limit = parseInt(searchParams.get('limit') || '24');
+    const localUserToken = searchParams.get('localUserToken') || undefined;
+
+    let userId: number | null = null;
+    const token = request.cookies.get('token')?.value;
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload && typeof payload === 'object' && 'userId' in payload) {
+        userId = payload.userId as number;
+      }
+    }
 
     // Строим условия фильтрации
     const where: any = {};
@@ -117,8 +127,30 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
+    let viewedIds = new Set<string>();
+    if ((userId != null || localUserToken) && ads.length > 0) {
+      const views = await prisma.userView.findMany({
+        where: {
+          adId: { in: ads.map((a) => a.id) },
+          OR: [
+            userId ? { userId } : undefined,
+            localUserToken ? { localUserToken } : undefined,
+          ].filter(Boolean) as any[],
+        },
+        select: { adId: true },
+      });
+      viewedIds = new Set(
+        views.map((v) => v.adId).filter((id): id is string => Boolean(id)),
+      );
+    }
+
     // Конвертируем в формат AdBase
-    const convertedAds = ads.map(convertToAdBase);
+    const convertedAds = ads
+      .map((ad) => ({
+        ...ad,
+        isViewed: viewedIds.has(ad.id),
+      }))
+      .map(convertToAdBase);
 
     return NextResponse.json(convertedAds);
   } catch (error) {

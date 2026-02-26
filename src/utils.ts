@@ -277,6 +277,7 @@ export function convertToAdBase(ad: any): AdBase {
     viewCount: ad._count?.userViews || 0,
     viewsToday: ad.userViews?.length || 0,
     favoritesCount: ad._count?.favorites || 0,
+    isViewed: ad.isViewed ?? false,
   };
 }
 

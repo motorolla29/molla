@@ -3,18 +3,22 @@ import Link from 'next/link';
 import { AdBase } from '@/types/ad';
 import FavoriteButton from '../favorite-button/favorite-button';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
+import { useViewedAdsStore } from '@/store/useViewedAdsStore';
 interface GalleryAdCardProps {
   ad: AdBase;
 }
 
 export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
   const isArchived = ad.status === 'archived';
+  const { viewedIds, markViewed } = useViewedAdsStore();
+  const isViewed = ad.isViewed || viewedIds.has(ad.id);
 
   return (
     <Link
       href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-      target="blank"
+      target="_blank"
       className="flex flex-col w-full overflow-hidden h-full min-w-0"
+      onClick={() => markViewed(ad.id)}
     >
       <div className="relative w-full aspect-square mb-2 overflow-hidden rounded-lg bg-gray-200/25">
         {/* <img
@@ -30,6 +34,13 @@ export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
           variant="md"
           className={`w-full h-full object-cover ${isArchived ? 'opacity-50' : ''}`}
         />
+        {isViewed && (
+          <div className="absolute inset-0 bg-white/40 pointer-events-none">
+            <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 px-2 py-0.5 rounded-full bg-black/50 text-[8px] min-[400px]:text-[10px] font-semibold text-white">
+              Просмотрено
+            </div>
+          </div>
+        )}
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-2 right-2" />
       </div>

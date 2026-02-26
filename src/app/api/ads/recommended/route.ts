@@ -220,6 +220,23 @@ export async function GET(request: NextRequest) {
       LIMIT ${limit}
     `)) ?? [];
 
+    let viewedIds = new Set<string>();
+    if ((userId != null || localUserToken) && rows.length > 0) {
+      const views = await prisma.userView.findMany({
+        where: {
+          adId: { in: rows.map((r) => r.id) },
+          OR: [
+            userId ? { userId } : undefined,
+            localUserToken ? { localUserToken } : undefined,
+          ].filter(Boolean) as any[],
+        },
+        select: { adId: true },
+      });
+      viewedIds = new Set(
+        views.map((v) => v.adId).filter((id): id is string => Boolean(id)),
+      );
+    }
+
     const adsLike = rows.map((r) => ({
       id: r.id,
       category: r.category,
@@ -245,6 +262,7 @@ export async function GET(request: NextRequest) {
         phone: r.seller_phone,
         email: r.seller_email,
       },
+      isViewed: viewedIds.has(r.id),
     }));
 
     return NextResponse.json(adsLike.map(convertToAdBase));

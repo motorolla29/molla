@@ -108,6 +108,12 @@ export default function InfiniteScrollAds({
         if (currentCityLabel && currentCityLabel !== 'russia') {
           params.set('cityLabel', currentCityLabel);
         }
+        try {
+          const localUserToken = getOrCreateUserToken();
+          params.set('localUserToken', localUserToken);
+        } catch {
+          // localStorage недоступен (SSR)
+        }
         const url = `/api/ads/fresh?${params.toString()}`;
         try {
           const res = await fetch(url);
@@ -138,6 +144,14 @@ export default function InfiniteScrollAds({
       if (cityLabel) listParams.set('cityLabel', cityLabel);
       if (category) listParams.set('category', category);
       if (sort) listParams.set('sort', sort);
+
+       // Передаем localUserToken для пометки просмотренных объявлений
+      try {
+        const localUserToken = getOrCreateUserToken();
+        listParams.set('localUserToken', localUserToken);
+      } catch {
+        // localStorage недоступен (SSR)
+      }
 
       try {
         const res = await fetch(`/api/ads?${listParams.toString()}`);

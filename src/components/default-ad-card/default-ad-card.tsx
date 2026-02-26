@@ -5,12 +5,15 @@ import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { AdBase } from '@/types/ad';
 import FavoriteButton from '../favorite-button/favorite-button';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
+import { useViewedAdsStore } from '@/store/useViewedAdsStore';
 
 interface DefaultAdCardProps {
   ad: AdBase;
 }
 
 export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
+  const { viewedIds, markViewed } = useViewedAdsStore();
+  const isViewed = ad.isViewed || viewedIds.has(ad.id);
   return (
     <div
       key={ad.id}
@@ -20,7 +23,8 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       <Link
         className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 bg-gray-200/25 overflow-hidden"
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-        target="blank"
+        target="_blank"
+        onClick={() => markViewed(ad.id)}
       >
         {/* было: <img
           src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${
@@ -33,13 +37,20 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
           variant="md"
           className="w-full h-full object-cover"
         />
+        {isViewed && (
+          <div className="absolute inset-0 bg-white/40 pointer-events-none">
+            <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 px-2 py-0.5 rounded-full bg-black/50 text-[8px] sm:text-[10px] font-semibold text-white">
+              Просмотрено
+            </div>
+          </div>
+        )}
       </Link>
 
       {/* Основная информация */}
       <Link
         className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative min-w-0"
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-        target="blank"
+        target="_blank"
       >
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-0 right-0" />
@@ -81,7 +92,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
       {/* Информация о продавце */}
       <Link
         href={`/user/${ad.seller.id}/active`}
-        target="blank"
+        target="_blank"
         className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
       >
         <div className="w-18 h-18 rounded-lg mb-2 bg-gray-200/25 overflow-hidden">
