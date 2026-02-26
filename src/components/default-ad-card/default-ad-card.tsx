@@ -17,7 +17,7 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
   return (
     <div
       key={ad.id}
-      className="flex w-full overflow-hidden h-full p-0 sm:p-4 my-3 sm:my-0 rounded-xl sm:hover:bg-neutral-100"
+      className="flex w-full overflow-hidden h-full p-0 sm:p-4 my-3 sm:my-0 rounded-xl sm:hover:bg-neutral-100/50"
     >
       {/* Фото */}
       <Link

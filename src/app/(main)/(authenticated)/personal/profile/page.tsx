@@ -364,7 +364,10 @@ export default function Profile() {
       <ImageModal
         isOpen={showAvatarModal}
         onClose={() => setShowAvatarModal(false)}
-        imageUrl={user.avatar || '765-default-avatar.png'}
+        imageUrl={
+          user.avatar ||
+          'https://molla.s3.cloud.ru/user-avatars/765-default-avatar.png'
+        }
         altText={user.name}
       />
 
