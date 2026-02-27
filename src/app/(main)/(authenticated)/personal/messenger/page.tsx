@@ -7,6 +7,7 @@ import ChatList from '@/components/messenger/chat-list';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
+import { useToast } from '@/components/toast/toast-context';
 
 interface Chat {
   id: string;
@@ -25,6 +26,8 @@ interface Chat {
   lastMessageIsOutgoing?: boolean;
   unreadCount: number;
   lastUnreadMessageTime?: Date | string | null;
+  isBlockedByMe?: boolean;
+  isBlockedMe?: boolean;
 }
 
 export default function MessengerPage() {
@@ -35,6 +38,7 @@ export default function MessengerPage() {
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const { socket } = useChatSocket();
+  const toast = useToast();
 
   // Ref для управления таймерами typing
   const typingTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -315,16 +319,19 @@ export default function MessengerPage() {
 
       const response = await fetch(`/api/messenger/chats?${params}`);
       if (response.ok) {
-        const data: { chats: Chat[]; hasMore: boolean } = await response.json();
+        const data: { chats: Chat[]; hasMore: boolean } =
+          await response.json();
 
-        // Обрабатываем lastMessage для сообщений с изображениями
+        // Обрабатываем lastMessage и "обнуляем" непрочитанные для заблокированных чатов,
+        // чтобы они не участвовали в глобальном счётчике
         const processedData = data.chats.map((chat: Chat) => {
           let displayMessage = chat.lastMessage;
-          // Если API возвращает информацию о attachments, можно добавить проверку здесь
-          // Пока оставляем как есть, предполагая что API уже возвращает правильный формат
+          const isBlocked = chat.isBlockedByMe || chat.isBlockedMe;
+
           return {
             ...chat,
             lastMessage: displayMessage,
+            unreadCount: isBlocked ? 0 : chat.unreadCount,
           };
         });
 
@@ -336,13 +343,15 @@ export default function MessengerPage() {
           if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
 
           // Оба имеют непрочитанные или оба не имеют
-          const aTime = a.unreadCount > 0 && a.lastUnreadMessageTime
-            ? new Date(a.lastUnreadMessageTime).getTime()
-            : new Date(a.lastMessageTime).getTime();
+          const aTime =
+            a.unreadCount > 0 && a.lastUnreadMessageTime
+              ? new Date(a.lastUnreadMessageTime).getTime()
+              : new Date(a.lastMessageTime).getTime();
 
-          const bTime = b.unreadCount > 0 && b.lastUnreadMessageTime
-            ? new Date(b.lastUnreadMessageTime).getTime()
-            : new Date(b.lastMessageTime).getTime();
+          const bTime =
+            b.unreadCount > 0 && b.lastUnreadMessageTime
+              ? new Date(b.lastUnreadMessageTime).getTime()
+              : new Date(b.lastMessageTime).getTime();
 
           return bTime - aTime;
         });
@@ -350,7 +359,9 @@ export default function MessengerPage() {
         if (beforeId) {
           // Добавляем к существующим чатам, исключая дубликаты
           setChats((prev) => {
-            const newChats = sortedData.filter(chat => !prev.some(existing => existing.id === chat.id));
+            const newChats = sortedData.filter(
+              (chat) => !prev.some((existing) => existing.id === chat.id),
+            );
             return [...prev, ...newChats];
           });
         } else {
@@ -405,6 +416,78 @@ export default function MessengerPage() {
     });
   };
 
+  const handleHideChat = async (chatId: string) => {
+    try {
+      const response = await fetch(
+        `/api/messenger/chats/${encodeURIComponent(chatId)}/hide`,
+        {
+          method: 'POST',
+        },
+      );
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || 'Не удалось удалить чат');
+      }
+
+      setChats((prev) => prev.filter((chat) => chat.id !== chatId));
+      const { setChatUnreadCount } = useUnreadMessagesStore.getState();
+      setChatUnreadCount(chatId, 0);
+
+      toast.show('Чат скрыт. Он появится при новом сообщении.', {
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Error hiding chat:', error);
+      toast.show('Не удалось удалить чат. Попробуйте позже.', {
+        type: 'error',
+      });
+    }
+  };
+
+  const handleToggleBlock = (chat: Chat) => {
+    const targetUserId = chat.otherUserId;
+    const isCurrentlyBlocked = !!chat.isBlockedByMe;
+
+    fetch(`/api/users/${encodeURIComponent(String(targetUserId))}/block`, {
+      method: isCurrentlyBlocked ? 'DELETE' : 'POST',
+    })
+      .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(
+            data?.error ||
+              (isCurrentlyBlocked
+                ? 'Не удалось разблокировать пользователя'
+                : 'Не удалось заблокировать пользователя'),
+          );
+        }
+
+        setChats((prev) =>
+          prev.map((c) =>
+            c.otherUserId === targetUserId
+              ? { ...c, isBlockedByMe: !isCurrentlyBlocked }
+              : c,
+          ),
+        );
+
+        toast.show(
+          isCurrentlyBlocked
+            ? 'Пользователь разблокирован. Вы снова можете переписываться.'
+            : 'Пользователь заблокирован. Вы больше не будете получать от него сообщения.',
+          {
+            type: 'success',
+          },
+        );
+      })
+      .catch((error) => {
+        console.error('Error toggling block:', error);
+        toast.show('Не удалось изменить блокировку. Попробуйте позже.', {
+          type: 'error',
+        });
+      });
+  };
+
   return (
     <div className="m-4 lg:m-6 h-full">
       <div className="mb-2 min-[500px]:mb-4 pb-4 border-b border-gray-200">
@@ -423,6 +506,8 @@ export default function MessengerPage() {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMoreChats={loadMoreChats}
+          onHideChat={handleHideChat}
+          onToggleBlock={handleToggleBlock}
         />
       )}
     </div>

@@ -5,7 +5,7 @@ import { Check, CheckCheck } from 'lucide-react';
 import { getAvatarColor } from '@/utils';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
 
-interface Message {
+export interface Message {
   id: string;
   stableId: string; // Стабильный ID для предотвращения перерисовки
   content: string;
@@ -26,7 +26,7 @@ interface Message {
   }>;
 }
 
-interface Chat {
+export interface Chat {
   id: string;
   adId: string;
   adTitle: string;
@@ -40,9 +40,11 @@ interface Chat {
   otherUserAvatar?: string;
   otherUserId: number;
   lastMessageTime?: Date | string;
+  isBlockedByMe?: boolean;
+  isBlockedMe?: boolean;
 }
 
-interface MessageItemProps {
+export interface MessageItemProps {
   message: Message;
   showDateDivider: boolean;
   isFirstInGroup: boolean;
@@ -194,7 +196,7 @@ const MessageItem = memo(
           )}
 
           <div
-            className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 min-[480px]:max-w-72 ${message.attachments && message.attachments.length > 0 ? 'sm:max-w-[350px]' : 'sm:max-w-120'} px-3 py-1 rounded-lg relative ${
+            className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 ${message.attachments && message.attachments.length > 0 ? 'sm:max-w-[350px]' : 'sm:max-w-120'} px-3 py-1 rounded-lg relative ${
               message.senderId === currentUserId
                 ? 'bg-violet-500 text-white'
                 : 'bg-gray-100 text-gray-900'
@@ -208,103 +210,70 @@ const MessageItem = memo(
                     key={attachment.id}
                     className="relative aspect-square max-w-full w-36 min-[320px]:w-48 min-[390px]:w-56 sm:w-[350px] bg-gray-300/25 rounded-lg overflow-hidden"
                   >
-                    {attachment.fileUrl.startsWith('blob:') ||
-                    (message.senderId === currentUserId &&
-                      attachment.blobUrl) ? (
-                      <img
-                        src={
-                          message.senderId === currentUserId &&
-                          attachment.blobUrl
-                            ? attachment.blobUrl
-                            : attachment.fileUrl
-                        }
-                        alt={attachment.fileName}
-                        className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${
-                          loadedImages[attachment.id]
-                            ? 'opacity-100'
-                            : 'opacity-0'
-                        }`}
-                        onClick={() =>
-                          openImageModal(
-                            message.senderId === currentUserId &&
-                              attachment.blobUrl &&
-                              loadedImages[attachment.id]
-                              ? attachment.blobUrl
-                              : attachment.fileUrl,
-                            attachment.fileName,
-                          )
-                        }
-                        onLoad={() => {
-                          updateLoadedImage(attachment.id, true);
-                        }}
-                      />
-                    ) : (
-                      <CloudImage
-                        src={attachment.fileUrl}
-                        variant="md"
-                        alt={attachment.fileName}
-                        className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${
-                          loadedImages[attachment.id]
-                            ? 'opacity-100'
-                            : 'opacity-0'
-                        }`}
-                        onClick={() =>
-                          openImageModal(
-                            attachment.fileUrl,
-                            attachment.fileName,
-                          )
-                        }
-                        onLoad={() => {
-                          updateLoadedImage(attachment.id, true);
-                        }}
-                      />
-                    )}
-                    {/* было: <img
-                      src={
-                        message.senderId === currentUserId
-                          ? // Логика для отправителя с blobUrl
-                            loadedImages[attachment.id] && attachment.blobUrl
-                            ? attachment.blobUrl // Оставить blobUrl если он загружен
-                            : !loadedImages[attachment.id] && attachment.blobUrl
-                              ? attachment.blobUrl
-                              : attachment.fileUrl.startsWith('blob:')
-                                ? attachment.fileUrl
-                                : `${attachment.fileUrl}?tr=w-350`
-                          : // Для получателя просто HTTP URL
-                            `${attachment.fileUrl}?tr=w-350`
-                      }
-                      alt={attachment.fileName}
-                      className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${
-                        loadedImages[attachment.id]
+                    {/*
+                      Фейд-ин делаем только для исходящих "локальных" вложений (blob),
+                      чтобы не залипать в opacity-0 после перезагрузки/загрузки с сервера.
+                    */}
+                    {(() => {
+                      const isOutgoing = message.senderId === currentUserId;
+                      const isLocalBlob =
+                        attachment.fileUrl.startsWith('blob:') ||
+                        !!attachment.blobUrl;
+                      const shouldFadeIn = isOutgoing && isLocalBlob;
+                      const opacityClass = shouldFadeIn
+                        ? loadedImages[attachment.id]
                           ? 'opacity-100'
                           : 'opacity-0'
-                      }`}
-                      onClick={() =>
-                        openImageModal(
-                          // Отправитель может открывать blob для быстрого просмотра, получатель всегда использует серверный URL
-                          message.senderId === currentUserId &&
-                            attachment.blobUrl &&
-                            loadedImages[attachment.id]
-                            ? attachment.blobUrl // Быстрый просмотр из blob только для отправителя
-                            : attachment.fileUrl, // HTTP с сервера для получателя и как fallback
-                          attachment.fileName,
-                        )
-                      }
-                      onLoad={() => {
-                        // Помечаем изображение как загруженное для плавного появления
-                        updateLoadedImage(attachment.id, true);
+                        : 'opacity-100';
 
-                        // Smart scroll: only scroll if user is near bottom
-                        setTimeout(() => {
-                          if (isNearBottomRef.current) {
-                            const container = messagesContainerRef.current;
-                            if (container) {
-                              container.scrollTop = container.scrollHeight;
+                      if (
+                        attachment.fileUrl.startsWith('blob:') ||
+                        (isOutgoing && attachment.blobUrl)
+                      ) {
+                        return (
+                          <img
+                            src={
+                              isOutgoing && attachment.blobUrl
+                                ? attachment.blobUrl
+                                : attachment.fileUrl
                             }
+                            alt={attachment.fileName}
+                            className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${opacityClass}`}
+                            onClick={() =>
+                              openImageModal(
+                                isOutgoing &&
+                                  attachment.blobUrl &&
+                                  loadedImages[attachment.id]
+                                  ? attachment.blobUrl
+                                  : attachment.fileUrl,
+                                attachment.fileName,
+                              )
+                            }
+                            onLoad={() => {
+                              updateLoadedImage(attachment.id, true);
+                            }}
+                          />
+                        );
+                      }
+
+                      return (
+                        <CloudImage
+                          src={attachment.fileUrl}
+                          variant="md"
+                          alt={attachment.fileName}
+                          className={`w-full h-full object-cover cursor-pointer transition-opacity duration-150 ${opacityClass}`}
+                          onClick={() =>
+                            openImageModal(
+                              attachment.fileUrl,
+                              attachment.fileName,
+                            )
                           }
-                        }, 100);
-                      }}
-                    /> */}
+                          onLoad={() => {
+                            updateLoadedImage(attachment.id, true);
+                          }}
+                        />
+                      );
+                    })()}
                     {message.senderId === currentUserId &&
                       attachment.blobUrl &&
                       attachment.isError && (
@@ -357,4 +326,3 @@ const MessageItem = memo(
 MessageItem.displayName = 'MessageItem';
 
 export default MessageItem;
-export type { MessageItemProps, Message, Chat };

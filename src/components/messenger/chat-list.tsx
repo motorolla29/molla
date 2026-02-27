@@ -1,34 +1,20 @@
 'use client';
 
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
-import { Check, CheckCheck } from 'lucide-react';
-import { getAvatarColor } from '@/utils';
-import { CloudImage } from '@/components/cloud-image/cloud-image';
-import { useRef, useEffect, useCallback } from 'react';
-
-interface Chat {
-  id: string;
-  adTitle: string;
-  adPhoto: string;
-  adPrice?: string;
-  isAdDeleted?: boolean;
-  otherUserId: number;
-  otherUserName: string;
-  otherUserAvatar?: string;
-  otherUserLastSeenAt?: string | null;
-  lastMessage: string;
-  lastMessageTime: Date | string;
-  lastMessageStatus?: string | null;
-  lastMessageIsOutgoing?: boolean;
-  unreadCount: number;
-}
+import { useEffect, useRef, useState } from 'react';
+import {
+  ChatListItem,
+  type ChatListItemModel,
+} from '@/components/messenger/chat-list-item';
 
 interface ChatListProps {
-  chats: Chat[];
+  chats: ChatListItemModel[];
   onChatSelect: (chatId: string) => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
   onLoadMoreChats?: () => Promise<void> | void;
+  onHideChat?: (chatId: string) => void;
+  onToggleBlock?: (chat: ChatListItemModel) => void;
 }
 
 export default function ChatList({
@@ -37,6 +23,8 @@ export default function ChatList({
   hasMore = false,
   isLoadingMore = false,
   onLoadMoreChats,
+  onHideChat,
+  onToggleBlock,
 }: ChatListProps) {
   // Real-time presence from Socket.IO
   const { onlineUserIds } = useChatPresenceStore();
@@ -44,6 +32,9 @@ export default function ChatList({
 
   const chatListRef = useRef<HTMLDivElement>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
+  const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressRef = useRef(false);
 
   // API-based presence (commented out for now)
   // const { fetchUsersStatuses, getUserStatus } = useOnlineUsersStore();
@@ -114,6 +105,76 @@ export default function ChatList({
     return isTyping;
   };
 
+  const handleCardPointerDown = (chatId: string) => {
+    isLongPressRef.current = false;
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+    }
+    longPressTimeoutRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      setOpenMenuChatId(chatId);
+    }, 500);
+  };
+
+  const handleCardPointerUp = (chatId: string) => {
+    // Если открыт попап
+    if (openMenuChatId) {
+      // Если это отпускание после long-press — просто сбрасываем флаг,
+      // не закрывая попап и не навигируя
+      if (isLongPressRef.current) {
+        isLongPressRef.current = false;
+        if (longPressTimeoutRef.current) {
+          clearTimeout(longPressTimeoutRef.current);
+          longPressTimeoutRef.current = null;
+        }
+        return;
+      }
+
+      // Если попап открыт и это обычный тап по карточке,
+      // сначала закрываем попап без навигации
+      setOpenMenuChatId(null);
+      if (longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current);
+        longPressTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+    if (!isLongPressRef.current) {
+      onChatSelect(chatId);
+    }
+    isLongPressRef.current = false;
+  };
+
+  const handleCardPointerLeave = () => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+    isLongPressRef.current = false;
+  };
+
+  // Глобальное закрытие попапа по клику вне области списка чатов
+  useEffect(() => {
+    if (!openMenuChatId) return;
+
+    const handleGlobalPointerDown = (event: PointerEvent) => {
+      const root = chatListRef.current;
+      if (root && !root.contains(event.target as Node)) {
+        setOpenMenuChatId(null);
+      }
+    };
+
+    window.addEventListener('pointerdown', handleGlobalPointerDown);
+    return () => {
+      window.removeEventListener('pointerdown', handleGlobalPointerDown);
+    };
+  }, [openMenuChatId]);
+
   if (chats.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center p-4">
@@ -145,169 +206,23 @@ export default function ChatList({
       className="flex-1 max-w-full overflow-y-auto custom-scrollbar"
     >
       {chats.map((chat) => (
-        <div
+        <ChatListItem
           key={chat.id}
-          onClick={() => onChatSelect(chat.id)}
-          className="px-1 py-2.5 min-[500px]:p-4 rounded-2xl border-gray-100 cursor-pointer min-[500px]:hover:bg-gray-100 transition-colors select-none"
-        >
-          <div className="flex max-w-full items-center space-x-4">
-            {/* Визуализация товара с аватаром */}
-            <div className="relative shrink-0">
-              {/* Фото товара */}
-              <div className="w-18 h-18 rounded-xl overflow-hidden bg-gray-100">
-                {/* было: <img
-                  src={`https://ik.imagekit.io/motorolla29/molla/mock-photos/${chat.adPhoto}?tr=w-150`}
-                  className="w-full h-full object-cover"
-                /> */}
-                {chat.adPhoto ? (
-                  <CloudImage
-                    src={`ad-photos/${chat.adPhoto}`}
-                    variant="sm"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <svg
-                      className="w-8 h-8 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                )}
-              </div>
-
-              {/* Аватар собеседника в левом верхнем углу */}
-              <div className="absolute -top-1.5 -left-1.5 w-9 h-9 rounded-full border-2 border-white overflow-hidden bg-white">
-                {chat.otherUserAvatar ? (
-                  // <img
-                  // src={`${chat.otherUserAvatar}?tr=w-40`}
-                  // className="w-full h-full object-cover"
-                  // />
-                  <CloudImage
-                    src={chat.otherUserAvatar}
-                    variant="xs"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{
-                      backgroundColor: getAvatarColor(chat.otherUserId),
-                    }}
-                  >
-                    <span className="text-white font-semibold text-xs">
-                      {chat.otherUserName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Информация о чате */}
-            <div className="flex-1 min-w-0 max-w-full flex flex-col justify-center">
-              <div className="relative flex items-start justify-between">
-                <div className="flex items-center min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 truncate">
-                    {chat.otherUserName}
-                  </h3>
-                  {/* Онлайн индикатор - real-time from Socket.IO */}
-                  {onlineUserIds.has(chat.otherUserId) && (
-                    <div className="shrink-0 w-2 h-2 mx-1 sm:mx-2 bg-emerald-500 rounded-full" />
-                  )}
-
-                  {/* Онлайн индикатор - API-based (commented out) */}
-                  {/* {getUserStatus(chat.otherUserId)?.isOnline && (
-                    <div className="shrink-0 w-2 h-2 mx-1 sm:mx-2 bg-emerald-500 rounded-full" />
-                  )} */}
-                </div>
-                <div className="flex items-center shrink-0">
-                  {/* Статус последнего сообщения (если исходящее) */}
-                  {chat.lastMessageIsOutgoing && chat.lastMessageStatus && (
-                    <div className="flex items-center ml-2">
-                      {chat.lastMessageStatus === 'sending' && (
-                        <div className="w-3 h-3 border border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-                      )}
-                      {chat.lastMessageStatus === 'sent' && (
-                        <Check className="w-3 h-3 text-gray-500" />
-                      )}
-                      {chat.lastMessageStatus === 'delivered' && (
-                        <Check className="w-3 h-3 text-violet-500" />
-                      )}
-                      {chat.lastMessageStatus === 'read' && (
-                        <CheckCheck className="w-3 h-3 text-violet-500" />
-                      )}
-                      {chat.lastMessageStatus === 'error' && (
-                        <div className="text-xs text-red-500">⚠</div>
-                      )}
-                    </div>
-                  )}
-                  <span className="text-xs ml-1 text-gray-500">
-                    {formatTime(chat.lastMessageTime)}
-                  </span>
-                </div>
-                {/* Индикатор непрочитанных сообщений */}
-                {chat.unreadCount > 0 && (
-                  <div className="absolute right-0 top-6 bg-amber-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center font-semibold">
-                    {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
-                  </div>
-                )}
-              </div>
-
-              <p className="mr-8 text-xs text-gray-600 truncate mb-1">
-                {chat.isAdDeleted ? (
-                  <span className="text-gray-500 italic">
-                    Объявление удалено
-                  </span>
-                ) : (
-                  <>
-                    {chat.adTitle}
-                    {chat.adPrice && <span className="mx-1">·</span>}
-                    {chat.adPrice && (
-                      <span className="text-xs text-gray-900">
-                        {chat.adPrice}
-                      </span>
-                    )}
-                  </>
-                )}
-              </p>
-
-              <div
-                className={`mr-8 max-w-fit py-1 px-2 rounded-xl text-sm truncate ${
-                  chat.unreadCount > 0
-                    ? 'bg-stone-200 text-gray-700 font-semibold'
-                    : 'bg-stone-200/40 text-gray-600'
-                } ${
-                  isUserTyping(chat.id, chat.otherUserId)
-                    ? 'bg-transparent'
-                    : ''
-                }`}
-              >
-                {isUserTyping(chat.id, chat.otherUserId) ? (
-                  <div className="">
-                    <div className="inline-block align-baseline">
-                      <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
-                      <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.1s] ml-0.5" />
-                      <span className="inline-block w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce ml-0.5" />
-                    </div>
-                    <span className="inline-block ml-1 align-baseline font-semibold text-violet-500">
-                      Печатает...
-                    </span>
-                  </div>
-                ) : (
-                  chat.lastMessage
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+          chat={chat}
+          isOtherUserOnline={onlineUserIds.has(chat.otherUserId)}
+          isTyping={isUserTyping(chat.id, chat.otherUserId)}
+          formatTime={formatTime}
+          isMenuOpen={openMenuChatId === chat.id}
+          showMenu={!!onHideChat && !!onToggleBlock}
+          onToggleMenu={() =>
+            setOpenMenuChatId(openMenuChatId === chat.id ? null : chat.id)
+          }
+          onHideChat={onHideChat}
+          onToggleBlock={onToggleBlock}
+          onPointerDown={() => handleCardPointerDown(chat.id)}
+          onPointerUp={() => handleCardPointerUp(chat.id)}
+          onPointerLeave={handleCardPointerLeave}
+        />
       ))}
 
       {/* Триггер для подгрузки */}

@@ -11,7 +11,7 @@ import type { Message } from './message-item';
 
 interface UseChatScrollArgs {
   localMessages: Message[];
-  initialMessages: Message[];
+  initialMessages: Message[]; // оставляем для совместимости, но в логике не используем
   currentUserId: number;
   isLoading: boolean;
   hasMoreMessages: boolean;
@@ -49,10 +49,10 @@ export function useChatScroll({
   const scrollRafRef = useRef<number | null>(null);
   const loadMoreTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const prevMessagesLengthRef = useRef(initialMessages.length);
-  const prevLastMessageIdRef = useRef<string | null>(
-    initialMessages[initialMessages.length - 1]?.id ?? null,
-  );
+  // Для отслеживания изменений списка сообщений
+  const prevMessagesLengthRef = useRef(0);
+  const prevLastMessageIdRef = useRef<string | null>(null);
+  const hasDoneInitialScrollRef = useRef(false);
 
   // Синхронизируем ref с состоянием
   useEffect(() => {
@@ -176,63 +176,61 @@ export function useChatScroll({
     };
   }, [handleScroll]);
 
-  // Умная автопрокрутка:
-  // - при добавлении новых сообщений ВНИЗ (append) скроллим вниз,
+  // Автопрокрутка:
+  // - при первой загрузке сообщений для чата — в самый низ;
+  // - при добавлении новых сообщений в конец (append) — в самый низ,
   //   но только если пользователь уже внизу или сообщение от текущего пользователя;
-  // - при подгрузке старых сообщений ВВЕРХ (prepend) позицию НЕ меняем.
+  // - при подгрузке старых сообщений вверх (prepend) позицию не трогаем.
+
+  // 1) Первая загрузка сообщений для чата — всегда один раз скроллим в самый низ
+  useEffect(() => {
+    if (hasDoneInitialScrollRef.current) return;
+    if (isLoading) return;
+    if (localMessages.length === 0) return;
+
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const scrollToBottom = () => {
+      container.scrollTop = container.scrollHeight;
+    };
+
+    scrollToBottom();
+    setTimeout(scrollToBottom, 50);
+    setTimeout(scrollToBottom, 150);
+
+    hasDoneInitialScrollRef.current = true;
+  }, [isLoading, localMessages.length]);
+
+  // 2) Дальнейшая автопрокрутка при приходе новых сообщений (append)
   useEffect(() => {
     const currentLength = localMessages.length;
     const currentLastId = localMessages[localMessages.length - 1]?.id ?? null;
 
-    const lastMessage = localMessages[localMessages.length - 1];
-    const isLastFromCurrentUser =
-      lastMessage && lastMessage.senderId === currentUserId;
-    const isLastFromOtherUser =
-      lastMessage && lastMessage.senderId !== currentUserId;
-
     const prevLength = prevMessagesLengthRef.current;
     const prevLastId = prevLastMessageIdRef.current;
 
-    // 1) Инициализация: с 0 до N сообщений — всегда скроллим вниз
-    if (prevLength === 0 && currentLength > 0) {
-      const container = messagesContainerRef.current;
-      if (container) {
-        // Небольшая задержка для учета изменений высоты при загрузке изображений
-        setTimeout(() => {
-          container.scrollTop = container.scrollHeight;
-        }, 50);
-      }
-    }
-    // 2) Добавление новых сообщений в конец (append):
-    // либо длина увеличилась, либо изменился id последнего сообщения
+    // Добавление новых сообщений в конец (append): определяем по смене id последнего сообщения.
     // (например, temp-id локального сообщения заменился на серверный id)
     // Скроллим, если:
     // - пользователь реально находится внизу (isNearBottom), ИЛИ
     // - последнее сообщение отправлено текущим пользователем
     //   (в этом случае мы всегда хотим показать ему его же отправку,
     //    даже если он был чуть выше).
-    else if (
-      (currentLength > prevLength || currentLastId !== prevLastId) &&
+    if (
       currentLastId &&
-      (isNearBottom || isLastFromCurrentUser)
+      currentLastId !== prevLastId &&
+      (isNearBottom ||
+        (localMessages[localMessages.length - 1]?.senderId ===
+          currentUserId))
     ) {
       const container = messagesContainerRef.current;
       if (container) {
-        const lastMessageElement = container.querySelector<HTMLElement>(
-          `[data-message-id="${currentLastId}"]`,
-        );
-
-        if (lastMessageElement) {
-          const scrollOnce = () => {
-            lastMessageElement.scrollIntoView({
-              block: 'end',
-            });
-          };
-
-          scrollOnce();
-          setTimeout(scrollOnce, 100);
-          setTimeout(scrollOnce, 300);
-        }
+        const scrollToBottom = () => {
+          container.scrollTop = container.scrollHeight;
+        };
+        scrollToBottom();
+        setTimeout(scrollToBottom, 50);
       }
     }
 

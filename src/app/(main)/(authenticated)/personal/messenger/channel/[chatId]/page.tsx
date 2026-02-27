@@ -29,6 +29,8 @@ interface Chat {
   lastMessage: string;
   lastMessageTime: Date | string;
   unreadCount: number;
+  isBlockedByMe?: boolean;
+  isBlockedMe?: boolean;
 }
 
 interface Message {
@@ -445,15 +447,6 @@ export default function ChatPage() {
   ) => {
     if (!user) return;
 
-    // Прекращаем индикацию печати при отправке сообщения
-    socket?.emit('stop_typing', { chatId });
-
-    // Без вложений — отправляем сразу через сокет (сервер сам сохранит)
-    if (!attachments || attachments.length === 0) {
-      socket?.emit('send_message', { chatId, content, tempId: tempMessageId });
-      return;
-    }
-
     const formData = new FormData();
     formData.append('chatId', chatId);
     formData.append('content', content);
@@ -613,7 +606,7 @@ export default function ChatPage() {
         isOtherUserOnline={!!isOtherUserOnline}
         otherUserLastSeen={otherUserLastSeen}
         isTyping={isTyping}
-        isLoading={isLoading}
+        isLoading={isLoading || !chat}
         hasMoreMessages={hasMore}
         isLoadingMoreMessages={isLoadingMore}
         onLoadMoreMessages={loadMoreMessages}

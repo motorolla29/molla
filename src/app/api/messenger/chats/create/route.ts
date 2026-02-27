@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
     }
 
     const buyerId = Number((decoded as any).userId);
-    const { adId, sellerId }: { adId: string; sellerId: number } = await request.json();
+    const { adId, sellerId }: { adId: string; sellerId: number } =
+      await request.json();
 
     if (!adId || !sellerId) {
       return NextResponse.json(
@@ -48,8 +49,33 @@ export async function POST(request: NextRequest) {
     if (!ad) {
       return NextResponse.json(
         { error: 'Объявление не найдено или недоступно' },
-        { status: 404 }
+        { status: 404 },
       );
+    }
+
+    // Проверяем блокировки между пользователями
+    const block = await prisma.userBlock.findFirst({
+      where: {
+        OR: [
+          {
+            blockerId: buyerId,
+            blockedId: sellerId,
+          },
+          {
+            blockerId: sellerId,
+            blockedId: buyerId,
+          },
+        ],
+      },
+    });
+
+    if (block) {
+      const isBlockedByMe = block.blockerId === buyerId;
+      const message = isBlockedByMe
+        ? 'Вы заблокировали этого пользователя и не можете начать с ним чат.'
+        : 'Вы не можете начать чат, так как пользователь заблокировал вас.';
+
+      return NextResponse.json({ error: message }, { status: 403 });
     }
 
     // Проверяем, существует ли уже чат между этими пользователями по этому объявлению

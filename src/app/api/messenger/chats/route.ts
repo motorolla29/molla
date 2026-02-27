@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     // - Все чаты где пользователь является покупателем (даже пустые)
     // - Только чаты где пользователь является продавцом И есть сообщения
     const [buyerChats, sellerChats] = await Promise.all([
-      // Чаты где пользователь - покупатель
+      // Чаты где пользователь - покупатель (скрытые не фильтруем здесь)
       prisma.chat.findMany({
         where: {
           buyerId: userId,
@@ -157,12 +157,66 @@ export async function GET(request: NextRequest) {
       hasMore = true;
     }
 
+    // Загружаем скрытия чатов для текущего пользователя
+    const hidden = await prisma.chatHidden.findMany({
+      where: {
+        userId,
+        chatId: {
+          in: chats.map((c) => c.id),
+        },
+      },
+      select: {
+        chatId: true,
+        deletedAt: true,
+      },
+    });
+
+    const hiddenMap = new Map<string, Date>();
+    hidden.forEach((h) => hiddenMap.set(h.chatId, h.deletedAt));
+
+    // Собираем ID собеседников для проверки блокировок
+    const otherUserIds = chats.map((chat) =>
+      chat.buyerId === userId ? chat.sellerId : chat.buyerId,
+    );
+
+    const blocks = otherUserIds.length
+      ? await prisma.userBlock.findMany({
+          where: {
+            OR: [
+              {
+                blockerId: userId,
+                blockedId: { in: otherUserIds },
+              },
+              {
+                blockerId: { in: otherUserIds },
+                blockedId: userId,
+              },
+            ],
+          },
+          select: {
+            blockerId: true,
+            blockedId: true,
+          },
+        })
+      : [];
+
     // Форматируем данные для фронтенда и подсчитываем непрочитанные сообщения
-    const formattedChats = await Promise.all(
+    const formattedChatsWithNulls = await Promise.all(
       chats.map(async (chat) => {
         const isBuyer = chat.buyerId === userId;
         const otherUser = isBuyer ? chat.seller : chat.buyer;
         const lastMessage = chat.messages[0];
+
+        // Проверяем, скрывал ли пользователь этот чат
+        const hiddenAt = hiddenMap.get(chat.id);
+        if (hiddenAt) {
+          // Считаем эффективное "последнее событие" по времени
+          const lastEventTime = lastMessage?.createdAt || chat.createdAt;
+          // Если после скрытия не было новых сообщений — чат остаётся скрытым
+          if (!lastEventTime || lastEventTime <= hiddenAt) {
+            return null;
+          }
+        }
 
         // Подсчитываем непрочитанные сообщения параллельно
         const unreadCount = await prisma.message.count({
@@ -195,6 +249,13 @@ export async function GET(request: NextRequest) {
         // Определяем, удалено ли объявление
         const isAdDeleted = !chat.ad;
 
+        const isBlockedByMe = blocks.some(
+          (b) => b.blockerId === userId && b.blockedId === otherUser.id,
+        );
+        const isBlockedMe = blocks.some(
+          (b) => b.blockerId === otherUser.id && b.blockedId === userId,
+        );
+
         return {
           id: chat.id,
           adId: chat.adId,
@@ -212,7 +273,7 @@ export async function GET(request: NextRequest) {
             ? lastMessage.attachments &&
               lastMessage.attachments.length > 0 &&
               lastMessage.attachments.some((att: any) =>
-                att.fileType?.startsWith('image/')
+                att.fileType?.startsWith('image/'),
               ) &&
               !lastMessage.content?.trim()
               ? '📎 Фото'
@@ -225,8 +286,14 @@ export async function GET(request: NextRequest) {
             : false,
           unreadCount,
           lastUnreadMessageTime,
+          isBlockedByMe,
+          isBlockedMe,
         };
-      })
+      }),
+    );
+
+    const formattedChats = formattedChatsWithNulls.filter(
+      (chat): chat is NonNullable<typeof chat> => chat !== null,
     );
 
     return NextResponse.json({

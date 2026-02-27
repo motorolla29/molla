@@ -71,6 +71,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
     }
 
+    // Проверяем блокировки между пользователями
+    const otherUserId = chat.buyerId === userId ? chat.sellerId : chat.buyerId;
+
+    const block = await prisma.userBlock.findFirst({
+      where: {
+        OR: [
+          {
+            blockerId: userId,
+            blockedId: otherUserId,
+          },
+          {
+            blockerId: otherUserId,
+            blockedId: userId,
+          },
+        ],
+      },
+    });
+
+    if (block) {
+      const isBlockedByMe = block.blockerId === userId;
+      const message = isBlockedByMe
+        ? 'Вы заблокировали этого пользователя и не можете отправлять ему сообщения.'
+        : 'Вы не можете отправить сообщение, так как пользователь заблокировал вас.';
+
+      return NextResponse.json({ error: message }, { status: 403 });
+    }
+
     // Определяем тип сообщения
     const messageType = attachments.length > 0 ? 'image' : 'text';
 

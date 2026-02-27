@@ -4,11 +4,17 @@ import { useCallback } from 'react';
 import { ChatHeader } from './chat-header';
 import MessageInput from './message-input';
 import MessageItem from './message-item';
-import type { Message, Chat } from './message-item';
+import type { Message, Chat as BaseChat } from './message-item';
 import { useChatMessages } from './use-chat-messages';
 import { useChatScroll } from './use-chat-scroll';
 import { getAvatarColor } from '@/utils';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
+import { Ban } from 'lucide-react';
+
+type Chat = BaseChat & {
+  isBlockedByMe?: boolean;
+  isBlockedMe?: boolean;
+};
 
 interface ChatAreaProps {
   chat: Chat | null;
@@ -261,19 +267,39 @@ export default function ChatArea({
             );
           })()}
 
+        {/* В конце чата: инфо о блокировке (для обоих случаев) */}
+        {!isLoading && chat && (chat.isBlockedByMe || chat.isBlockedMe) && (
+          <div className="w-full flex justify-center mt-6 mb-12 lg:mb-0">
+            <div className="max-w-[520px] w-full px-4">
+              <div className="w-full rounded-2xl border border-red-100 bg-red-50 px-4 py-3 flex items-start gap-3">
+                <div className="mt-0.5">
+                  <Ban className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                </div>
+                <div className="text-xs sm:text-sm text-red-700 leading-snug">
+                  {chat.isBlockedByMe
+                    ? 'Вы заблокировали этого пользователя. Чтобы снова написать, разблокируйте его в списке чатов.'
+                    : 'Вы не можете отправлять сообщения, так как пользователь заблокировал вас.'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Реф для прокрутки */}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Поле ввода сообщения - фиксированная высота внизу */}
-      <div className="bg-gray-50 shrink-0 mb-12 lg:mb-0">
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          disabled={isLoading}
-          onTyping={onTyping}
-          onStopTyping={onStopTyping}
-        />
-      </div>
+      {/* Поле ввода сообщения внизу показываем только когда чат загружен и нет блокировки */}
+      {!chat || isLoading || chat.isBlockedByMe || chat.isBlockedMe ? null : (
+        <div className="bg-gray-50 shrink-0 mb-12 lg:mb-0">
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            disabled={isLoading}
+            onTyping={onTyping}
+            onStopTyping={onStopTyping}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -36,6 +36,20 @@ export async function GET(
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
     }
 
+    // Проверяем, скрывал ли пользователь этот чат раньше,
+    // чтобы показывать только сообщения после момента удаления
+    const hidden = await prisma.chatHidden.findUnique({
+      where: {
+        chatId_userId: {
+          chatId,
+          userId,
+        },
+      },
+      select: {
+        deletedAt: true,
+      },
+    });
+
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
     const beforeId = searchParams.get('beforeId');
@@ -46,9 +60,15 @@ export async function GET(
     );
 
     // Базовый where для сообщений текущего чата
-    const baseWhere = {
+    const baseWhere: any = {
       chatId: chatId,
     };
+
+    if (hidden?.deletedAt) {
+      baseWhere.createdAt = {
+        gt: hidden.deletedAt,
+      };
+    }
 
     let messages;
     let hasMore = false;
@@ -71,6 +91,7 @@ export async function GET(
         where: {
           ...baseWhere,
           createdAt: {
+            ...(baseWhere.createdAt || {}),
             lt: beforeMessage.createdAt,
           },
         },
@@ -104,6 +125,7 @@ export async function GET(
           where: {
             ...baseWhere,
             createdAt: {
+              ...(baseWhere.createdAt || {}),
               lt: oldestInBatch.createdAt,
             },
           },

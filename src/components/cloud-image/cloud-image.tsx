@@ -21,6 +21,7 @@ export function CloudImage({
   variant = 'orig',
   alt = '',
   className,
+  onLoad,
   onError,
   ...rest
 }: CloudImageProps) {
@@ -67,9 +68,13 @@ export function CloudImage({
     [src, variant, useOriginal, onError],
   );
 
-  const handleLoad = useCallback(() => {
+  const handleLoad = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     setHasLoaded(true);
-  }, []);
+    onLoad?.(e);
+  },
+    [onLoad],
+  );
 
   const displaySrc = getCloudImageVariantUrl(
     src,

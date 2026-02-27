@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ chatId: string }> }
+  { params }: { params: Promise<{ chatId: string }> },
 ) {
   try {
     // Получаем токен из cookies
@@ -12,7 +12,7 @@ export async function GET(
     if (!token) {
       return NextResponse.json(
         { error: 'Требуется авторизация' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -100,6 +100,33 @@ export async function GET(
     // Определяем, удалено ли объявление
     const isAdDeleted = !chat.ad;
 
+    // Проверяем блокировки между пользователями
+    const blocks = await prisma.userBlock.findMany({
+      where: {
+        OR: [
+          {
+            blockerId: userId,
+            blockedId: otherUser.id,
+          },
+          {
+            blockerId: otherUser.id,
+            blockedId: userId,
+          },
+        ],
+      },
+      select: {
+        blockerId: true,
+        blockedId: true,
+      },
+    });
+
+    const isBlockedByMe = blocks.some(
+      (b) => b.blockerId === userId && b.blockedId === otherUser.id,
+    );
+    const isBlockedMe = blocks.some(
+      (b) => b.blockerId === otherUser.id && b.blockedId === userId,
+    );
+
     const formattedChat = {
       id: chat.id,
       adId: chat.adId,
@@ -108,10 +135,10 @@ export async function GET(
       adPrice: isAdDeleted
         ? undefined
         : chat.ad!.price
-        ? `${chat.ad!.price.toLocaleString('ru-RU')} ${
-            chat.ad!.currency || 'RUB'
-          }`
-        : undefined,
+          ? `${chat.ad!.price.toLocaleString('ru-RU')} ${
+              chat.ad!.currency || 'RUB'
+            }`
+          : undefined,
       adCity: isAdDeleted ? '' : chat.ad!.city,
       adCityLabel: isAdDeleted ? '' : chat.ad!.cityLabel,
       adCategory: isAdDeleted ? 'goods' : chat.ad!.category,
@@ -124,7 +151,7 @@ export async function GET(
         ? lastMessage.attachments &&
           lastMessage.attachments.length > 0 &&
           lastMessage.attachments.some((att: any) =>
-            att.fileType?.startsWith('image/')
+            att.fileType?.startsWith('image/'),
           ) &&
           !lastMessage.content?.trim()
           ? '📎 Фото'
@@ -136,6 +163,8 @@ export async function GET(
         ? lastMessage.senderId === userId
         : false,
       unreadCount,
+      isBlockedByMe,
+      isBlockedMe,
     };
 
     return NextResponse.json(formattedChat);
@@ -143,7 +172,7 @@ export async function GET(
     console.error('Error fetching chat:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
