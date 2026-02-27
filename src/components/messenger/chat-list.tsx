@@ -35,6 +35,10 @@ export default function ChatList({
   const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPressRef = useRef(false);
+  const lastMenuOpenFromLongPressRef = useRef<{
+    chatId: string;
+    ts: number;
+  } | null>(null);
 
   // API-based presence (commented out for now)
   // const { fetchUsersStatuses, getUserStatus } = useOnlineUsersStore();
@@ -113,6 +117,10 @@ export default function ChatList({
     longPressTimeoutRef.current = setTimeout(() => {
       isLongPressRef.current = true;
       setOpenMenuChatId(chatId);
+      lastMenuOpenFromLongPressRef.current = {
+        chatId,
+        ts: Date.now(),
+      };
     }, 500);
   };
 
@@ -156,6 +164,21 @@ export default function ChatList({
       longPressTimeoutRef.current = null;
     }
     isLongPressRef.current = false;
+  };
+
+  const handleMenuActionClick = (chatId: string, action: () => void) => {
+    const info = lastMenuOpenFromLongPressRef.current;
+    if (info && info.chatId === chatId) {
+      const dt = Date.now() - info.ts;
+      // Игнорируем первый "случайный" клик сразу после long-press (например, отпускание пальца)
+      if (dt < 300) {
+        lastMenuOpenFromLongPressRef.current = null;
+        return;
+      }
+      // После первого осознанного нажатия очищаем флаг
+      lastMenuOpenFromLongPressRef.current = null;
+    }
+    action();
   };
 
   // Глобальное закрытие попапа по клику вне области списка чатов
@@ -219,6 +242,7 @@ export default function ChatList({
           }
           onHideChat={onHideChat}
           onToggleBlock={onToggleBlock}
+          onMenuActionClick={handleMenuActionClick}
           onPointerDown={() => handleCardPointerDown(chat.id)}
           onPointerUp={() => handleCardPointerUp(chat.id)}
           onPointerLeave={handleCardPointerLeave}

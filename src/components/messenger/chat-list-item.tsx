@@ -42,6 +42,7 @@ export interface ChatListItemProps {
   onToggleMenu: () => void;
   onHideChat?: (chatId: string) => void;
   onToggleBlock?: (chat: ChatListItemModel) => void;
+  onMenuActionClick?: (chatId: string, action: () => void) => void;
   onPointerDown: () => void;
   onPointerUp: () => void;
   onPointerLeave: () => void;
@@ -57,6 +58,7 @@ export function ChatListItem({
   onToggleMenu,
   onHideChat,
   onToggleBlock,
+  onMenuActionClick,
   onPointerDown,
   onPointerUp,
   onPointerLeave,
@@ -201,8 +203,15 @@ export function ChatListItem({
                             type="button"
                             className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                             onClick={() => {
-                              onToggleMenu();
-                              onToggleBlock?.(chat);
+                              const action = () => {
+                                onToggleMenu();
+                                onToggleBlock?.(chat);
+                              };
+                              if (onMenuActionClick) {
+                                onMenuActionClick(chat.id, action);
+                              } else {
+                                action();
+                              }
                             }}
                           >
                             {chat.isBlockedByMe ? (
@@ -222,19 +231,26 @@ export function ChatListItem({
                             className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                             onClick={() => {
                               if (!onHideChat) return;
-                              confirm(
-                                'Вы уверены, что хотите удалить этот чат? История останется у собеседника, но у вас появятся только новые сообщения.',
-                                () => {
-                                  onHideChat(chat.id);
-                                },
-                                {
-                                  title: 'Удалить чат',
-                                  icon: Trash2,
-                                  iconBgColor: 'bg-red-100',
-                                  iconColor: 'text-red-500',
-                                },
-                              );
-                              onToggleMenu();
+                              const action = () => {
+                                confirm(
+                                  'Вы уверены, что хотите удалить этот чат? История останется у собеседника, но у вас появятся только новые сообщения.',
+                                  () => {
+                                    onHideChat(chat.id);
+                                  },
+                                  {
+                                    title: 'Удалить чат',
+                                    icon: Trash2,
+                                    iconBgColor: 'bg-red-100',
+                                    iconColor: 'text-red-500',
+                                  },
+                                );
+                                onToggleMenu();
+                              };
+                              if (onMenuActionClick) {
+                                onMenuActionClick(chat.id, action);
+                              } else {
+                                action();
+                              }
                             }}
                           >
                             <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
