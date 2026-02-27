@@ -10,7 +10,7 @@ import {
   CheckCheck,
   MoreVertical,
   Trash2,
-  UserCheck,
+  User,
 } from 'lucide-react';
 
 export type ChatListItemModel = {
@@ -157,7 +157,11 @@ export function ChatListItem({
                 </div>
               )}
 
-              <span className="text-xs ml-1 text-gray-500 transition-all duration-150 sm:group-hover:mr-12">
+              <span
+                className={`text-xs ml-1 text-gray-500 transition-all duration-150 ${
+                  isMenuOpen ? 'sm:mr-12' : 'sm:group-hover:mr-12'
+                }`}
+              >
                 {formatTime(chat.lastMessageTime)}
               </span>
 
@@ -166,7 +170,11 @@ export function ChatListItem({
                 <>
                   <button
                     type="button"
-                    className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-gray-600 bg-neutral-200 hover:bg-neutral-300 opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150 absolute right-0 top-1/2 -translate-y-1/2"
+                    className={`hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-gray-600 bg-neutral-200 hover:bg-neutral-300 absolute right-0 top-1/2 -translate-y-1/2 transition-opacity duration-150 ${
+                      isMenuOpen
+                        ? 'opacity-100'
+                        : 'opacity-0 group-hover:opacity-100'
+                    }`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleMenu();
@@ -198,7 +206,7 @@ export function ChatListItem({
                             }}
                           >
                             {chat.isBlockedByMe ? (
-                              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+                              <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
                             ) : (
                               <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
                             )}
@@ -242,7 +250,7 @@ export function ChatListItem({
 
             {/* Индикатор непрочитанных сообщений */}
             {chat.unreadCount > 0 && (
-              <div className="absolute right-0 top-6 bg-amber-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center font-semibold">
+              <div className="absolute right-5 top-13 bg-amber-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center font-semibold">
                 {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
               </div>
             )}
