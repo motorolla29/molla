@@ -45082,12 +45082,12 @@
     "name_en": "Odintsovo",
     "namecase": {
       "nominative": "Одинцово",
-      "genitive": "Одинцова",
-      "dative": "Одинцову",
+      "genitive": "Одинцово",
+      "dative": "Одинцово",
       "accusative": "Одинцово",
-      "ablative": "Одинцовом",
-      "prepositional": "Одинцове",
-      "locative": "Одинцове"
+      "ablative": "Одинцово",
+      "prepositional": "Одинцово",
+      "locative": "Одинцово"
     },
     "coords": { "lat": 55.6789455, "lon": 37.263686 },
     "timezone": {

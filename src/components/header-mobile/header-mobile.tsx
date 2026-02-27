@@ -10,7 +10,7 @@ import { useNotificationsStore } from '@/store/useNotificationsStore';
 export default function HeaderMobile() {
   const { cityName, setLocation } = useLocationStore();
   const unreadNotifications = useNotificationsStore(
-    (state) => state.unreadCount
+    (state) => state.unreadCount,
   );
 
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -24,7 +24,7 @@ export default function HeaderMobile() {
           className="flex items-center shrink-0 text-neutral-500 hover:opacity-80 cursor-pointer"
         >
           <MapPinIcon className="h-5 w-5 shrink-0" />
-          <span className="ml-1 leading-none min-w-0 max-w-[200px] truncate font-light text-md">
+          <span className="ml-1 leading-normal min-w-0 max-w-[200px] truncate font-light text-md">
             {cityName || 'Город'}
           </span>
         </button>
