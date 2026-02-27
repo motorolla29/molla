@@ -100,32 +100,37 @@ export async function GET(
     // Определяем, удалено ли объявление
     const isAdDeleted = !chat.ad;
 
-    // Проверяем блокировки между пользователями
-    const blocks = await prisma.userBlock.findMany({
-      where: {
-        OR: [
-          {
-            blockerId: userId,
-            blockedId: otherUser.id,
-          },
-          {
-            blockerId: otherUser.id,
-            blockedId: userId,
-          },
-        ],
-      },
-      select: {
-        blockerId: true,
-        blockedId: true,
-      },
-    });
+    // Проверяем блокировки между пользователями (только если собеседник ещё существует)
+    let isBlockedByMe = false;
+    let isBlockedMe = false;
 
-    const isBlockedByMe = blocks.some(
-      (b) => b.blockerId === userId && b.blockedId === otherUser.id,
-    );
-    const isBlockedMe = blocks.some(
-      (b) => b.blockerId === otherUser.id && b.blockedId === userId,
-    );
+    if (otherUser) {
+      const blocks = await prisma.userBlock.findMany({
+        where: {
+          OR: [
+            {
+              blockerId: userId,
+              blockedId: otherUser.id,
+            },
+            {
+              blockerId: otherUser.id,
+              blockedId: userId,
+            },
+          ],
+        },
+        select: {
+          blockerId: true,
+          blockedId: true,
+        },
+      });
+
+      isBlockedByMe = blocks.some(
+        (b) => b.blockerId === userId && b.blockedId === otherUser.id,
+      );
+      isBlockedMe = blocks.some(
+        (b) => b.blockerId === otherUser.id && b.blockedId === userId,
+      );
+    }
 
     const formattedChat = {
       id: chat.id,
@@ -143,10 +148,10 @@ export async function GET(
       adCityLabel: isAdDeleted ? '' : chat.ad!.cityLabel,
       adCategory: isAdDeleted ? 'goods' : chat.ad!.category,
       isAdDeleted,
-      otherUserId: otherUser.id,
-      otherUserName: otherUser.name,
-      otherUserAvatar: otherUser.avatar,
-      otherUserLastSeenAt: otherUser.lastSeenAt,
+      otherUserId: otherUser?.id ?? 0,
+      otherUserName: otherUser?.name ?? 'Пользователь удален',
+      otherUserAvatar: otherUser?.avatar ?? null,
+      otherUserLastSeenAt: otherUser?.lastSeenAt ?? null,
       lastMessage: lastMessage
         ? lastMessage.attachments &&
           lastMessage.attachments.length > 0 &&

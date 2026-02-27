@@ -1,7 +1,8 @@
 'use client';
 
 import { memo, Fragment, useState, useCallback } from 'react';
-import { Check, CheckCheck } from 'lucide-react';
+import { Check, CheckCheck, User } from 'lucide-react';
+import { FaUser } from 'react-icons/fa6';
 import { getAvatarColor } from '@/utils';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
 
@@ -155,17 +156,14 @@ const MessageItem = memo(
                 }}
               >
                 {chat?.otherUserAvatar ? (
-                  // <img
-                  // src={`${chat.otherUserAvatar}?tr=w-40`}
-                  // alt={chat?.otherUserName}
-                  // className="w-full h-full object-cover"
-                  // />
                   <CloudImage
                     src={chat.otherUserAvatar}
                     variant="xs"
                     alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />
+                ) : chat?.otherUserName === 'Пользователь удален' ? (
+                  <FaUser className="w-3 h-3 text-gray-400" />
                 ) : (
                   <span className="text-white font-semibold text-sm">
                     {chat?.otherUserName?.charAt(0).toUpperCase()}

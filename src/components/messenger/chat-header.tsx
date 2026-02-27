@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User } from 'lucide-react';
+import { FaUser } from 'react-icons/fa6';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { getAvatarColor } from '@/utils';
 import type { Chat } from './message-item';
@@ -107,7 +108,13 @@ export function ChatHeader({
           </div>
 
           {/* Аватар собеседника в левом верхнем углу */}
-          <Link href={`/user/${chat?.otherUserId}/active`}>
+          <Link
+            href={
+              chat && chat.otherUserId
+                ? `/user/${chat.otherUserId}/active`
+                : '#'
+            }
+          >
             <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-white cursor-pointer transition-opacity">
               {chat?.otherUserAvatar ? (
                 <CloudImage
@@ -115,6 +122,10 @@ export function ChatHeader({
                   variant="xs"
                   className="w-full h-full object-cover"
                 />
+              ) : chat?.otherUserName === 'Пользователь удален' ? (
+                <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                  <FaUser className="w-2.5 h-2.5 text-gray-500" />
+                </div>
               ) : (
                 <div
                   className="w-full h-full flex items-center justify-center"
@@ -137,7 +148,11 @@ export function ChatHeader({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <Link
-              href={`/user/${chat?.otherUserId}/active`}
+              href={
+                chat && chat.otherUserId
+                  ? `/user/${chat.otherUserId}/active`
+                  : '#'
+              }
               className="flex-1 min-w-0 max-w-fit"
             >
               <div className="flex items-center gap-2 min-w-0">

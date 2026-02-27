@@ -177,9 +177,10 @@ export async function GET(
       id: message.id,
       stableId: `stable-existing-${message.id}`, // Стабильный ID для существующих сообщений
       content: message.content || '',
-      senderId: message.senderId,
-      senderName: message.sender.name,
-      senderAvatar: message.sender.avatar,
+      // Если отправитель был удалён, senderId может быть null — даём безопасное значение
+      senderId: message.senderId ?? 0,
+      senderName: message.sender?.name ?? 'Пользователь удален',
+      senderAvatar: message.sender?.avatar ?? null,
       timestamp: message.createdAt,
       type: message.messageType === 'image' ? 'image' : 'text',
       status: message.status,

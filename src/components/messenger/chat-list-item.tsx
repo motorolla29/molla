@@ -12,6 +12,7 @@ import {
   Trash2,
   User,
 } from 'lucide-react';
+import { FaUser } from 'react-icons/fa6';
 
 export type ChatListItemModel = {
   id: string;
@@ -103,13 +104,17 @@ export function ChatListItem({
           </div>
 
           {/* Аватар собеседника в левом верхнем углу */}
-          <div className="absolute -top-1.5 -left-1.5 w-9 h-9 rounded-full border-2 border-white overflow-hidden bg-white">
+          <div className="absolute -top-1.5 -left-1.5 w-9 h-9 rounded-full border-2 border-gray-50 overflow-hidden bg-gray-100">
             {chat.otherUserAvatar ? (
               <CloudImage
                 src={chat.otherUserAvatar}
                 variant="xs"
                 className="w-full h-full object-cover"
               />
+            ) : chat.otherUserName === 'Пользователь удален' ? (
+              <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                <FaUser className="w-3 h-3 text-gray-500" />
+              </div>
             ) : (
               <div
                 className="w-full h-full flex items-center justify-center"
