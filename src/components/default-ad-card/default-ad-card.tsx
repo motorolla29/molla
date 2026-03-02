@@ -17,7 +17,8 @@ export default function DefaultAdCard({
   disableViewedOverlay = false,
 }: DefaultAdCardProps) {
   const { viewedIds, markViewed } = useViewedAdsStore();
-  const isViewed = !disableViewedOverlay && (ad.isViewed || viewedIds.has(ad.id));
+  const isViewed =
+    !disableViewedOverlay && (ad.isViewed || viewedIds.has(ad.id));
   return (
     <div
       key={ad.id}
@@ -27,7 +28,7 @@ export default function DefaultAdCard({
       <Link
         className="rounded-2xl relative w-26 h-26 sm:w-36 sm:h-36 bg-gray-200/25 overflow-hidden"
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-        target="_blank"
+        target="blank"
         onClick={() => markViewed(ad.id)}
       >
         {/* было: <img
@@ -54,7 +55,7 @@ export default function DefaultAdCard({
       <Link
         className="flex-1 flex-col justify-between ml-3 sm:ml-4 relative min-w-0"
         href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-        target="_blank"
+        target="blank"
       >
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-0 right-0" />
@@ -63,7 +64,7 @@ export default function DefaultAdCard({
             {ad.title}
           </h2>
           {ad.description && ad.description.trim() && (
-                <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-2 max-w-full overflow-hidden wrap-break-word">
+            <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-2 max-w-full overflow-hidden wrap-break-word">
               {ad.description}
             </p>
           )}
@@ -96,7 +97,7 @@ export default function DefaultAdCard({
       {/* Информация о продавце */}
       <Link
         href={`/user/${ad.seller.id}/active`}
-        target="_blank"
+        target="blank"
         className="hidden w-32 sm:flex flex-col items-start justify-start ml-8 overflow-hidden hover:opacity-90 transition-opacity"
       >
         <div className="w-18 h-18 rounded-lg mb-2 bg-gray-200/25 overflow-hidden">

@@ -15,12 +15,13 @@ export default function GalleryAdCard({
 }: GalleryAdCardProps) {
   const isArchived = ad.status === 'archived';
   const { viewedIds, markViewed } = useViewedAdsStore();
-  const isViewed = !disableViewedOverlay && (ad.isViewed || viewedIds.has(ad.id));
+  const isViewed =
+    !disableViewedOverlay && (ad.isViewed || viewedIds.has(ad.id));
 
   return (
     <Link
       href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-      target="_blank"
+      target="blank"
       className="flex flex-col w-full overflow-hidden h-full min-w-0"
       onClick={() => markViewed(ad.id)}
     >
