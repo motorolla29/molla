@@ -365,13 +365,12 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
               <div className="flex items-start space-x-3 py-3">
                 <Link
                   href={`/user/${ad.seller.id}/active`}
-                  className="w-12 h-12 rounded-lg overflow-hidden shrink-0 hover:opacity-90 transition-opacity"
+                  className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 hover:opacity-90 transition-opacity"
                 >
                   {ad.seller.avatar ? (
                     <CloudImage
                       src={ad.seller.avatar}
                       variant="sm"
-                      alt="Аватар продавца"
                       className="w-full h-full object-cover"
                     />
                   ) : (

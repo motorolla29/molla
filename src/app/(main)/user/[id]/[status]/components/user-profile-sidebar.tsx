@@ -58,7 +58,7 @@ export default function UserProfileSidebar({
             <CloudImage
               src={user.avatar}
               variant="sm"
-              alt={`Аватар ${user.name}`}
+              //alt={`Аватар ${user.name}`}
               className="w-full h-full object-cover cursor-pointer"
               onClick={onAvatarClick}
             />
