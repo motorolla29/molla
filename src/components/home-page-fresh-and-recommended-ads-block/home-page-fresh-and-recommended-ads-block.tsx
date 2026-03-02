@@ -13,6 +13,14 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
   const recommendRef = useRef<HTMLButtonElement | null>(null);
   const freshRef = useRef<HTMLButtonElement | null>(null);
   const viewedRef = useRef<HTMLButtonElement | null>(null);
+  const tabListRef = useRef<HTMLDivElement | null>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    left: number;
+    width: number;
+  }>({
+    left: 0,
+    width: 0,
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -57,6 +65,23 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
     };
   }, [localViewedCount]);
 
+  // Обновляем позицию анимированного индикатора под активной вкладкой
+  useEffect(() => {
+    const tabList = tabListRef.current;
+    if (!tabList) return;
+
+    let el: HTMLButtonElement | null = null;
+    if (activeTab === 'recommend') el = recommendRef.current;
+    else if (activeTab === 'fresh') el = freshRef.current;
+    else if (activeTab === 'viewed') el = viewedRef.current;
+
+    if (el) {
+      const left = el.offsetLeft;
+      const width = el.offsetWidth;
+      setIndicatorStyle({ left, width });
+    }
+  }, [activeTab, hasViewedAds]);
+
   const handleTabClick = (
     tab: HomeTabs,
     ref?: React.RefObject<HTMLButtonElement>,
@@ -75,15 +100,18 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
 
   return (
     <div className="bg-white mx-4 mb-6">
-      <div className="mb-6">
+      <div className="relative mb-6">
         <div className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-track-transparent pb-1">
-          <div className="border-b border-gray-200 flex items-center w-full">
+          <div
+            ref={tabListRef}
+            className="relative flex items-center w-max min-w-full"
+          >
             <button
               ref={recommendRef}
               onClick={() => handleTabClick('recommend', recommendRef)}
-              className={`px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer border-b-2 border-transparent whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer whitespace-nowrap transition-colors duration-150 ${
                 activeTab === 'recommend'
-                  ? 'border-violet-400 text-violet-400'
+                  ? 'text-violet-400'
                   : 'text-neutral-400 hover:text-gray-400'
               }`}
             >
@@ -92,9 +120,9 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
             <button
               ref={freshRef}
               onClick={() => handleTabClick('fresh', freshRef)}
-              className={`ml-2 sm:ml-4 px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer border-b-2 border-transparent whitespace-nowrap ${
+              className={`ml-2 sm:ml-4 px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer whitespace-nowrap transition-colors duration-150 ${
                 activeTab === 'fresh'
-                  ? 'border-violet-400 text-violet-400'
+                  ? 'text-violet-400'
                   : 'text-neutral-400 hover:text-gray-400'
               }`}
             >
@@ -104,17 +132,29 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
               <button
                 ref={viewedRef}
                 onClick={() => handleTabClick('viewed', viewedRef)}
-                className={`ml-2 sm:ml-4 px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer border-b-2 border-transparent whitespace-nowrap ${
+                className={`ml-2 sm:ml-4 px-3 sm:px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer whitespace-nowrap transition-colors duration-150 ${
                   activeTab === 'viewed'
-                    ? 'border-violet-400 text-violet-400'
+                    ? 'text-violet-400'
                     : 'text-neutral-400 hover:text-gray-400'
                 }`}
               >
                 Вы смотрели
               </button>
             )}
+
+            {/* Анимированный нижний бордер, который "ездит" поверх серого */}
+            <div
+              className="pointer-events-none absolute bottom-0 h-[2px] bg-violet-400 rounded-full transition-[left,width] duration-300 ease-out z-1"
+              style={{
+                left: indicatorStyle.left,
+                width: indicatorStyle.width,
+              }}
+            />
           </div>
         </div>
+
+        {/* серый нижний бордер */}
+        <div className="pointer-events-none absolute bottom-1 h-px w-full bg-gray-200 rounded-full" />
       </div>
 
       <InfiniteScrollAds
