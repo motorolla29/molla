@@ -28,21 +28,46 @@ export function useChatMessages(
 
   // Синхронизируем локальные сообщения с пропсами
   useEffect(() => {
-    // Мерджим серверные сообщения с локальными,
-    // но добавляем только локальные сообщения с ошибкой (status === 'error'),
-    // чтобы не дублировать успешно отправленные сообщения.
+    // Мерджим серверные сообщения с локальными.
+    // Локальные сообщения с ошибкой (status === 'error') всегда сохраняем.
+    // Локальные "отправляющиеся" сообщения (sending/sent) сохраняем,
+    // пока на сервере нет эквивалентного сообщения от текущего пользователя.
     setLocalMessages((prev) => {
       const byId = new Map<string, Message>();
+
+      // Строим "отпечатки" серверных сообщений текущего пользователя,
+      // чтобы уметь сопоставлять их с локальными временными сообщениями.
+      const serverFingerprints = new Set<string>();
 
       // Сначала кладём серверные сообщения (они считаются источником истины)
       for (const msg of initialMessages) {
         byId.set(msg.id, msg);
+        if (msg.senderId === currentUserId) {
+          const fp = `${msg.senderId}|${msg.content || ''}`;
+          serverFingerprints.add(fp);
+        }
       }
 
-      // Затем добавляем локальные, которых нет на сервере и которые в статусе error
+      // Затем добавляем локальные, которых нет на сервере
       for (const msg of prev) {
-        if (!byId.has(msg.id) && msg.status === 'error') {
+        if (byId.has(msg.id)) continue;
+
+        if (msg.status === 'error') {
+          // Сообщения с ошибкой всегда сохраняем
           byId.set(msg.id, msg);
+          continue;
+        }
+
+        // Для локальных сообщений текущего пользователя в статусе sending/sent
+        // проверяем, есть ли уже "эквивалент" на сервере.
+        if (
+          msg.senderId === currentUserId &&
+          (msg.status === 'sending' || msg.status === 'sent')
+        ) {
+          const fp = `${msg.senderId}|${msg.content || ''}`;
+          if (!serverFingerprints.has(fp)) {
+            byId.set(msg.id, msg);
+          }
         }
       }
 

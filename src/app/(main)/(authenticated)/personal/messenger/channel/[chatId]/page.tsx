@@ -22,7 +22,7 @@ interface Chat {
   adCityLabel: string;
   adCategory: string;
   isAdDeleted?: boolean;
-  otherUserId: number;
+  otherUserId: number | null;
   otherUserName: string;
   otherUserAvatar?: string;
   otherUserLastSeenAt?: string | null;
@@ -143,7 +143,7 @@ export default function ChatPage() {
       if (response.ok) {
         const chatData = await response.json();
         setChat(chatData);
-        if (chatData.otherUserLastSeenAt) {
+        if (chatData.otherUserLastSeenAt && chatData.otherUserId != null) {
           updateLastSeen(chatData.otherUserId, chatData.otherUserLastSeenAt);
         }
       } else if (response.status === 404) {
@@ -532,20 +532,20 @@ export default function ChatPage() {
     socket?.emit('stop_typing', { chatId });
   };
 
-  const otherUserId = chat?.otherUserId;
+  const otherUserId: number | null = chat?.otherUserId ?? null;
   const isOtherUserOnline =
-    otherUserId !== undefined && onlineUserIds.has(Number(otherUserId));
+    otherUserId != null && onlineUserIds.has(otherUserId);
 
   // Используем lastSeen из presence store, если он есть, иначе из данных чата
-  const otherUserLastSeen = otherUserId
-    ? lastSeenMap[otherUserId] || chat?.otherUserLastSeenAt || null
-    : chat?.otherUserLastSeenAt || null;
+  const otherUserLastSeen =
+    otherUserId != null
+      ? lastSeenMap[otherUserId] || chat?.otherUserLastSeenAt || null
+      : chat?.otherUserLastSeenAt || null;
 
-  const typingForChat = chatId
-    ? typingMap[chatId]?.[otherUserId ?? -1]
-    : undefined;
+  const typingForChat =
+    chatId && otherUserId != null ? typingMap[chatId]?.[otherUserId] : undefined;
   const isTyping =
-    !!typingForChat && Date.now() - typingForChat < 3000 && !!otherUserId;
+    !!typingForChat && Date.now() - typingForChat < 3000;
 
   // Очищаем таймер при размонтировании компонента
   useEffect(() => {

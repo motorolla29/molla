@@ -39,7 +39,7 @@ export interface Chat {
   isAdDeleted?: boolean;
   otherUserName: string;
   otherUserAvatar?: string;
-  otherUserId: number;
+  otherUserId: number | null;
   lastMessageTime?: Date | string;
   isBlockedByMe?: boolean;
   isBlockedMe?: boolean;
@@ -162,7 +162,7 @@ const MessageItem = memo(
                     alt={chat?.otherUserName}
                     className="w-full h-full object-cover"
                   />
-                ) : chat?.otherUserName === 'Пользователь удален' ? (
+                ) : chat && chat.otherUserId == null ? (
                   <FaUser className="w-3 h-3 text-gray-400" />
                 ) : (
                   <span className="text-white font-semibold text-sm">

@@ -148,7 +148,7 @@ export async function GET(
       adCityLabel: isAdDeleted ? '' : chat.ad!.cityLabel,
       adCategory: isAdDeleted ? 'goods' : chat.ad!.category,
       isAdDeleted,
-      otherUserId: otherUser?.id ?? 0,
+      otherUserId: otherUser?.id ?? null,
       otherUserName: otherUser?.name ?? 'Пользователь удален',
       otherUserAvatar: otherUser?.avatar ?? null,
       otherUserLastSeenAt: otherUser?.lastSeenAt ?? null,

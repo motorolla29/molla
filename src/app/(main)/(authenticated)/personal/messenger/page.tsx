@@ -8,32 +8,12 @@ import { useChatSocket } from '@/hooks/useChatSocket';
 import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 import { useToast } from '@/components/toast/toast-context';
-
-interface Chat {
-  id: string;
-  adId: string;
-  adTitle: string;
-  adPhoto: string;
-  adPrice?: string;
-  isAdDeleted?: boolean;
-  otherUserId: number;
-  otherUserName: string;
-  otherUserAvatar?: string;
-  otherUserLastSeenAt?: string | null;
-  lastMessage: string;
-  lastMessageTime: Date | string;
-  lastMessageStatus?: string | null;
-  lastMessageIsOutgoing?: boolean;
-  unreadCount: number;
-  lastUnreadMessageTime?: Date | string | null;
-  isBlockedByMe?: boolean;
-  isBlockedMe?: boolean;
-}
+import type { ChatListItemModel } from '@/components/messenger/chat-list-item';
 
 export default function MessengerPage() {
   const { user } = useAuthStore();
   const router = useRouter();
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<ChatListItemModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -319,12 +299,12 @@ export default function MessengerPage() {
 
       const response = await fetch(`/api/messenger/chats?${params}`);
       if (response.ok) {
-        const data: { chats: Chat[]; hasMore: boolean } =
+        const data: { chats: ChatListItemModel[]; hasMore: boolean } =
           await response.json();
 
         // Обрабатываем lastMessage и "обнуляем" непрочитанные для заблокированных чатов,
         // чтобы они не участвовали в глобальном счётчике
-        const processedData = data.chats.map((chat: Chat) => {
+        const processedData = data.chats.map((chat: ChatListItemModel) => {
           let displayMessage = chat.lastMessage;
           const isBlocked = chat.isBlockedByMe || chat.isBlockedMe;
 
@@ -375,8 +355,8 @@ export default function MessengerPage() {
         const { refreshUnreadCounts } = useUnreadMessagesStore.getState();
         refreshUnreadCounts(processedData);
 
-        processedData.forEach((chat: Chat) => {
-          if (chat.otherUserLastSeenAt) {
+        processedData.forEach((chat: ChatListItemModel) => {
+          if (chat.otherUserLastSeenAt && chat.otherUserId != null) {
             updateLastSeen(chat.otherUserId, chat.otherUserLastSeenAt);
           }
         });
@@ -434,7 +414,7 @@ export default function MessengerPage() {
       const { setChatUnreadCount } = useUnreadMessagesStore.getState();
       setChatUnreadCount(chatId, 0);
 
-      toast.show('Чат скрыт. Он появится при новом сообщении.', {
+      toast.show('Чат удален, но только у вас.', {
         type: 'success',
       });
     } catch (error) {
@@ -445,8 +425,9 @@ export default function MessengerPage() {
     }
   };
 
-  const handleToggleBlock = (chat: Chat) => {
+  const handleToggleBlock = (chat: ChatListItemModel) => {
     const targetUserId = chat.otherUserId;
+    if (targetUserId == null) return;
     const isCurrentlyBlocked = !!chat.isBlockedByMe;
 
     fetch(`/api/users/${encodeURIComponent(String(targetUserId))}/block`, {

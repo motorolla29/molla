@@ -16,11 +16,12 @@ import { FaUser } from 'react-icons/fa6';
 
 export type ChatListItemModel = {
   id: string;
+  adId: string;
   adTitle: string;
   adPhoto: string;
   adPrice?: string;
   isAdDeleted?: boolean;
-  otherUserId: number;
+  otherUserId: number | null;
   otherUserName: string;
   otherUserAvatar?: string;
   otherUserLastSeenAt?: string | null;
@@ -29,6 +30,7 @@ export type ChatListItemModel = {
   lastMessageStatus?: string | null;
   lastMessageIsOutgoing?: boolean;
   unreadCount: number;
+  lastUnreadMessageTime?: Date | string | null;
   isBlockedByMe?: boolean;
   isBlockedMe?: boolean;
 };
@@ -111,7 +113,7 @@ export function ChatListItem({
                 variant="xs"
                 className="w-full h-full object-cover"
               />
-            ) : chat.otherUserName === 'Пользователь удален' ? (
+            ) : chat.otherUserId == null ? (
               <div className="w-full h-full flex items-center justify-center bg-gray-300">
                 <FaUser className="w-3 h-3 text-gray-500" />
               </div>

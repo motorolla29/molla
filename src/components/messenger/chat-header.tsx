@@ -110,7 +110,7 @@ export function ChatHeader({
           {/* Аватар собеседника в левом верхнем углу */}
           <Link
             href={
-              chat && chat.otherUserId
+              chat && chat.otherUserId != null
                 ? `/user/${chat.otherUserId}/active`
                 : '#'
             }
@@ -122,7 +122,7 @@ export function ChatHeader({
                   variant="xs"
                   className="w-full h-full object-cover"
                 />
-              ) : chat?.otherUserName === 'Пользователь удален' ? (
+              ) : chat && chat.otherUserId == null ? (
                 <div className="w-full h-full flex items-center justify-center bg-gray-300">
                   <FaUser className="w-2.5 h-2.5 text-gray-500" />
                 </div>
@@ -149,7 +149,7 @@ export function ChatHeader({
           <div className="flex items-center gap-2 min-w-0">
             <Link
               href={
-                chat && chat.otherUserId
+                chat && chat.otherUserId != null
                   ? `/user/${chat.otherUserId}/active`
                   : '#'
               }

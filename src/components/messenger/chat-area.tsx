@@ -116,6 +116,13 @@ export default function ChatArea({
     [onImageModalOpen],
   );
 
+  const isInputHidden =
+    !chat ||
+    isLoading ||
+    chat.isBlockedByMe ||
+    chat.isBlockedMe ||
+    chat.otherUserId == null;
+
   const handleSendMessage = async (content: string, attachments?: File[]) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
@@ -142,7 +149,11 @@ export default function ChatArea({
   };
 
   return (
-    <div className="fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:h-[calc(100dvh-105px)] lg:top-auto">
+    <div
+      className={`fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:top-auto ${
+        isInputHidden ? 'lg:h-[calc(100dvh)]' : 'lg:h-[calc(100dvh-105px)]'
+      }`}
+    >
       <ChatHeader
         chat={chat}
         showBackButton={showBackButton}
@@ -156,7 +167,7 @@ export default function ChatArea({
       <div
         ref={messagesContainerRef}
         data-messages-container
-        className="flex-1 overflow-y-auto p-4 pb-6 min-h-0 custom-scrollbar-chat flex flex-col"
+        className={`flex-1 overflow-y-auto p-4 ${isInputHidden ? 'pb-0 mb-12' : ''}  lg:mb-0 min-h-0 custom-scrollbar-chat flex flex-col`}
       >
         {/* Индикатор подгрузки более старых сообщений */}
         {hasMoreMessages && (
@@ -179,7 +190,9 @@ export default function ChatArea({
               <p className="text-sm text-gray-600">Загрузка сообщений...</p>
             </div>
           </div>
-        ) : !isLoading && initialMessages.length === 0 ? (
+        ) : !isLoading &&
+          initialMessages.length === 0 &&
+          localMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -272,22 +285,22 @@ export default function ChatArea({
           chat &&
           (chat.isBlockedByMe ||
             chat.isBlockedMe ||
-            chat.otherUserName === 'Пользователь удален') && (
-            <div className="w-full flex justify-center mt-6 mb-12 lg:mb-0">
-            <div className="max-w-[520px] w-full px-4">
-              <div className="w-full rounded-2xl border border-red-100 bg-red-50 px-4 py-3 flex items-start gap-3">
-                <div className="mt-0.5">
-                  <Ban className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-                </div>
-                <div className="text-xs sm:text-sm text-red-700 leading-snug">
-                  {chat.otherUserName === 'Пользователь удален'
-                    ? 'Профиль вашего собеседника удалён. Ему больше нельзя написать сообщение.'
-                    : chat.isBlockedByMe
-                      ? 'Вы заблокировали этого пользователя. Чтобы снова написать, разблокируйте его в списке чатов.'
-                      : 'Вы не можете отправлять сообщения, так как пользователь заблокировал вас.'}
+            chat.otherUserId == null) && (
+            <div className="w-full flex justify-center my-6">
+              <div className="max-w-[520px] w-full px-4">
+                <div className="w-full rounded-2xl border border-red-100 bg-red-50 px-4 py-3 flex items-start gap-3">
+                  <div className="mt-0.5">
+                    <Ban className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                  </div>
+                  <div className="text-xs sm:text-sm text-red-700 leading-snug">
+                    {chat.otherUserId == null
+                      ? 'Профиль вашего собеседника удалён. Ему больше нельзя написать сообщение.'
+                      : chat.isBlockedByMe
+                        ? 'Вы заблокировали этого пользователя. Чтобы снова написать, разблокируйте его в списке чатов.'
+                        : 'Вы не можете отправлять сообщения, так как пользователь заблокировал вас.'}
+                  </div>
                 </div>
               </div>
-            </div>
             </div>
           )}
 
@@ -301,7 +314,7 @@ export default function ChatArea({
       isLoading ||
       chat.isBlockedByMe ||
       chat.isBlockedMe ||
-      chat.otherUserName === 'Пользователь удален' ? null : (
+      chat.otherUserId == null ? null : (
         <div className="bg-gray-50 shrink-0 mb-12 lg:mb-0">
           <MessageInput
             onSendMessage={handleSendMessage}

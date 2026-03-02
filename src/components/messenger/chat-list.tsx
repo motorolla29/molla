@@ -103,7 +103,8 @@ export default function ChatList({
     });
   };
 
-  const isUserTyping = (chatId: string, otherUserId: number) => {
+  const isUserTyping = (chatId: string, otherUserId: number | null) => {
+    if (otherUserId == null) return false;
     const typingForChat = typingMap[chatId]?.[otherUserId];
     const isTyping = !!typingForChat && Date.now() - typingForChat < 3000;
     return isTyping;
@@ -232,7 +233,9 @@ export default function ChatList({
         <ChatListItem
           key={chat.id}
           chat={chat}
-          isOtherUserOnline={onlineUserIds.has(chat.otherUserId)}
+          isOtherUserOnline={
+            chat.otherUserId != null && onlineUserIds.has(chat.otherUserId)
+          }
           isTyping={isUserTyping(chat.id, chat.otherUserId)}
           formatTime={formatTime}
           isMenuOpen={openMenuChatId === chat.id}
