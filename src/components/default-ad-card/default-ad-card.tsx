@@ -9,11 +9,15 @@ import { useViewedAdsStore } from '@/store/useViewedAdsStore';
 
 interface DefaultAdCardProps {
   ad: AdBase;
+  disableViewedOverlay?: boolean;
 }
 
-export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
+export default function DefaultAdCard({
+  ad,
+  disableViewedOverlay = false,
+}: DefaultAdCardProps) {
   const { viewedIds, markViewed } = useViewedAdsStore();
-  const isViewed = ad.isViewed || viewedIds.has(ad.id);
+  const isViewed = !disableViewedOverlay && (ad.isViewed || viewedIds.has(ad.id));
   return (
     <div
       key={ad.id}
@@ -55,11 +59,11 @@ export default function DefaultAdCard({ ad }: DefaultAdCardProps) {
         {/* Кнопка избранного */}
         <FavoriteButton ad={ad} className="absolute top-0 right-0" />
         <div className="overflow-hidden">
-          <h2 className="text-base sm:text-lg font-semibold line-clamp-1 hover:text-violet-400 mr-10 mb-2 leading-tight max-w-full overflow-hidden break-words">
+          <h2 className="text-base sm:text-lg font-semibold line-clamp-1 hover:text-violet-400 mr-10 mb-2 leading-tight max-w-full overflow-hidden wrap-break-word">
             {ad.title}
           </h2>
           {ad.description && ad.description.trim() && (
-            <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-2 max-w-full overflow-hidden break-words">
+                <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-1 line-clamp-2 max-w-full overflow-hidden wrap-break-word">
               {ad.description}
             </p>
           )}

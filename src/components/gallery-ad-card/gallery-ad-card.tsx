@@ -6,12 +6,16 @@ import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useViewedAdsStore } from '@/store/useViewedAdsStore';
 interface GalleryAdCardProps {
   ad: AdBase;
+  disableViewedOverlay?: boolean;
 }
 
-export default function GalleryAdCard({ ad }: GalleryAdCardProps) {
+export default function GalleryAdCard({
+  ad,
+  disableViewedOverlay = false,
+}: GalleryAdCardProps) {
   const isArchived = ad.status === 'archived';
   const { viewedIds, markViewed } = useViewedAdsStore();
-  const isViewed = ad.isViewed || viewedIds.has(ad.id);
+  const isViewed = !disableViewedOverlay && (ad.isViewed || viewedIds.has(ad.id));
 
   return (
     <Link

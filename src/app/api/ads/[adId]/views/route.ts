@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/jwt';
+import { Prisma } from '@prisma/client';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ adId: string }> }
+  { params }: { params: Promise<{ adId: string }> },
 ) {
   try {
     const { adId } = await params;
@@ -27,7 +28,7 @@ export async function POST(
     if (!userId && !localUserToken) {
       return NextResponse.json(
         { error: 'Требуется авторизация или localUserToken' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -40,7 +41,7 @@ export async function POST(
     if (!ad) {
       return NextResponse.json(
         { error: 'Объявление не найдено' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -50,18 +51,27 @@ export async function POST(
     }
 
     // Проверяем, был ли уже просмотр от этого пользователя (по userId или localUserToken)
+    const orConditions: Prisma.UserViewWhereInput[] = [];
+    if (userId) {
+      orConditions.push({ userId });
+    }
+    if (localUserToken) {
+      orConditions.push({ localUserToken });
+    }
+
     const existingView = await prisma.userView.findFirst({
       where: {
         adId: adId,
-        OR: [
-          userId ? { userId: userId } : {},
-          localUserToken ? { localUserToken: localUserToken } : {},
-        ].filter((condition) => Object.keys(condition).length > 0),
+        OR: orConditions,
       },
     });
 
-    // Если просмотр уже был, не создаем новый
+    // Если просмотр уже был, обновляем дату просмотра
     if (existingView) {
+      await prisma.userView.update({
+        where: { id: existingView.id },
+        data: { viewedAt: new Date() },
+      });
       return NextResponse.json({ success: true });
     }
 
@@ -87,7 +97,7 @@ export async function POST(
     console.error('Ошибка при записи просмотра:', error);
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

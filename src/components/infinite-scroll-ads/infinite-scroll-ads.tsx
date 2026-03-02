@@ -21,6 +21,9 @@ interface InfiniteScrollAdsProps {
   // Использовать эндпоинт свежих объявлений с приоритизацией по городу (/api/ads/fresh)
   fresh?: boolean;
 
+  // Использовать эндпоинт просмотренных объявлений (/api/ads/viewed)
+  viewed?: boolean;
+
   // Количество объявлений на странице
   limit?: number;
 
@@ -41,6 +44,7 @@ export default function InfiniteScrollAds({
   sort,
   recommended = false,
   fresh = false,
+  viewed = false,
   limit = 24,
   viewType = 'gallery',
   className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8',
@@ -52,6 +56,7 @@ export default function InfiniteScrollAds({
   const [hasMore, setHasMore] = useState(true);
 
   const observerRef = useRef<HTMLDivElement>(null);
+  const fetchIdRef = useRef(0);
 
   // Получаем текущий город из стора для режима fresh
   const { cityLabel: currentCityLabel } = useLocationStore();
@@ -59,6 +64,8 @@ export default function InfiniteScrollAds({
   // Функция для загрузки объявлений
   const fetchAds = useCallback(
     async (isLoadMore = false, skip = 0) => {
+      const fetchId = ++fetchIdRef.current;
+
       if (isLoadMore) {
         setLoadingMore(true);
       } else {
@@ -83,6 +90,7 @@ export default function InfiniteScrollAds({
           const res = await fetch(url);
           if (res.ok) {
             const data: AdBase[] = await res.json();
+            if (fetchIdRef.current !== fetchId) return;
             if (isLoadMore) {
               setAds((prevAds) => [...prevAds, ...data]);
             } else {
@@ -90,14 +98,18 @@ export default function InfiniteScrollAds({
             }
             setHasMore(data.length === limit);
           } else {
+            if (fetchIdRef.current !== fetchId) return;
             if (!isLoadMore) setAds([]);
           }
         } catch (error) {
           console.error('Error fetching recommended ads:', error);
+          if (fetchIdRef.current !== fetchId) return;
           if (!isLoadMore) setAds([]);
         }
-        if (isLoadMore) setLoadingMore(false);
-        else setLoading(false);
+        if (fetchIdRef.current === fetchId) {
+          if (isLoadMore) setLoadingMore(false);
+          else setLoading(false);
+        }
         return;
       }
 
@@ -119,6 +131,7 @@ export default function InfiniteScrollAds({
           const res = await fetch(url);
           if (res.ok) {
             const data: AdBase[] = await res.json();
+            if (fetchIdRef.current !== fetchId) return;
             if (isLoadMore) {
               setAds((prevAds) => [...prevAds, ...data]);
             } else {
@@ -126,14 +139,66 @@ export default function InfiniteScrollAds({
             }
             setHasMore(data.length === limit);
           } else {
+            if (fetchIdRef.current !== fetchId) return;
             if (!isLoadMore) setAds([]);
           }
         } catch (error) {
           console.error('Error fetching fresh ads:', error);
+          if (fetchIdRef.current !== fetchId) return;
           if (!isLoadMore) setAds([]);
         }
-        if (isLoadMore) setLoadingMore(false);
-        else setLoading(false);
+        if (fetchIdRef.current === fetchId) {
+          if (isLoadMore) setLoadingMore(false);
+          else setLoading(false);
+        }
+        return;
+      }
+
+      if (viewed) {
+        // Просмотренные объявления: запрашиваем порциями, максимум 100 на сервере
+        params.set('skip', skip.toString());
+        params.set('limit', limit.toString());
+        try {
+          const localUserToken = getOrCreateUserToken();
+          params.set('localUserToken', localUserToken);
+        } catch {
+          // localStorage недоступен (SSR)
+        }
+        const url = `/api/ads/viewed?${params.toString()}`;
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const data: AdBase[] = await res.json();
+            if (fetchIdRef.current !== fetchId) return;
+            if (isLoadMore) {
+              setAds((prevAds) => [...prevAds, ...data]);
+            } else {
+              setAds(data);
+            }
+            // hasMore = true, пока сервер возвращает полную порцию limit
+            setHasMore(data.length === limit);
+          } else {
+            if (fetchIdRef.current !== fetchId) return;
+            if (!isLoadMore) {
+              setAds([]);
+            }
+            setHasMore(false);
+          }
+        } catch (error) {
+          console.error('Error fetching viewed ads:', error);
+          if (fetchIdRef.current !== fetchId) return;
+          if (!isLoadMore) {
+            setAds([]);
+          }
+          setHasMore(false);
+        }
+        if (fetchIdRef.current === fetchId) {
+          if (isLoadMore) {
+            setLoadingMore(false);
+          } else {
+            setLoading(false);
+          }
+        }
         return;
       }
 
@@ -157,6 +222,7 @@ export default function InfiniteScrollAds({
         const res = await fetch(`/api/ads?${listParams.toString()}`);
         if (res.ok) {
           const data: AdBase[] = await res.json();
+          if (fetchIdRef.current !== fetchId) return;
 
           if (isLoadMore) {
             setAds((prevAds) => [...prevAds, ...data]);
@@ -167,21 +233,27 @@ export default function InfiniteScrollAds({
           setHasMore(data.length === limit);
         } else {
           console.error('Failed to fetch ads:', res.statusText);
+          if (fetchIdRef.current !== fetchId) return;
           if (!isLoadMore) {
             setAds([]);
           }
         }
       } catch (error) {
         console.error('Error fetching ads:', error);
+        if (fetchIdRef.current !== fetchId) return;
         if (!isLoadMore) {
           setAds([]);
         }
       }
 
       if (isLoadMore) {
-        setLoadingMore(false);
+        if (fetchIdRef.current === fetchId) {
+          setLoadingMore(false);
+        }
       } else {
-        setLoading(false);
+        if (fetchIdRef.current === fetchId) {
+          setLoading(false);
+        }
       }
     },
     [
@@ -192,6 +264,7 @@ export default function InfiniteScrollAds({
       limit,
       recommended,
       fresh,
+      viewed,
       currentCityLabel,
     ],
   );
@@ -248,10 +321,17 @@ export default function InfiniteScrollAds({
           {ads.map((ad) =>
             viewType === 'gallery' ? (
               <div key={ad.id} className="h-full">
-                <GalleryAdCard ad={ad} />
+                <GalleryAdCard
+                  ad={ad}
+                  disableViewedOverlay={viewed}
+                />
               </div>
             ) : (
-              <AdCardsDefault key={ad.id} ads={[ad]} />
+              <AdCardsDefault
+                key={ad.id}
+                ads={[ad]}
+                disableViewedOverlay={viewed}
+              />
             ),
           )}
         </div>
