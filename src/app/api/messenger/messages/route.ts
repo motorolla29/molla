@@ -74,6 +74,17 @@ export async function POST(request: NextRequest) {
     // Проверяем блокировки между пользователями
     const otherUserId = chat.buyerId === userId ? chat.sellerId : chat.buyerId;
 
+    // Если собеседник удалён (otherUserId null), запрещаем отправку сообщений
+    if (otherUserId == null) {
+      return NextResponse.json(
+        {
+          error:
+            'Собеседник больше не существует. Нельзя отправить сообщение в этот чат.',
+        },
+        { status: 403 },
+      );
+    }
+
     const block = await prisma.userBlock.findFirst({
       where: {
         OR: [
