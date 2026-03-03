@@ -44,7 +44,7 @@ export default function UserProfileSidebar({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 max-[350px]:p-4 p-6">
       {/* Аватар и основная информация */}
       <div className="flex flex-col items-center text-center mb-6">
         <div className="w-20 h-20 mb-4 rounded-full overflow-hidden">

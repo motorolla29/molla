@@ -6,7 +6,7 @@ export default function UserProfileSkeleton() {
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Левый блок */}
             <div className="w-full lg:w-80 lg:shrink-0">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 max-[350px]:p-4 p-6">
                 <div className="flex flex-col items-center text-center mb-6">
                   <div className="w-20 h-20 bg-gray-200 rounded-full mb-4"></div>
                   <div className="h-6 bg-gray-200 rounded w-32 mb-2"></div>
@@ -39,13 +39,13 @@ export default function UserProfileSkeleton() {
             <div className="flex-1">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                 {/* Вкладки */}
-                <div className="flex items-center px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center max-[350px]:px-2 px-6 py-4 border-b border-gray-100">
                   <div className="mx-4 my-2 bg-gray-200 rounded w-20 h-6"></div>
                   <div className="mx-4 my-2 bg-gray-200 rounded w-28 h-6 ml-8"></div>
                 </div>
 
                 {/* Контент вкладки */}
-                <div className="p-6">
+                <div className="max-[350px]:p-2 p-6">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {Array.from({ length: 10 }).map((_, i) => (
                       <div

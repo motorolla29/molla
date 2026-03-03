@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import PaginatedAds from '@/components/paginated-ads/paginated-ads';
+import ScrollableTabs, {
+  type ScrollableTabItem,
+} from '@/components/tabs/scrollable-tabs';
 
 interface UserAdsContentProps {
   userId: string;
@@ -15,7 +18,7 @@ export default function UserAdsContent({
   adsCounts,
 }: UserAdsContentProps) {
   const [currentStatus, setCurrentStatus] = useState<'active' | 'archived'>(
-    initialStatus
+    initialStatus,
   );
 
   // Синхронизируем состояние с URL при первой загрузке
@@ -34,44 +37,40 @@ export default function UserAdsContent({
     }
   };
 
+  const items: ScrollableTabItem[] = [
+    {
+      id: 'active',
+      label: 'Активные',
+      count: adsCounts?.active ?? 0,
+      countClassName: 'bg-violet-500 text-white',
+    },
+    {
+      id: 'archived',
+      label: 'Завершенные',
+      count: adsCounts?.archived ?? 0,
+      countClassName: 'bg-gray-500 text-white',
+    },
+  ];
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
       {/* Вкладки */}
-      <div className="flex items-center px-6 py-4 border-b border-gray-100">
-        <button
-          onClick={() => handleTabChange('active')}
-          className={`relative px-2 min-[340px]:px-4 py-2 text-sm sm:text-base font-semibold border-b-2 border-transparent transition-colors ${
-            currentStatus === 'active'
-              ? 'border-violet-400 text-violet-700'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Активные
-          {!!adsCounts?.active && adsCounts.active > 0 && (
-            <span className="absolute -top-[2px] -right-[3px] min-[340px]:-top-px min-[340px]:-right-px sm:-top-[3px] sm:-right-[3px] bg-violet-500 text-white text-[8px] sm:text-[10px] font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 flex items-center justify-center px-[6px]">
-              {adsCounts.active}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => handleTabChange('archived')}
-          className={`relative ml-2 min-[340px]:ml-6 px-2 min-[340px]:px-4 py-2 text-sm sm:text-base font-semibold border-b-2 border-transparent transition-colors ${
-            currentStatus === 'archived'
-              ? 'border-violet-400 text-violet-700'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Завершенные
-          {!!adsCounts?.archived && adsCounts.archived > 0 && (
-            <span className="absolute -top-px -right-px sm:-top-[3px] sm:-right-[3px] bg-gray-500 text-white text-[8px] sm:text-[10px] font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 flex items-center justify-center px-[6px]">
-              {adsCounts.archived}
-            </span>
-          )}
-        </button>
+      <div className="max-[350px]:px-2 px-6 pt-4 border-b border-gray-100">
+        <ScrollableTabs
+          items={items}
+          activeId={currentStatus}
+          onChange={(id) => handleTabChange(id as 'active' | 'archived')}
+          showBaseLine={false}
+          itemSpacingClassName="ml-2 sm:ml-4"
+          activeTextClassName="text-violet-700"
+          inactiveTextClassName="text-gray-500 hover:text-gray-700"
+          indicatorClassName="pointer-events-none absolute bottom-0 h-[2px] bg-violet-400 rounded-full transition-[left,width] duration-300 ease-out"
+          scrollClassName="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-track-transparent pt-1 pb-4"
+        />
       </div>
 
       {/* Контент вкладки */}
-      <div className="p-6">
+      <div className="max-[350px]:p-2 p-6">
         <PaginatedAds
           userId={userId}
           status={currentStatus}

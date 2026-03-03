@@ -1,3 +1,7 @@
+import ScrollableTabs, {
+  type ScrollableTabItem,
+} from '@/components/tabs/scrollable-tabs';
+
 interface TabsProps {
   activeTab: 'active' | 'archived';
   activeCount: number;
@@ -11,46 +15,33 @@ export default function Tabs({
   archivedCount,
   onTabChange,
 }: TabsProps) {
+  const items: ScrollableTabItem[] = [
+    {
+      id: 'active',
+      label: 'Активные',
+      count: activeCount,
+      countClassName: 'bg-violet-500 text-white',
+    },
+    {
+      id: 'archived',
+      label: 'Архив',
+      count: archivedCount,
+      countClassName: 'bg-gray-500 text-white',
+    },
+  ];
+
   return (
-    <div className="flex border-b border-gray-200 mb-6">
-      <button
-        onClick={() => {
-          if (activeTab !== 'active') {
-            onTabChange('active');
-          }
-        }}
-        className={`relative px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer border-b-2 border-transparent transition-colors ${
-          activeTab === 'active'
-            ? 'border-violet-400 text-violet-700'
-            : 'text-gray-500 hover:text-gray-700'
-        }`}
-      >
-        Активные
-        {activeCount > 0 && (
-          <span className="absolute -top-px -right-px sm:-top-[3px] sm:-right-[3px] bg-violet-500 text-white text-[8px] sm:text-[10px] font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 flex items-center justify-center px-[6px]">
-            {activeCount}
-          </span>
-        )}
-      </button>
-      <button
-        onClick={() => {
-          if (activeTab !== 'archived') {
-            onTabChange('archived');
-          }
-        }}
-        className={`relative ml-6 px-4 py-2 text-sm sm:text-base font-semibold hover:cursor-pointer border-b-2 border-transparent transition-colors ${
-          activeTab === 'archived'
-            ? 'border-violet-400 text-violet-700'
-            : 'text-gray-500 hover:text-gray-700'
-        }`}
-      >
-        Архив
-        {archivedCount > 0 && (
-          <span className="absolute -top-px -right-px sm:-top-[3px] sm:-right-[3px] bg-gray-500 text-white text-[8px] sm:text-[10px] font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 flex items-center justify-center px-[6px]">
-            {archivedCount}
-          </span>
-        )}
-      </button>
-    </div>
+    <ScrollableTabs
+      className="border-b border-gray-200 mb-6"
+      items={items}
+      activeId={activeTab}
+      onChange={(id) => onTabChange(id as 'active' | 'archived')}
+      showBaseLine={false}
+      itemSpacingClassName="ml-2 sm:ml-4"
+      activeTextClassName="text-violet-700"
+      inactiveTextClassName="text-gray-500 hover:text-gray-700"
+      indicatorClassName="pointer-events-none absolute bottom-0 h-[2px] bg-violet-400 rounded-full transition-[left,width] duration-300 ease-out"
+      scrollClassName="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-track-transparent pt-1 pb-4"
+    />
   );
 }
