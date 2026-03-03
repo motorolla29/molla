@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   getCloudImageVariantUrl,
   type CloudImageVariant,
@@ -28,12 +28,15 @@ export function CloudImage({
   const [useOriginal, setUseOriginal] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [forceKey, setForceKey] = useState(0);
+  const [isInView, setIsInView] = useState(false);
+  const [target, setTarget] = useState<HTMLImageElement | null>(null);
 
   // Сбрасываем состояние при изменении src или variant
   useEffect(() => {
     setUseOriginal(false);
     setHasLoaded(false);
     setForceKey((prev) => prev + 1);
+    setIsInView(false);
   }, [src, variant]);
 
   // Таймаут на случай, когда запрос варианта "висит" в pending и onError не срабатывает
@@ -55,6 +58,45 @@ export function CloudImage({
     };
   }, [variant, useOriginal, hasLoaded]);
 
+  // Ленивая загрузка через IntersectionObserver:
+  // начинаем подставлять src только когда изображение попадает во вьюпорт.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (isInView) return;
+
+    const node = target;
+    if (!node) return;
+
+    if (!('IntersectionObserver' in window)) {
+      // Если браузер не поддерживает IO — грузим сразу
+      setIsInView(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      {
+        root: null,
+        rootMargin: '350px',
+        threshold: 0.01,
+      },
+    );
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isInView, target]);
+
   const handleError = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       if (variant === 'orig' || useOriginal) {
@@ -70,9 +112,9 @@ export function CloudImage({
 
   const handleLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    setHasLoaded(true);
-    onLoad?.(e);
-  },
+      setHasLoaded(true);
+      onLoad?.(e);
+    },
     [onLoad],
   );
 
@@ -87,10 +129,18 @@ export function CloudImage({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       {...rest}
+      ref={setTarget}
       key={imgKey}
-      src={displaySrc}
+      src={
+        isInView
+          ? displaySrc
+          : 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+      }
       alt={alt}
-      className={className}
+      loading="lazy"
+      className={`${className ?? ''} transition-opacity duration-300 ${
+        hasLoaded ? 'opacity-100' : 'opacity-0'
+      }`}
       onLoad={handleLoad}
       onError={handleError}
     />

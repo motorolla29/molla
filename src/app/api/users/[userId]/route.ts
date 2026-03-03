@@ -29,13 +29,6 @@ export async function GET(
         email: true,
         createdAt: true,
         rating: true,
-        _count: {
-          select: {
-            ads: {
-              where: { status: 'active' },
-            },
-          },
-        },
       },
     });
 
@@ -46,6 +39,19 @@ export async function GET(
       );
     }
 
+    // Счётчики объявлений и отзывов пользователя
+    const [activeAdsCount, archivedAdsCount, reviewsCount] = await Promise.all([
+      prisma.ad.count({
+        where: { sellerId: userIdNum, status: 'active' },
+      }),
+      prisma.ad.count({
+        where: { sellerId: userIdNum, status: 'archived' },
+      }),
+      prisma.review.count({
+        where: { sellerId: userIdNum, targetRole: 'seller' },
+      }),
+    ]);
+
     // Форматируем данные для клиента
     const formattedUser = {
       id: user.id.toString(),
@@ -55,7 +61,9 @@ export async function GET(
       joinDate: user.createdAt.toISOString().split('T')[0], // YYYY-MM-DD формат
       phone: user.phone,
       email: user.email,
-      activeAdsCount: user._count.ads,
+      activeAdsCount,
+      archivedAdsCount,
+      reviewsCount,
     };
 
     return NextResponse.json(formattedUser);

@@ -101,14 +101,12 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                   <CloudImage
                     src={src}
                     variant="sm"
-                    alt=""
                     className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-50"
                     aria-hidden="true"
                   />
                   {/* Плавный переход появления главного фото */}
                   <img
                     src={src}
-                    alt={`Фото ${idx + 1}`}
                     loading="lazy"
                     className="relative w-full h-full object-contain transition-opacity duration-500"
                     style={{ opacity: 1 }}
@@ -164,7 +162,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
               <button
                 key={idx}
                 onClick={() => onThumbClick(idx)}
-                className={`relative rounded-md overflow-hidden w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 border-2 shrink-0 ${
+                className={`relative rounded-md overflow-hidden w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 border-2 shrink-0 bg-gray-100 ${
                   idx === selectedIndex
                     ? 'border-violet-400'
                     : 'border-neutral-100'
@@ -173,7 +171,6 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
                 <CloudImage
                   src={src}
                   variant="sm"
-                  alt={`Миниатюра ${idx + 1}`}
                   className="w-full h-full object-cover"
                 />
               </button>

@@ -20,6 +20,8 @@ interface UserProfile {
   joinDate: string;
   phone?: string;
   email?: string;
+  activeAdsCount: number;
+  archivedAdsCount: number;
 }
 
 export default function UserProfilePage() {
@@ -51,44 +53,20 @@ export default function UserProfilePage() {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        // Загружаем профиль пользователя, счетчики объявлений и отзывы параллельно
-        const [
-          userResponse,
-          activeResponse,
-          archivedResponse,
-          reviewsResponse,
-        ] = await Promise.all([
-          fetch(`/api/users/${userId}`),
-          fetch(`/api/users/${userId}/ads?status=active&limit=1`),
-          fetch(`/api/users/${userId}/ads?status=archived&limit=1`),
-          fetch(`/api/reviews?sellerId=${userId}&page=1&limit=1`),
-        ]);
+        // Загружаем профиль пользователя вместе с агрегированными счётчиками
+        const userResponse = await fetch(`/api/users/${userId}`);
 
         if (!userResponse.ok) {
           const errorData = await userResponse.json();
           throw new Error(errorData.error || 'Пользователь не найден');
         }
 
-        const userData = await userResponse.json();
+        const userData: UserProfile = await userResponse.json();
 
-        // Получаем количество объявлений из пагинации
-        const activeData = activeResponse.ok
-          ? await activeResponse.json()
-          : { pagination: { total: 0 } };
-        const archivedData = archivedResponse.ok
-          ? await archivedResponse.json()
-          : { pagination: { total: 0 } };
-        const reviewsData = reviewsResponse.ok
-          ? await reviewsResponse.json()
-          : { pagination: { totalCount: 0 } };
-
-        setUser({
-          ...userData,
-          reviewsCount: reviewsData.pagination?.totalCount || 0,
-        });
+        setUser(userData);
         setAdsCounts({
-          active: activeData.pagination?.total || 0,
-          archived: archivedData.pagination?.total || 0,
+          active: userData.activeAdsCount ?? 0,
+          archived: userData.archivedAdsCount ?? 0,
         });
       } catch (err: any) {
         setError(err.message || 'Не удалось загрузить профиль пользователя');
