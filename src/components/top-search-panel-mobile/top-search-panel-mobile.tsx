@@ -69,7 +69,7 @@ export default function TopSearchPanelMobile({
             className="w-full pl-10 pr-4 py-2 border outline-none border-gray-300 rounded-full focus:border-violet-300"
           />
           {/* Если нужен крестик для очистки */}
-          {searchTerm && (
+          {/* {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
@@ -78,7 +78,7 @@ export default function TopSearchPanelMobile({
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
-          )}
+          )} */}
         </form>
 
         {/* Кнопка фильтры справа */}

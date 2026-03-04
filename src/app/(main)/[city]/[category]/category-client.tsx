@@ -101,7 +101,7 @@ export default function CategoryClient({
             <span className="text-neutral-400">
               {' '}
               (по запросу «
-              <span className="text-neutral-800">
+              <span className="text-neutral-800 leading-snug line-clamp-3">
                 {searchParams.get('search')}
               </span>
               »):

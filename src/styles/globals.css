@@ -150,6 +150,16 @@ button:not(:disabled) {
   overflow-wrap: break-word;
   hyphens: auto;
 }
+/* Ограничение текста до 3 строк с многоточием */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
 
 /* Кастомные маркеры на Яндекс.Карте */
 .molla-map-marker {
