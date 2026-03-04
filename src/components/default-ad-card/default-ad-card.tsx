@@ -110,7 +110,7 @@ export default function DefaultAdCard({
             }
           /> */}
           <CloudImage
-            src={ad.seller.avatar || 'user-avatars/765-default-avatar.png'}
+            src={ad.seller.avatar || 'user-avatars/user-default3.svg'}
             variant="sm"
             className="w-full h-full object-cover"
           />

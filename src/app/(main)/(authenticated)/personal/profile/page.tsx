@@ -366,7 +366,7 @@ export default function Profile() {
         onClose={() => setShowAvatarModal(false)}
         imageUrl={
           user.avatar ||
-          'https://molla.s3.cloud.ru/user-avatars/765-default-avatar.png'
+          'https://molla.s3.cloud.ru/user-avatars/user-default3.svg'
         }
         altText={user.name}
       />
