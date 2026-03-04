@@ -140,7 +140,7 @@ button:not(:disabled) {
   display: none; /* Chrome, Safari and Opera */
 }
 
-/* Ограничение текста до 2 строк с многоточием */
+/* Ограничение текста до X строк с многоточием */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -150,10 +150,9 @@ button:not(:disabled) {
   overflow-wrap: break-word;
   hyphens: auto;
 }
-/* Ограничение текста до 3 строк с многоточием */
-.line-clamp-3 {
+.line-clamp-4 {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;

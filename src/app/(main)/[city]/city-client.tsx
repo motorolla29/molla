@@ -82,13 +82,13 @@ export default function CityClient({
           </ol>
         </nav>
 
-        <h1 className="text-xl sm:text-3xl font-semibold mb-5">
+        <h1 className="text-xl sm:text-3xl font-semibold mb-5 line-clamp-4">
           Объявления в {cityNamePrep}
           {searchParams?.get('search') && (
             <span className="text-neutral-400">
               {' '}
               (по запросу «
-              <span className="text-neutral-800 leading-snug line-clamp-3">
+              <span className="text-neutral-800 leading-snug">
                 {searchParams.get('search')}
               </span>
               »):
