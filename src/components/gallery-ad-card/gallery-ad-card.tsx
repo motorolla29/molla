@@ -21,7 +21,7 @@ export default function GalleryAdCard({
   return (
     <Link
       href={`/${ad.cityLabel}/${ad.category}/${ad.id}`}
-      target="blank"
+      target="_blank"
       className="flex flex-col w-full overflow-hidden h-full min-w-0"
       onClick={() => markViewed(ad.id)}
     >

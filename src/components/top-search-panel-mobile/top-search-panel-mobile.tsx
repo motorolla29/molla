@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useLocationStore } from '@/store/useLocationStore';
 import {
   MagnifyingGlassIcon,
-  XMarkIcon,
   AdjustmentsHorizontalIcon,
 } from '@heroicons/react/24/outline';
+import { MobileSearchModal } from './mobile-search-modal';
 
 interface TopSearchPanelMobileProps {
   categoryName: string | null;
@@ -24,34 +23,24 @@ export default function TopSearchPanelMobile({
   setSearchTerm,
   setFiltersVisible,
 }: TopSearchPanelMobileProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { cityLabel, cityNamePreposition } = useLocationStore();
+  const { cityNamePreposition } = useLocationStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = searchTerm.trim();
-    const params = new URLSearchParams(searchParams?.toString() ?? '');
-
-    if (trimmed) {
-      params.set('search', trimmed); // заменит или добавит параметр search
-    } else {
-      params.delete('search'); // если строка пуста — удаляем параметр
-    }
-
-    const basePath = categoryKey
-      ? `/${cityLabel}/${categoryKey}`
-      : `/${cityLabel}`;
-
-    router.push(`${basePath}?${params.toString()}`);
-  };
+  const placeholder = `Найти ${
+    categoryName ? categoryName.toLocaleLowerCase() : 'объявления'
+  }${cityNamePreposition ? ` в ${cityNamePreposition}...` : '...'}`;
 
   return (
     <>
+      {/* Мобильный хедер с исходным стилем инпута */}
       <div className="lg:hidden bg-white mx-auto py-3 flex items-center gap-2 sticky top-12 z-9">
-        {/* Строка поиска с иконкой внутри */}
-        <form onSubmit={handleSearchSubmit} className="flex-1 relative min-w-0">
-          {/* Иконка поиска слева */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setIsModalOpen(true);
+          }}
+          className="flex-1 relative min-w-0"
+        >
           <button
             type="submit"
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -62,23 +51,11 @@ export default function TopSearchPanelMobile({
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={`Найти ${
-              categoryName ? categoryName.toLocaleLowerCase() : 'объявления'
-            }${cityNamePreposition ? ` в ${cityNamePreposition}...` : '...'}`}
-            className="w-full pl-10 pr-4 py-2 border outline-none border-gray-300 rounded-full focus:border-violet-300"
+            onFocus={() => setIsModalOpen(true)}
+            readOnly
+            placeholder={placeholder}
+            className="w-full pl-10 pr-4 py-2 border outline-none border-gray-300 rounded-full focus:border-violet-300 truncate"
           />
-          {/* Если нужен крестик для очистки */}
-          {/* {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              aria-label="Очистить"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
-          )} */}
         </form>
 
         {/* Кнопка фильтры справа */}
@@ -90,6 +67,15 @@ export default function TopSearchPanelMobile({
           <AdjustmentsHorizontalIcon className="w-6 h-6 text-neutral-800" />
         </button>
       </div>
+
+      <MobileSearchModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        categoryName={categoryName}
+        categoryKey={categoryKey}
+        initialQuery={searchTerm}
+        onSearchApplied={(value) => setSearchTerm(value)}
+      />
     </>
   );
 }

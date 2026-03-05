@@ -114,6 +114,14 @@ button:not(:disabled) {
   background-color: #a3a2a9;
 }
 
+.custom-scrollbar-2.scrollbar-suggestions::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar-2.scrollbar-suggestions::-webkit-scrollbar-track {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 /* Анимация появления */
 @keyframes fade-in {
   from {

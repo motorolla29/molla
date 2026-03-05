@@ -6,8 +6,8 @@ import { categoryOptions } from '@/const';
 import Link from 'next/link';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useLocationStore } from '@/store/useLocationStore';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { MapPinIcon } from '@heroicons/react/24/outline';
+import { DesktopSearchWithSuggestions } from './desktop-search-with-suggestions';
 
 interface TopSearchPanelProps {
   categoryName: string | null;
@@ -24,12 +24,10 @@ export default function TopSearchPanel({
   setSearchTerm,
   onLocationModalOpen,
 }: TopSearchPanelProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const { cityLabel, cityName, cityNamePreposition } = useLocationStore();
+  const { cityLabel, cityName } = useLocationStore();
 
-  const dropdownRef = useRef<HTMLDivElement>(null); // <== ссылка на dropdown
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Варианты анимации для выпадающего списка
   const dropdownVariants = {
@@ -72,7 +70,7 @@ export default function TopSearchPanel({
 
   return (
     <div className="hidden lg:block bg-white sticky top-15 z-10">
-      <div className="mx-auto py-3 flex items-center gap-2">
+      <div className="relative mx-auto py-3 flex items-center gap-2">
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowFilterDropdown((prev) => !prev)}
@@ -128,10 +126,6 @@ export default function TopSearchPanel({
                         className="flex w-full items-center"
                         href={`/${cityLabel}/${opt.key}`}
                       >
-                        {/* было: <img
-                          src={`https://ik.imagekit.io/motorolla29/molla/icons/${opt.key}.png?tr=w-48`}
-                          className="w-6 h-6 aspect-auto mr-1"
-                        /> */}
                         <CloudImage
                           src={`icons/${opt.key}.png`}
                           variant="xs"
@@ -149,43 +143,13 @@ export default function TopSearchPanel({
           </AnimatePresence>
         </div>
 
-        {/* Поисковая строка */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const trimmed = searchTerm.trim();
-            const params = new URLSearchParams(searchParams?.toString() ?? '');
-
-            if (trimmed) {
-              params.set('search', trimmed); // заменит или добавит параметр search
-            } else {
-              params.delete('search'); // если строка пуста — удаляем параметр
-            }
-
-            const basePath = categoryKey
-              ? `/${cityLabel}/${categoryKey}`
-              : `/${cityLabel}`;
-
-            router.push(`${basePath}?${params.toString()}`);
-          }}
-          className="flex-1 relative min-w-72"
-        >
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={`Найти ${
-              categoryName ? categoryName.toLocaleLowerCase() : 'объявления'
-            }${cityNamePreposition ? ` в ${cityNamePreposition}...` : '...'}`}
-            className="w-full pl-4 pr-24 py-2 border outline-none border-gray-300 rounded-full focus:border-violet-300"
-          />
-          <button
-            type="submit"
-            className="absolute outline-none right-0 top-0 h-full px-4 cursor-pointer bg-violet-400 text-white rounded-full hover:bg-violet-500"
-          >
-            Найти
-          </button>
-        </form>
+        {/* Поисковая строка с подсказками и блюром */}
+        <DesktopSearchWithSuggestions
+          categoryName={categoryName}
+          categoryKey={categoryKey}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
         <button
           onClick={() => onLocationModalOpen()}
           className="ml-2 text-md flex items-center font-semibold text-neutral-500 hover:opacity-80 cursor-pointer"

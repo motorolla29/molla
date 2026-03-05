@@ -61,7 +61,7 @@ export function ChatHeader({
               ) : (
                 <Link
                   href={`/${chat.adCityLabel}/${chat.adCategory}/${chat.adId}`}
-                  target="blank"
+                  target="_blank"
                 >
                   {chat.adPhoto ? (
                     <CloudImage
