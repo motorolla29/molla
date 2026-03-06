@@ -40,6 +40,14 @@ export function DesktopSearchWithSuggestions({
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [remoteSuggestions, setRemoteSuggestions] = useState<string[]>([]);
   const [isLoadingRemote, setIsLoadingRemote] = useState(false);
+  const remoteCacheRef = useRef<Map<string, { data: string[]; expiresAt: number }>>(
+    new Map(),
+  );
+  const remoteAbortRef = useRef<AbortController | null>(null);
+  const remoteDebounceRef = useRef<number | null>(null);
+
+  const REMOTE_TTL_MS = 60_000;
+  const REMOTE_DEBOUNCE_MS = 120;
 
   // Инициализация истории из localStorage
   useEffect(() => {
@@ -130,9 +138,9 @@ export function DesktopSearchWithSuggestions({
       ? `/${cityLabel}/${categoryKey}`
       : `/${cityLabel}`;
 
-    await handleLogSearch(trimmed);
-
     setIsOverlayOpen(false);
+
+    await handleLogSearch(trimmed);
 
     router.push(`${basePath}?${params.toString()}`);
 
@@ -142,29 +150,74 @@ export function DesktopSearchWithSuggestions({
 
   const fetchRemoteSuggestions = async (q: string) => {
     const trimmed = q.trim();
+    const key = trimmed.toLowerCase();
+
+    const cached = remoteCacheRef.current.get(key);
+    const now = Date.now();
+    if (cached && cached.expiresAt > now) {
+      setRemoteSuggestions(cached.data);
+      return;
+    }
+
+    // отменяем предыдущий запрос
+    remoteAbortRef.current?.abort();
+    const controller = new AbortController();
+    remoteAbortRef.current = controller;
 
     try {
       setIsLoadingRemote(true);
       const url = trimmed
         ? `/api/search/suggestions?q=${encodeURIComponent(trimmed)}`
         : '/api/search/suggestions';
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error('Failed to fetch suggestions');
-      }
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) throw new Error('Failed to fetch suggestions');
+
       const data = (await res.json()) as string[];
-      setRemoteSuggestions(Array.isArray(data) ? data : []);
-    } catch {
+      const normalized = Array.isArray(data) ? data : [];
+
+      // записываем в кэш
+      remoteCacheRef.current.set(key, {
+        data: normalized,
+        expiresAt: now + REMOTE_TTL_MS,
+      });
+
+      setRemoteSuggestions(normalized);
+    } catch (err) {
+      // abort — штатная ситуация при быстром вводе
+      if ((err as any)?.name === 'AbortError') return;
       setRemoteSuggestions([]);
     } finally {
-      setIsLoadingRemote(false);
+      // не сбрасываем loading, если запрос уже отменён/заменён
+      if (!controller.signal.aborted) setIsLoadingRemote(false);
     }
   };
 
   // Обновляем удалённые подсказки при изменении строки поиска
   useEffect(() => {
-    fetchRemoteSuggestions(searchTerm);
+    // микро-debounce, чтобы не дергать API на каждый символ
+    if (remoteDebounceRef.current) {
+      window.clearTimeout(remoteDebounceRef.current);
+    }
+    remoteDebounceRef.current = window.setTimeout(() => {
+      fetchRemoteSuggestions(searchTerm);
+    }, REMOTE_DEBOUNCE_MS);
+
+    return () => {
+      if (remoteDebounceRef.current) {
+        window.clearTimeout(remoteDebounceRef.current);
+      }
+    };
   }, [searchTerm]);
+
+  // cleanup на unmount
+  useEffect(() => {
+    return () => {
+      remoteAbortRef.current?.abort();
+      if (remoteDebounceRef.current) {
+        window.clearTimeout(remoteDebounceRef.current);
+      }
+    };
+  }, []);
 
   const localSuggestions = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();

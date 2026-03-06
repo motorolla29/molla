@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocationStore } from '@/store/useLocationStore';
 import { DEFAULT_TOP_SEARCH_SUGGESTIONS } from '@/const';
@@ -46,6 +45,14 @@ export function MobileSearchModal({
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [remoteSuggestions, setRemoteSuggestions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const remoteCacheRef = useRef<
+    Map<string, { data: string[]; expiresAt: number }>
+  >(new Map());
+  const remoteAbortRef = useRef<AbortController | null>(null);
+  const remoteDebounceRef = useRef<number | null>(null);
+
+  const REMOTE_TTL_MS = 60_000;
+  const REMOTE_DEBOUNCE_MS = 120;
 
   // Блокируем скролл страницы при открытой модалке
   useEffect(() => {
@@ -161,24 +168,64 @@ export function MobileSearchModal({
   const fetchRemoteSuggestions = async (q: string) => {
     const trimmed = q.trim();
     try {
+      const key = trimmed.toLowerCase();
+      const cached = remoteCacheRef.current.get(key);
+      const now = Date.now();
+      if (cached && cached.expiresAt > now) {
+        setRemoteSuggestions(cached.data);
+        return;
+      }
+
+      remoteAbortRef.current?.abort();
+      const controller = new AbortController();
+      remoteAbortRef.current = controller;
+
       const url = trimmed
         ? `/api/search/suggestions?q=${encodeURIComponent(trimmed)}`
         : '/api/search/suggestions';
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) {
         throw new Error('Failed to fetch suggestions');
       }
       const data = (await res.json()) as string[];
-      setRemoteSuggestions(Array.isArray(data) ? data : []);
-    } catch {
+      const normalized = Array.isArray(data) ? data : [];
+
+      remoteCacheRef.current.set(key, {
+        data: normalized,
+        expiresAt: now + REMOTE_TTL_MS,
+      });
+
+      setRemoteSuggestions(normalized);
+    } catch (err) {
+      if ((err as any)?.name === 'AbortError') return;
       setRemoteSuggestions([]);
     }
   };
 
   useEffect(() => {
     if (!isOpen) return;
-    fetchRemoteSuggestions(query);
+    if (remoteDebounceRef.current) {
+      window.clearTimeout(remoteDebounceRef.current);
+    }
+    remoteDebounceRef.current = window.setTimeout(() => {
+      fetchRemoteSuggestions(query);
+    }, REMOTE_DEBOUNCE_MS);
+
+    return () => {
+      if (remoteDebounceRef.current) {
+        window.clearTimeout(remoteDebounceRef.current);
+      }
+    };
   }, [isOpen, query]);
+
+  useEffect(() => {
+    return () => {
+      remoteAbortRef.current?.abort();
+      if (remoteDebounceRef.current) {
+        window.clearTimeout(remoteDebounceRef.current);
+      }
+    };
+  }, []);
 
   const localSuggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -252,7 +299,7 @@ export function MobileSearchModal({
 
   if (!isOpen || !mounted) return null;
 
-  const content = (
+  return (
     <div className="fixed inset-0 pb-12 z-50 bg-white flex flex-col">
       <div className="px-4 pt-4 pb-2 flex items-center gap-2 border-b border-gray-200">
         <form
@@ -359,6 +406,4 @@ export function MobileSearchModal({
       </div>
     </div>
   );
-
-  return createPortal(content, document.body);
 }

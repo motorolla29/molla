@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const OPTIONS = [
   { value: 'default', label: 'По умолчанию' },
@@ -87,25 +88,33 @@ export default function SortDropdown() {
         </svg>
       </button>
 
-      {open && (
-        <ul className="absolute mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10">
-          {OPTIONS.map((opt) => (
-            <li key={opt.value}>
-              <button
-                type="button"
-                className={`w-full text-left text-nowrap px-4 py-2 hover:bg-gray-100 ${
-                  opt.value === current
-                    ? 'text-violet-500'
-                    : 'text-neutral-700 '
-                }`}
-                onClick={() => handleSelect(opt.value)}
-              >
-                {opt.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.ul
+            className="absolute mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10 overflow-hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+          >
+            {OPTIONS.map((opt) => (
+              <li key={opt.value}>
+                <button
+                  type="button"
+                  className={`w-full text-left text-nowrap px-4 py-2 hover:bg-gray-100 ${
+                    opt.value === current
+                      ? 'text-violet-500'
+                      : 'text-neutral-700 '
+                  }`}
+                  onClick={() => handleSelect(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

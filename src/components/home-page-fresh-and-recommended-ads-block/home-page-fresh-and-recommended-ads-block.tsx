@@ -58,6 +58,40 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
 
   const showViewedTab = hasViewedAds === true;
 
+  // Синхронизация активного таба с hash в URL (#recommended, #fresh, #viewed)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const hashToTab: Record<string, HomeTabs> = {
+      '#recommended': 'recommend',
+      '#fresh': 'fresh',
+      '#viewed': 'viewed',
+    };
+
+    const applyHash = () => {
+      const hash = window.location.hash;
+      const tabFromHash = hashToTab[hash];
+      if (!tabFromHash) return;
+
+      // Если вкладка "Вы смотрели" недоступна, откатываемся к рекомендациям
+      if (tabFromHash === 'viewed' && !showViewedTab) {
+        setActiveTab('recommend');
+        return;
+      }
+
+      setActiveTab(tabFromHash);
+    };
+
+    // Применяем при первом монтировании
+    applyHash();
+
+    // И обновляем при изменении hash (если пользователь вручную меняет URL)
+    window.addEventListener('hashchange', applyHash);
+    return () => {
+      window.removeEventListener('hashchange', applyHash);
+    };
+  }, [showViewedTab]);
+
   return (
     <div className="bg-white mx-4 mb-6">
       <ScrollableTabs
@@ -72,7 +106,22 @@ export default function HomePageFreshAndRecommendedAdsBlock() {
           ].filter(Boolean) as ScrollableTabItem[]
         }
         activeId={activeTab}
-        onChange={(id) => setActiveTab(id as HomeTabs)}
+        onChange={(id) => {
+          const next = id as HomeTabs;
+          setActiveTab(next);
+
+          if (typeof window !== 'undefined') {
+            const tabToHash: Record<HomeTabs, string> = {
+              recommend: '#recommended',
+              fresh: '#fresh',
+              viewed: '#viewed',
+            };
+
+            const url = new URL(window.location.href);
+            url.hash = tabToHash[next] ?? '';
+            window.history.replaceState(null, '', url.toString());
+          }
+        }}
       />
 
       <InfiniteScrollAds
