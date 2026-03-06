@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
-    // @ts-expect-error модель появится после обновления Prisma Client
     await prisma.searchStat.upsert({
       where: { text: trimmed },
       update: {
@@ -34,4 +33,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
-
