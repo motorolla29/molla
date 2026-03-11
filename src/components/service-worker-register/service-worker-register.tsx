@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 const ServiceWorkerRegister = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (process.env.NODE_ENV !== 'production') return;
     if (!('serviceWorker' in navigator)) return;
 
     const register = async () => {

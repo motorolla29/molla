@@ -26,6 +26,15 @@ export default function MyAddsPage() {
   // Получаем статус из URL
   const status = params?.status as 'active' | 'archived' | undefined;
 
+  // Раздел "Мои объявления" считаем online-only: при отсутствии сети
+  // отправляем пользователя на offline-страницу вместо краша.
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+    if (!navigator.onLine) {
+      router.replace('/offline');
+    }
+  }, [router]);
+
   // Проверяем валидность статуса и перенаправляем если нужно
   useEffect(() => {
     if (status && !['active', 'archived'].includes(status)) {

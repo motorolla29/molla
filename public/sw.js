@@ -1,13 +1,245 @@
-// Service Worker для PWA и Push-уведомлений
+// Service Worker для PWA, Push-уведомлений и Offline режима.
+// Подход: небольшой precache для offline shell + runtime cache для статики и ключевых GET /api.
+
+const SW_VERSION = 'v6';
+const CACHE_PREFIX = 'molla';
+const OFFLINE_CACHE = `${CACHE_PREFIX}-offline-${SW_VERSION}`;
+const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
+const API_CACHE = `${CACHE_PREFIX}-api-${SW_VERSION}`;
+const PAGES_CACHE = `${CACHE_PREFIX}-pages-${SW_VERSION}`;
+
+const OFFLINE_URL = '/offline';
+
+// Базовые assets (иконки, манифест) — всегда precache.
+const PRECACHE_ASSETS = [
+  OFFLINE_URL,
+  '/manifest.json',
+  '/favicon.ico',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-badge-72.png',
+  '/icons/favicon-96x96.png',
+  '/logo/molla-logo.svg',
+];
+
+// Ключевые страницы для офлайна.
+// Здесь кэшируем только shell страниц: данные для сложных разделов (мессенджер, мои объявления)
+// требуют сети и при офлайне перенаправляют на /offline внутри самих страниц.
+const PRECACHE_PAGES = [
+  '/',
+  '/favorites',
+  '/personal/profile',
+  '/personal/notifications',
+  '/personal/rating',
+  '/personal/my-reviews',
+  '/personal/my-adds',
+  '/personal/my-adds/active',
+  '/personal/my-adds/archived',
+  '/personal/messenger',
+];
+
+const PRECACHE_URLS = [...PRECACHE_ASSETS, ...PRECACHE_PAGES];
+
+const sameOrigin = (url) => url.origin === self.location.origin;
+
+const isStaticAsset = (pathname) =>
+  pathname.startsWith('/_next/') ||
+  pathname.startsWith('/icons/') ||
+  pathname.startsWith('/images/') ||
+  pathname.startsWith('/logo/') ||
+  pathname === '/favicon.ico';
+
+// Кешируем только нужные GET /api (явный allowlist), чтобы не схватить лишнее.
+const isApiCacheAllowed = (pathname) => {
+  if (!pathname.startsWith('/api/')) return false;
+
+  const allowExact = new Set([
+    // Профиль
+    '/api/auth/me',
+
+    // Главная: ленты
+    '/api/ads',
+    '/api/ads/fresh',
+    '/api/ads/recommended',
+    '/api/ads/viewed',
+
+    // Карта (если используется на главной/каталогах)
+    '/api/map-markers',
+    '/api/cluster-ads',
+
+    // Уведомления
+    '/api/notifications',
+
+    // Избранное
+    '/api/favorites',
+
+    // Отзывы
+    '/api/reviews',
+
+    // Мои объявления
+    '/api/user/ads',
+  ]);
+
+  if (allowExact.has(pathname)) return true;
+
+  // Детальная карточка объявления
+  if (pathname.startsWith('/api/ads/')) return true;
+
+  // Чужие объявления пользователя (в карточке продавца)
+  if (pathname.startsWith('/api/users/') && pathname.endsWith('/ads'))
+    return true;
+
+  return false;
+};
+
+async function cachePutSafe(cacheName, request, response) {
+  // Не кладём непрозрачные/битые ответы и редиректы.
+  if (!response || !response.ok || response.type === 'opaque') return;
+  const cache = await caches.open(cacheName);
+  await cache.put(request, response.clone());
+}
+
+async function cacheMatch(cacheName, request) {
+  const cache = await caches.open(cacheName);
+  return await cache.match(request);
+}
+
+// Поиск в кэше по pathname (fallback при несовпадении URL из-за query/trailing slash)
+async function cacheMatchByPath(cacheName, pathname) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  const normalized = pathname.replace(/\/$/, '') || '/';
+  for (const req of keys) {
+    const u = new URL(req.url);
+    const kPath = u.pathname.replace(/\/$/, '') || '/';
+    if (kPath === normalized) return await cache.match(req);
+  }
+  return null;
+}
+
+async function networkFirst(request, cacheName) {
+  try {
+    const response = await fetch(request);
+    await cachePutSafe(cacheName, request, response);
+    return response;
+  } catch (e) {
+    const cached = await cacheMatch(cacheName, request);
+    if (cached) return cached;
+    throw e;
+  }
+}
+
+async function cacheFirst(request, cacheName) {
+  const cached = await cacheMatch(cacheName, request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  await cachePutSafe(cacheName, request, response);
+  return response;
+}
 
 // Установка Service Worker
+// Precache выполняется в фоне и не блокирует первую загрузку страницы.
+// Ошибки по отдельным URL (например, 401 для /personal/*) не ломают установку.
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(OFFLINE_CACHE);
+      const results = await Promise.allSettled(
+        PRECACHE_URLS.map((url) => cache.add(url)),
+      );
+      const failed = results.filter((r) => r.status === 'rejected');
+      if (failed.length > 0) {
+        console.warn('[SW] Precache: некоторые URL не закэшированы', failed);
+      }
+      await self.skipWaiting();
+    })(),
+  );
 });
 
 // Активация Service Worker
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter(
+            (key) =>
+              key.startsWith(`${CACHE_PREFIX}-`) &&
+              !key.endsWith(`-${SW_VERSION}`),
+          )
+          .map((key) => caches.delete(key)),
+      );
+      await clients.claim();
+    })(),
+  );
+});
+
+// Fetch: offline shell + runtime caching
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+  if (!sameOrigin(url)) return;
+
+  // Навигация (HTML): mode 'navigate' или destination 'document'
+  // (Next.js client-side может делать fetch с destination 'document')
+  const isDocument =
+    request.mode === 'navigate' || request.destination === 'document';
+
+  if (
+    isDocument &&
+    !url.pathname.startsWith('/_next') &&
+    !url.pathname.startsWith('/api')
+  ) {
+    event.respondWith(
+      (async () => {
+        try {
+          const response = await fetch(request);
+          await cachePutSafe(PAGES_CACHE, request, response);
+          return response;
+        } catch (e) {
+          const pathname = url.pathname.replace(/\/$/, '') || '/';
+          // Точное совпадение
+          let cached =
+            (await cacheMatch(PAGES_CACHE, request)) ||
+            (await cacheMatch(OFFLINE_CACHE, request));
+          if (!cached) {
+            // Fallback: поиск по pathname (query, trailing slash)
+            cached =
+              (await cacheMatchByPath(PAGES_CACHE, pathname)) ||
+              (await cacheMatchByPath(OFFLINE_CACHE, pathname));
+          }
+          if (cached) return cached;
+          const offline = await cacheMatch(OFFLINE_CACHE, OFFLINE_URL);
+          if (offline) return offline;
+          return new Response('Offline', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }
+      })(),
+    );
+    return;
+  }
+
+  // Статика: cache-first
+  if (isStaticAsset(url.pathname)) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE));
+    return;
+  }
+
+  // API GET: network-first (чтобы данные были свежими), fallback на cache.
+  if (url.pathname.startsWith('/api/')) {
+    if (!isApiCacheAllowed(url.pathname)) {
+      // Для denylist оставляем поведение "как сейчас": только сеть.
+      event.respondWith(fetch(request));
+      return;
+    }
+    event.respondWith(networkFirst(request, API_CACHE));
+    return;
+  }
 });
 
 // Обработка push-уведомлений
@@ -38,7 +270,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Molla', options)
+    self.registration.showNotification(data.title || 'Molla', options),
   );
 });
 
@@ -83,7 +315,7 @@ self.addEventListener('notificationclick', (event) => {
         if (clients.openWindow) {
           return clients.openWindow(url);
         }
-      })
+      }),
   );
 });
 

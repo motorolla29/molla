@@ -5,6 +5,8 @@ import GlobalActivityTracker from '@/components/global-activity-tracker/global-a
 import GlobalEventListener from '@/components/global-event-listener/global-event-listener';
 import ServiceWorkerRegister from '@/components/service-worker-register/service-worker-register';
 import PushNotificationInitializer from '@/components/push-notification-initializer/push-notification-initializer';
+import OfflineIndicator from '@/components/offline-indicator/offline-indicator';
+import OfflineChunkHandler from '@/components/offline-chunk-handler/offline-chunk-handler';
 import { ToastProvider } from '@/components/toast/toast-context';
 import ToastContainer from '@/components/toast/toast-container';
 import ToastHandler from '@/components/toast/toast-handler';
@@ -24,9 +26,17 @@ export const metadata: Metadata = {
       { url: '/icons/favicon.svg', type: 'image/svg+xml' },
       { url: '/icons/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/web-app-manifest-192x192.png', sizes: '192x192', type: 'image/png' },
+      {
+        url: '/icons/web-app-manifest-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
       { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-      { url: '/icons/web-app-manifest-512x512.png', sizes: '512x512', type: 'image/png' },
+      {
+        url: '/icons/web-app-manifest-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
     ],
     shortcut: '/favicon.ico',
     apple: [
@@ -47,12 +57,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ru">
       <body>
+        <OfflineChunkHandler />
         <LocationInitializer />
         <AuthInitializer />
         <GlobalActivityTracker />
         <GlobalEventListener />
         <ServiceWorkerRegister />
         <PushNotificationInitializer />
+        <OfflineIndicator />
         <ConfirmationModalProvider>
           <ToastProvider>
             {children}

@@ -7,6 +7,7 @@ import {
   AdjustmentsHorizontalIcon,
 } from '@heroicons/react/24/outline';
 import { MobileSearchModal } from './mobile-search-modal';
+import Portal from '@/components/portal/portal';
 
 interface TopSearchPanelMobileProps {
   categoryName: string | null;
@@ -68,14 +69,16 @@ export default function TopSearchPanelMobile({
         </button>
       </div>
 
-      <MobileSearchModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        categoryName={categoryName}
-        categoryKey={categoryKey}
-        initialQuery={searchTerm}
-        onSearchApplied={(value) => setSearchTerm(value)}
-      />
+      <Portal>
+        <MobileSearchModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          categoryName={categoryName}
+          categoryKey={categoryKey}
+          initialQuery={searchTerm}
+          onSearchApplied={(value) => setSearchTerm(value)}
+        />
+      </Portal>
     </>
   );
 }

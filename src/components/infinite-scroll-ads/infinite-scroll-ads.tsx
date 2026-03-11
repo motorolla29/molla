@@ -100,11 +100,13 @@ export default function InfiniteScrollAds({
           } else {
             if (fetchIdRef.current !== fetchId) return;
             if (!isLoadMore) setAds([]);
+            setHasMore(false);
           }
         } catch (error) {
           console.error('Error fetching recommended ads:', error);
           if (fetchIdRef.current !== fetchId) return;
           if (!isLoadMore) setAds([]);
+          setHasMore(false);
         }
         if (fetchIdRef.current === fetchId) {
           if (isLoadMore) setLoadingMore(false);
@@ -141,11 +143,13 @@ export default function InfiniteScrollAds({
           } else {
             if (fetchIdRef.current !== fetchId) return;
             if (!isLoadMore) setAds([]);
+            setHasMore(false);
           }
         } catch (error) {
           console.error('Error fetching fresh ads:', error);
           if (fetchIdRef.current !== fetchId) return;
           if (!isLoadMore) setAds([]);
+          setHasMore(false);
         }
         if (fetchIdRef.current === fetchId) {
           if (isLoadMore) setLoadingMore(false);
@@ -237,6 +241,7 @@ export default function InfiniteScrollAds({
           if (!isLoadMore) {
             setAds([]);
           }
+          setHasMore(false);
         }
       } catch (error) {
         console.error('Error fetching ads:', error);
@@ -244,6 +249,7 @@ export default function InfiniteScrollAds({
         if (!isLoadMore) {
           setAds([]);
         }
+        setHasMore(false);
       }
 
       if (isLoadMore) {

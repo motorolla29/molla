@@ -172,7 +172,7 @@ export default function NotificationsPage() {
                     )}
                   </div>
                   <p
-                    className={`text-sm sm:text-base mb-2 sm:mb-3 leading-relaxed ${
+                    className={`text-sm sm:text-base mb-2 sm:mb-3 leading-relaxed wrap-break-word ${
                       notification.isRead
                         ? 'text-neutral-600'
                         : 'text-neutral-900'

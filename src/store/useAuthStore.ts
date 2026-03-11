@@ -19,7 +19,7 @@ interface AuthState {
   logout: () => void;
   setUser: (user: User) => void;
   updateUser: (
-    updates: Partial<User> & { verificationCode?: string }
+    updates: Partial<User> & { verificationCode?: string },
   ) => Promise<void>;
   initialize: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
             ) {
               import('./usePushNotificationStore')
                 .then(({ usePushNotificationStore }) =>
-                  usePushNotificationStore.getState().requestPermission()
+                  usePushNotificationStore.getState().requestPermission(),
                 )
                 .catch(() => {
                   // тихо игнорируем ошибки, чтобы не ломать auth flow
@@ -86,7 +86,11 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           // Сетевые/неожиданные ошибки — не считаем токен битым, просто завершаем проверку
-          set({ isAuthChecking: false });
+          const state = get();
+          set({
+            isAuthChecking: false,
+            isLoggedIn: state.user ? true : state.isLoggedIn,
+          });
         }
       },
       logout: async () => {
@@ -151,6 +155,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
       }),
-    }
-  )
+    },
+  ),
 );
