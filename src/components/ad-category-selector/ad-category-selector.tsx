@@ -80,10 +80,12 @@ export default function AdCategorySelector({
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
               /> */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${selectedCategory.key}.png`}
+                src={`/icons/${selectedCategory.key}.png`}
                 alt="cat-icon"
                 className="w-5 h-5 mr-2"
+                loading="lazy"
               />
               <span>{selectedCategory.label}</span>
             </>
@@ -146,10 +148,12 @@ export default function AdCategorySelector({
                   alt="cat-icon"
                   className="w-5 h-5 mr-2"
                 /> */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${opt.key}.png`}
+                  src={`/icons/${opt.key}.png`}
                   alt="cat-icon"
                   className="w-5 h-5 mr-2"
+                  loading="lazy"
                 />
                 <span className="text-sm sm:text-base text-gray-900">
                   {opt.label}

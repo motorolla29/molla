@@ -350,8 +350,9 @@ export default function InfiniteScrollAds({
                 src="https://ik.imagekit.io/motorolla29/molla/icons/%D0%BD%D0%B8%D1%87%D0%B5%D0%B3%D0%BE-%D0%BD%D0%B5-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BE-100.png"
                 alt="nothing-found"
               /> */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/ничего-не-найдено-100.png`}
+                src="/icons/ничего-не-найдено-100.png"
                 alt="nothing-found"
                 className="w-16 sm:w-20"
               />

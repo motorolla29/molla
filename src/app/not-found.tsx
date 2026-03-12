@@ -15,8 +15,9 @@ export default function NotFound() {
           src="https://ik.imagekit.io/motorolla29/molla/icons/oshibka_404.svg"
           alt="404"
         /> */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/oshibka_404.svg`}
+          src="/icons/oshibka_404.svg"
           alt="404"
           className="w-20 sm:w-24 mb-2"
         />

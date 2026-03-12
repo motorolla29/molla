@@ -14,11 +14,11 @@ const ServiceWorkerRegister = () => {
 
     const register = async () => {
       try {
-        const existing = await navigator.serviceWorker.getRegistration();
-        if (!existing) {
-          await navigator.serviceWorker.register('/sw.js');
-          await navigator.serviceWorker.ready;
-        }
+        // Всегда регистрируем (и обновляем) sw.js, иначе после изменений SW/кэша
+        // клиент может оставаться на старой версии и не получать offline fallback.
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        await reg.update().catch(() => {});
+        await navigator.serviceWorker.ready;
       } catch (error) {
         console.error('Service worker registration failed:', error);
       }

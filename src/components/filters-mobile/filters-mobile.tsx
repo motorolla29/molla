@@ -268,10 +268,12 @@ export default function FiltersMobile({
                           alt={opt.label}
                           className="w-5 h-5 mr-2"
                         /> */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/${opt.key}.png`}
+                          src={`/icons/${opt.key}.png`}
                           alt={opt.label}
                           className="w-5 h-5 mr-2"
+                          loading="lazy"
                         />
                         <span className="truncate">{opt.label}</span>
                       </button>

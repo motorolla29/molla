@@ -46,8 +46,9 @@ const FavoriteAdsList = ({ ads, isLoading = false }: FavoriteAdsListProps) => {
             src="https://ik.imagekit.io/motorolla29/molla/icons/empty-favs-image.svg"
             alt="favs-empty"
           /> */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`${process.env.CLOUD_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL || 'https://molla.s3.cloud.ru'}/icons/empty-favs-image.svg`}
+            src="/icons/empty-favs-image.svg"
             alt="favs-empty"
             className="w-20 sm:w-30 opacity-75"
           />

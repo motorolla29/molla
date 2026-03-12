@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { categoryOptions } from '@/const';
 import Link from 'next/link';
-import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { useLocationStore } from '@/store/useLocationStore';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 import { DesktopSearchWithSuggestions } from './desktop-search-with-suggestions';
@@ -126,10 +125,12 @@ export default function TopSearchPanel({
                         className="flex w-full items-center"
                         href={`/${cityLabel}/${opt.key}`}
                       >
-                        <CloudImage
-                          src={`icons/${opt.key}.png`}
-                          variant="xs"
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/icons/${opt.key}.png`}
+                          alt={opt.label}
                           className="w-6 h-6 aspect-auto mr-1"
+                          loading="lazy"
                         />
                         <span className="flex grow items-center text-neutral-800 px-1 py-1 hover:bg-gray-50 rounded-sm">
                           {opt.label}

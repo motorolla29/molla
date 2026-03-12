@@ -5,6 +5,10 @@ export default function OfflineChunkHandler() {
     <Script id="offline-chunk-handler" strategy="beforeInteractive">
       {`
         (function() {
+          function isOfflineNow() {
+            try { return typeof navigator !== 'undefined' && navigator.onLine === false; } catch (e) { return false; }
+          }
+
           function shouldHandle(errorLike) {
             if (!errorLike) return false;
             var name = errorLike.name || '';
@@ -12,7 +16,15 @@ export default function OfflineChunkHandler() {
             var isChunkError = name === 'ChunkLoadError' ||
               message.indexOf('ChunkLoadError') !== -1 ||
               message.indexOf('Failed to load chunk') !== -1;
-            if (!isChunkError) return false;
+            var isNetworkError =
+              isOfflineNow() &&
+              (name === 'TypeError' ||
+                message.indexOf('Failed to fetch') !== -1 ||
+                message.indexOf('NetworkError') !== -1 ||
+                message.indexOf('ERR_INTERNET_DISCONNECTED') !== -1 ||
+                message.indexOf('Load failed') !== -1);
+
+            if (!isChunkError && !isNetworkError) return false;
             if (typeof window !== 'undefined' && window.location.pathname === '/offline') return false;
             return true;
           }
