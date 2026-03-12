@@ -1,7 +1,7 @@
 // Service Worker для PWA, Push-уведомлений и Offline режима.
 // Подход: небольшой precache для offline shell + runtime cache для статики и ключевых GET /api.
 
-const SW_VERSION = 'v8';
+const SW_VERSION = 'v9';
 const CACHE_PREFIX = 'molla';
 const OFFLINE_CACHE = `${CACHE_PREFIX}-offline-${SW_VERSION}`;
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
@@ -23,6 +23,17 @@ const PRECACHE_ASSETS = [
   '/icons/icon-badge-72.png',
   '/icons/favicon-96x96.png',
   '/logo/molla-logo.svg',
+  '/icons/ничего-не-найдено-100.png',
+  '/icons/empty-favs-image.svg',
+  '/icons/oshibka_404.svg',
+  '/icons/goods.png',
+  '/icons/services.png',
+  '/icons/realestate.png',
+  '/icons/auto.png',
+  '/icons/goods-map-marker.png',
+  '/icons/services-map-marker.png',
+  '/icons/realestate-map-marker.png',
+  '/icons/auto-map-marker.png',
 ];
 
 // Ключевые страницы для офлайна.

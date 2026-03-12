@@ -14,6 +14,7 @@ import {
   StarIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Notification {
   id: string;
@@ -26,9 +27,15 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+    if (!navigator.onLine) router.replace('/offline');
+  }, [router]);
 
   // Сбрасываем счетчик в header при открытии страницы (красная точка гаснет сразу)
   useEffect(() => {

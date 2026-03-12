@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/components/toast/toast-context';
@@ -10,12 +10,19 @@ import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { EditProfileModal } from '@/components/edit-profile-modal/edit-profile-modal';
 import ImageModal from '@/components/messenger/image-modal';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
+import { useRouter } from 'next/navigation';
 
 export default function Profile() {
+  const router = useRouter();
   const { user, logout, updateUser } = useAuthStore();
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+    if (!navigator.onLine) router.replace('/offline');
+  }, [router]);
 
   // Состояние для модального окна редактирования профиля
   const [showEditProfile, setShowEditProfile] = useState(false);
