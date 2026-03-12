@@ -1,7 +1,7 @@
 // Service Worker для PWA, Push-уведомлений и Offline режима.
 // Подход: небольшой precache для offline shell + runtime cache для статики и ключевых GET /api.
 
-const SW_VERSION = 'v9';
+const SW_VERSION = 'v10';
 const CACHE_PREFIX = 'molla';
 const OFFLINE_CACHE = `${CACHE_PREFIX}-offline-${SW_VERSION}`;
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;

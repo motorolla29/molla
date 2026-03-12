@@ -11,7 +11,8 @@ export default function OfflinePage() {
           <div className="w-12 flex items-center justify-start">
             <a
               href="/"
-              className="retry-link flex items-center p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              data-offline-back="true"
+              className="flex items-center p-2 text-gray-600 hover:text-gray-900 transition-colors"
               aria-label="Вернуться назад"
             >
               <ArrowLeft className="h-6 w-6 max-sm:h-5 max-sm:w-5" />

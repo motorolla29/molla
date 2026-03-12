@@ -39,6 +39,20 @@ export default function OfflineChunkHandler() {
           window.addEventListener('unhandledrejection', function(e) {
             if (shouldHandle(e.reason)) { if (e.preventDefault) e.preventDefault(); rememberUrlAndGoOffline(); }
           });
+          function initBackLinks() {
+            document.querySelectorAll('[data-offline-back]').forEach(function(link) {
+              link.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Стрелка "назад" на offline-странице должна возвращать именно на предыдущую страницу,
+                // а не повторно открывать проблемный URL.
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = '/';
+                }
+              });
+            });
+          }
           function fixOfflineUrl() {
             if (window.location.pathname !== '/offline' && document.getElementById('offline-page')) {
               try { sessionStorage.setItem('offline:last-url', window.location.href); } catch (e) {}
@@ -71,6 +85,7 @@ export default function OfflineChunkHandler() {
           }
           function runOfflineInit() {
             if (fixOfflineUrl()) return;
+            initBackLinks();
             initRetryLinks();
           }
           if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', runOfflineInit);
