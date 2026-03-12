@@ -20,7 +20,7 @@ export default function OfflineIndicator() {
   if (pathname === '/offline') return null;
   if (!hasResolved || isOnline) return null;
 
-  const bottomClass = hasMobileNav ? 'bottom-16' : 'bottom-4';
+  const bottomClass = hasMobileNav ? 'bottom-16 lg:bottom-4' : 'bottom-4';
 
   return (
     <div className={`fixed ${bottomClass} right-3 sm:right-4 max-w-3/4 z-40`}>
