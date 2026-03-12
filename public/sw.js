@@ -111,7 +111,12 @@ const PRECACHE_PAGES_SET = new Set(PRECACHE_PAGES.map(normalizePathname));
 
 function isHtmlRequest(request) {
   const accept = request.headers.get('accept') || '';
-  return accept.includes('text/html');
+  if (!accept.includes('text/html')) return false;
+  // Запросы Next.js App Router за RSC-пейлоудом содержат text/x-component,
+  // их нельзя считать навигацией документа, иначе мы вернём HTML offline-страницы
+  // туда, где ожидается RSC/JSON, и получим "Application error".
+  if (accept.includes('text/x-component')) return false;
+  return true;
 }
 
 async function cacheMatch(cacheName, request) {

@@ -8,19 +8,31 @@ import { usePathname } from 'next/navigation';
 export default function OfflineIndicator() {
   const { isOnline, hasResolved } = useOnlineStatus();
   const pathname = usePathname();
-  const [hasMobileNav, setHasMobileNav] = useState(false);
+  const [hasMobileNavVisible, setHasMobileNavVisible] = useState(false);
 
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
     const el = document.getElementById('mobile-bottom-nav');
-    setHasMobileNav(Boolean(el));
+    const isVisible = !!el && window.innerWidth < 1024; // lg breakpoint в Tailwind по умолчанию
+    setHasMobileNavVisible(isVisible);
+
+    const handleResize = () => {
+      const el = document.getElementById('mobile-bottom-nav');
+      const isVisible = !!el && window.innerWidth < 1024;
+      setHasMobileNavVisible(isVisible);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, [pathname]);
 
   // На странице /offline отдельный экран, дополнительный индикатор не нужен.
   if (pathname === '/offline') return null;
   if (!hasResolved || isOnline) return null;
 
-  const bottomClass = hasMobileNav ? 'bottom-16 lg:bottom-4' : 'bottom-4';
+  const bottomClass = hasMobileNavVisible ? 'bottom-16 lg:bottom-4' : 'bottom-4';
 
   return (
     <div className={`fixed ${bottomClass} right-3 sm:right-4 max-w-3/4 z-40`}>
