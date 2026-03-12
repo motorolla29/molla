@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import { ReactNode, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, List, ArrowLeft, MessageCircle, Bell, Star } from 'lucide-react';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
@@ -20,12 +20,34 @@ const secondaryNavItems = [
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const totalUnreadCount = useUnreadMessagesStore(
     (state) => state.totalUnreadCount,
   );
   const unreadNotifications = useNotificationsStore(
     (state) => state.unreadCount,
   );
+
+  // Единая офлайн-логика для personal-раздела:
+  // - online-only страницы (мессенджер, мои объявления) при офлайне ведём на /offline
+  // - профиль/уведомления/рейтинг/мои отзывы оставляем открываться (они либо из стора, либо показывают error UI)
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined')
+      return;
+    if (navigator.onLine) return;
+
+    const p = pathname ?? '';
+    const isOnlineOnly =
+      p.startsWith('/personal/messenger') || p.startsWith('/personal/my-adds');
+
+    if (!isOnlineOnly) return;
+
+    try {
+      sessionStorage.setItem('offline:last-url', window.location.href);
+    } catch {}
+
+    router.replace('/offline');
+  }, [pathname, router]);
 
   return (
     <div className="min-h-dvh bg-gray-50 flex flex-col">
@@ -66,12 +88,13 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
                           isActive ? 'text-violet-700' : 'text-gray-400'
                         }`}
                       />
-                      {href === '/personal/messenger' && totalUnreadCount > 0 && (
-                        <div className="absolute -top-0.5 -right-0.5 bg-red-500 outline outline-2 outline-white rounded-full w-2 h-2" />
-                      )}
+                      {href === '/personal/messenger' &&
+                        totalUnreadCount > 0 && (
+                          <div className="absolute -top-0.5 -right-0.5 bg-red-500 outline-2 outline-white rounded-full w-2 h-2" />
+                        )}
                       {href === '/personal/notifications' &&
                         unreadNotifications > 0 && (
-                          <div className="absolute -top-0.5 -right-0.5 bg-red-500 outline outline-2 outline-white rounded-full w-2 h-2" />
+                          <div className="absolute -top-0.5 -right-0.5 bg-red-500 outline-2 outline-white rounded-full w-2 h-2" />
                         )}
                     </div>
                     {label}
@@ -86,7 +109,9 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
               {secondaryNavItems.map(({ href, Icon, label }) => {
                 const isActive = pathname?.startsWith(href) ?? false;
                 const finalHref =
-                  href === '/personal/my-adds' ? '/personal/my-adds/active' : href;
+                  href === '/personal/my-adds'
+                    ? '/personal/my-adds/active'
+                    : href;
 
                 return (
                   <Link

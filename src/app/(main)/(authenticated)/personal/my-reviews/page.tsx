@@ -5,10 +5,8 @@ import { FidgetSpinner } from 'react-loader-spinner';
 import MyReviewCard from '@/components/my-reviews/my-review-card';
 import ReviewSkeleton from '@/components/review-skeleton/review-skeleton';
 import type { ReviewBase } from '@/types/review';
-import { useRouter } from 'next/navigation';
 
 export default function MyReviewsPage() {
-  const router = useRouter();
   const [reviews, setReviews] = useState<ReviewBase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,11 +14,6 @@ export default function MyReviewsPage() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const limit = 5;
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-    if (!navigator.onLine) router.replace('/offline');
-  }, [router]);
 
   useEffect(() => {
     loadReviews(1, false);

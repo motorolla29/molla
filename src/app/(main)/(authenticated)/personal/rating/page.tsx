@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useRouter } from 'next/navigation';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 import { FidgetSpinner } from 'react-loader-spinner';
@@ -21,7 +20,6 @@ interface ReviewsResponse {
 }
 
 export default function RatingPage() {
-  const router = useRouter();
   const { user } = useAuthStore();
   const [reviews, setReviews] = useState<ReviewBase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +30,6 @@ export default function RatingPage() {
   const [error, setError] = useState<string | null>(null);
 
   const REVIEWS_LIMIT = 8;
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-    if (!navigator.onLine) router.replace('/offline');
-  }, [router]);
 
   // Загрузка отзывов с пагинацией
   const loadReviews = async (pageNum: number, append: boolean) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -54,6 +54,7 @@ interface Message {
 }
 
 export default function ChatPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const params = useParams<{ chatId: string }>();
   const chatId = (params?.chatId as string) || '';
@@ -64,6 +65,18 @@ export default function ChatPage() {
   const typingMap = useChatPresenceStore((state) => state.typing);
   const markTyping = useChatPresenceStore((state) => state.markTyping);
   const clearTyping = useChatPresenceStore((state) => state.clearTyping);
+
+  // Канал мессенджера в офлайне сразу отправляем на /offline,
+  // чтобы не было ERR_FAILED / падений при загрузке сообщений.
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+    if (!navigator.onLine) {
+      try {
+        sessionStorage.setItem('offline:last-url', window.location.href);
+      } catch {}
+      router.replace('/offline');
+    }
+  }, [router]);
 
   // Блокировка скролла и прокрутка вверх при заходе на страницу (только для мобильных)
   useEffect(() => {

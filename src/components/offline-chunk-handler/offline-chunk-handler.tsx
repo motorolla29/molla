@@ -46,8 +46,21 @@ export default function OfflineChunkHandler() {
             return false;
           }
           function initRetryLinks() {
-            var target = window.location.pathname !== '/offline' ? window.location.href : (function() { try { var s = sessionStorage.getItem('offline:last-url'); return s || '/'; } catch (e) { return '/'; } })();
-            document.querySelectorAll('.retry-link').forEach(function(link) { link.href = target; });
+            document.querySelectorAll('.retry-link').forEach(function(link) {
+              link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = null;
+                try {
+                  target = sessionStorage.getItem('offline:last-url');
+                } catch (e) {}
+                if (target) {
+                  window.location.href = target;
+                } else {
+                  // Если не знаем проблемный URL, просто перезагружаем текущую страницу.
+                  window.location.reload();
+                }
+              });
+            });
           }
           function runOfflineInit() {
             if (fixOfflineUrl()) return;

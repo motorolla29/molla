@@ -29,15 +29,6 @@ export default function MessengerPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Мессенджер — online-only: при отсутствии сети сразу переводим на offline-страницу,
-  // чтобы не получить ERR_FAILED / краш приложения.
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-    if (!navigator.onLine) {
-      router.replace('/offline');
-    }
-  }, [router]);
-
   // Загрузка списка чатов
   useEffect(() => {
     if (user) {
