@@ -51,6 +51,11 @@ export default function OfflineChunkHandler() {
             document.querySelectorAll('.retry-link').forEach(function(link) {
               link.addEventListener('click', function(e) {
                 e.preventDefault();
+                // Если сети всё ещё нет, остаёмся на offline-странице,
+                // чтобы не дёргать лишний раз роутер и не мигал индикатор.
+                if (typeof navigator !== 'undefined' && navigator && navigator.onLine === false) {
+                  return;
+                }
                 var target = null;
                 try {
                   target = sessionStorage.getItem('offline:last-url');

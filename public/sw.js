@@ -37,20 +37,10 @@ const PRECACHE_ASSETS = [
 ];
 
 // Ключевые страницы для офлайна.
-// Здесь кэшируем только shell страниц: данные для сложных разделов (мессенджер, мои объявления)
-// требуют сети и при офлайне перенаправляют на /offline внутри самих страниц.
-const PRECACHE_PAGES = [
-  '/',
-  '/favorites',
-  '/personal/profile',
-  '/personal/notifications',
-  '/personal/rating',
-  '/personal/my-reviews',
-  '/personal/my-adds',
-  '/personal/my-adds/active',
-  '/personal/my-adds/archived',
-  '/personal/messenger',
-];
+// Здесь предкешируем только действительно работающие офлайн разделы.
+// Личный кабинет (/personal/*) считаем online-only и всегда ведём на /offline при отсутствии сети,
+// поэтому их HTML предкешировать не нужно (это также убирает возможные 401/редиректы в precache).
+const PRECACHE_PAGES = ['/', '/favorites'];
 
 const PRECACHE_URLS = [...PRECACHE_ASSETS, ...PRECACHE_PAGES];
 
