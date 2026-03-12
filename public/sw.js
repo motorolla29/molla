@@ -1,12 +1,15 @@
 // Service Worker для PWA, Push-уведомлений и Offline режима.
 // Подход: небольшой precache для offline shell + runtime cache для статики и ключевых GET /api.
 
-const SW_VERSION = 'v6';
+const SW_VERSION = 'v8';
 const CACHE_PREFIX = 'molla';
 const OFFLINE_CACHE = `${CACHE_PREFIX}-offline-${SW_VERSION}`;
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
 const API_CACHE = `${CACHE_PREFIX}-api-${SW_VERSION}`;
-const PAGES_CACHE = `${CACHE_PREFIX}-pages-${SW_VERSION}`;
+// Важно: не кешируем произвольный HTML страниц runtime-ом.
+// Иначе после нового деплоя в кэше может остаться старый HTML, который ссылается
+// на новые (другие) чанки Next.js, и офлайн будет падать с ChunkLoadError.
+// Офлайн-опыт делаем предсказуемым: либо precache shell-страниц, либо /offline.
 
 const OFFLINE_URL = '/offline';
 
@@ -99,6 +102,17 @@ async function cachePutSafe(cacheName, request, response) {
   await cache.put(request, response.clone());
 }
 
+function normalizePathname(pathname) {
+  return pathname.replace(/\/$/, '') || '/';
+}
+
+const PRECACHE_PAGES_SET = new Set(PRECACHE_PAGES.map(normalizePathname));
+
+function isHtmlRequest(request) {
+  const accept = request.headers.get('accept') || '';
+  return accept.includes('text/html');
+}
+
 async function cacheMatch(cacheName, request) {
   const cache = await caches.open(cacheName);
   return await cache.match(request);
@@ -185,8 +199,12 @@ self.addEventListener('fetch', (event) => {
 
   // Навигация (HTML): mode 'navigate' или destination 'document'
   // (Next.js client-side может делать fetch с destination 'document')
+  // В Chrome (и особенно в некоторых сценариях PWA/перезагрузки) destination может быть пустым,
+  // поэтому дополнительно опираемся на Accept: text/html.
   const isDocument =
-    request.mode === 'navigate' || request.destination === 'document';
+    request.mode === 'navigate' ||
+    request.destination === 'document' ||
+    isHtmlRequest(request);
 
   if (
     isDocument &&
@@ -196,22 +214,18 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         try {
-          const response = await fetch(request);
-          await cachePutSafe(PAGES_CACHE, request, response);
-          return response;
+          // Всегда пробуем сеть для документа (актуальный HTML под текущие чанки).
+          return await fetch(request);
         } catch (e) {
-          const pathname = url.pathname.replace(/\/$/, '') || '/';
-          // Точное совпадение
-          let cached =
-            (await cacheMatch(PAGES_CACHE, request)) ||
-            (await cacheMatch(OFFLINE_CACHE, request));
-          if (!cached) {
-            // Fallback: поиск по pathname (query, trailing slash)
-            cached =
-              (await cacheMatchByPath(PAGES_CACHE, pathname)) ||
-              (await cacheMatchByPath(OFFLINE_CACHE, pathname));
+          const pathname = normalizePathname(url.pathname);
+
+          // Если документ входит в precache pages — отдаём его HTML из OFFLINE_CACHE.
+          if (PRECACHE_PAGES_SET.has(pathname)) {
+            const cached = await cacheMatchByPath(OFFLINE_CACHE, pathname);
+            if (cached) return cached;
           }
-          if (cached) return cached;
+
+          // Иначе всегда показываем offline-экран (предсказуемо, без ERR_FAILED).
           const offline = await cacheMatch(OFFLINE_CACHE, OFFLINE_URL);
           if (offline) return offline;
           return new Response('Offline', {

@@ -5,10 +5,6 @@ export default function OfflineChunkHandler() {
     <Script id="offline-chunk-handler" strategy="beforeInteractive">
       {`
         (function() {
-          function isOfflineNow() {
-            try { return typeof navigator !== 'undefined' && navigator.onLine === false; } catch (e) { return false; }
-          }
-
           function shouldHandle(errorLike) {
             if (!errorLike) return false;
             var name = errorLike.name || '';
@@ -16,8 +12,9 @@ export default function OfflineChunkHandler() {
             var isChunkError = name === 'ChunkLoadError' ||
               message.indexOf('ChunkLoadError') !== -1 ||
               message.indexOf('Failed to load chunk') !== -1;
+            // На мобильных navigator.onLine может врать, поэтому ориентируемся по тексту ошибки.
+            // Это позволяет уходить на /offline вместо белого экрана при реальном офлайне.
             var isNetworkError =
-              isOfflineNow() &&
               (name === 'TypeError' ||
                 message.indexOf('Failed to fetch') !== -1 ||
                 message.indexOf('NetworkError') !== -1 ||
