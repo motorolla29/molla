@@ -73,7 +73,10 @@ export default function MobileBottomNav() {
       navContext === 'home');
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden shadow-md h-12 z-50">
+    <nav
+      id="mobile-bottom-nav"
+      className="fixed bottom-0 left-0 right-0 bg-neutral-100 border-t border-t-neutral-400 lg:hidden shadow-md h-12 z-50"
+    >
       <div className="flex h-full">
         {navItems.map(({ href, Icon, label, id }) => {
           let isActive = false;

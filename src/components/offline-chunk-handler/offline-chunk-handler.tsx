@@ -27,7 +27,9 @@ export default function OfflineChunkHandler() {
           }
           function rememberUrlAndGoOffline() {
             try { if (typeof window !== 'undefined') window.sessionStorage.setItem('offline:last-url', window.location.href); } catch (e) {}
-            if (typeof window !== 'undefined') window.location.href = '/offline';
+            // Используем replace, чтобы в истории не оставалась "битая" страница,
+            // и кнопка "Назад" возвращала на страницу до неё.
+            if (typeof window !== 'undefined') window.location.replace('/offline');
           }
           if (typeof window === 'undefined') return;
           window.addEventListener('error', function(e) {

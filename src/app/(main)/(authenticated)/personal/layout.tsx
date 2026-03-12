@@ -29,16 +29,15 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
   );
 
   // Единая офлайн-логика для personal-раздела:
-  // - online-only страницы (мессенджер, мои объявления) при офлайне ведём на /offline
-  // - профиль/уведомления/рейтинг/мои отзывы оставляем открываться (они либо из стора, либо показывают error UI)
+  // В офлайне ВСЕ маршруты под /personal считаем online-only и уводим на /offline,
+  // чтобы не ловить ERR_FAILED / падения из-за сетевых запросов внутри страниц.
   useEffect(() => {
     if (typeof window === 'undefined' || typeof navigator === 'undefined')
       return;
     if (navigator.onLine) return;
 
     const p = pathname ?? '';
-    const isOnlineOnly =
-      p.startsWith('/personal/messenger') || p.startsWith('/personal/my-adds');
+    const isOnlineOnly = p.startsWith('/personal/');
 
     if (!isOnlineOnly) return;
 
