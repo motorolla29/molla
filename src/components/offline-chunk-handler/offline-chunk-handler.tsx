@@ -34,10 +34,24 @@ export default function OfflineChunkHandler() {
           if (typeof window === 'undefined') return;
           window.addEventListener('error', function(e) {
             var err = e.error || e;
-            if (shouldHandle(err)) { if (e.preventDefault) e.preventDefault(); rememberUrlAndGoOffline(); }
+            if (shouldHandle(err)) {
+              if (e.preventDefault) e.preventDefault();
+              try {
+                alert('[window.error] ' + (err && err.message ? err.message : String(err)));
+              } catch (alertErr) {}
+              rememberUrlAndGoOffline();
+            }
           });
           window.addEventListener('unhandledrejection', function(e) {
-            if (shouldHandle(e.reason)) { if (e.preventDefault) e.preventDefault(); rememberUrlAndGoOffline(); }
+            if (shouldHandle(e.reason)) {
+              if (e.preventDefault) e.preventDefault();
+              try {
+                var reason = e.reason || {};
+                var msg = reason && reason.message ? reason.message : String(reason);
+                alert('[unhandledrejection] ' + msg);
+              } catch (alertErr) {}
+              rememberUrlAndGoOffline();
+            }
           });
           function initBackLinks() {
             document.querySelectorAll('[data-offline-back]').forEach(function(link) {
