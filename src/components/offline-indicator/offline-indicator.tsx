@@ -14,7 +14,7 @@ export default function OfflineIndicator() {
     if (typeof document === 'undefined') return;
     const el = document.getElementById('mobile-bottom-nav');
     setHasMobileNav(Boolean(el));
-  }, []);
+  }, [pathname]);
 
   // На странице /offline отдельный экран, дополнительный индикатор не нужен.
   if (pathname === '/offline') return null;
