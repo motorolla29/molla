@@ -120,13 +120,13 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 sm:p-6">
-          <p className="text-red-800 text-sm sm:text-base">
+        <div className="flex flex-col items-center justify-center text-center bg-red-50 border border-red-200 rounded-2xl p-4 sm:p-6">
+          <p className="text-red-500 text-sm sm:text-base">
             {error || 'Ошибка загрузки уведомлений'}
           </p>
           <button
             onClick={loadNotifications}
-            className="mt-3 sm:mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
+            className="mt-3 sm:mt-4 px-4 py-2 bg-red-500 font-semibold text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
           >
             Попробовать снова
           </button>

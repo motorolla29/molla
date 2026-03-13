@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { User, List, ArrowLeft, MessageCircle, Bell, Star } from 'lucide-react';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
@@ -20,33 +20,12 @@ const secondaryNavItems = [
 
 export default function PersonalLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const totalUnreadCount = useUnreadMessagesStore(
     (state) => state.totalUnreadCount,
   );
   const unreadNotifications = useNotificationsStore(
     (state) => state.unreadCount,
   );
-
-  // Единая офлайн-логика для personal-раздела:
-  // В офлайне ВСЕ маршруты под /personal считаем online-only и уводим на /offline,
-  // чтобы не ловить ERR_FAILED / падения из-за сетевых запросов внутри страниц.
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof navigator === 'undefined')
-      return;
-    if (navigator.onLine) return;
-
-    const p = pathname ?? '';
-    const isOnlineOnly = p.startsWith('/personal/');
-
-    if (!isOnlineOnly) return;
-
-    try {
-      sessionStorage.setItem('offline:last-url', window.location.href);
-    } catch {}
-
-    router.replace('/offline');
-  }, [pathname, router]);
 
   return (
     <div className="min-h-dvh bg-gray-50 flex flex-col">

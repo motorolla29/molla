@@ -1,7 +1,7 @@
 // Service Worker для PWA, Push-уведомлений и Offline режима.
 // Подход: небольшой precache для offline shell + runtime cache для статики и ключевых GET /api.
 
-const SW_VERSION = 'v9';
+const SW_VERSION = 'v10';
 const CACHE_PREFIX = 'molla';
 const OFFLINE_CACHE = `${CACHE_PREFIX}-offline-${SW_VERSION}`;
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
@@ -163,9 +163,31 @@ async function cacheFirst(request, cacheName) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
-      const cache = await caches.open(OFFLINE_CACHE);
+      const offlineCache = await caches.open(OFFLINE_CACHE);
+      const staticCache = await caches.open(STATIC_CACHE);
+
       const results = await Promise.allSettled(
-        PRECACHE_URLS.map((url) => cache.add(url)),
+        PRECACHE_URLS.map(async (url) => {
+          const u = new URL(url, self.location.origin);
+          const pathname = u.pathname;
+
+          // HTML-страницы (OFFLINE_URL и shell-страницы) храним в OFFLINE_CACHE
+          if (
+            pathname === OFFLINE_URL ||
+            PRECACHE_PAGES_SET.has(normalizePathname(pathname))
+          ) {
+            return offlineCache.add(u.toString());
+          }
+
+          // Статические ассеты (иконки, логотип, манифест) кладём в STATIC_CACHE,
+          // чтобы ими мог пользоваться runtime handler isStaticAsset().
+          if (isStaticAsset(pathname)) {
+            return staticCache.add(u.toString());
+          }
+
+          // Остальное пока не трогаем.
+          return Promise.resolve();
+        }),
       );
       const failed = results.filter((r) => r.status === 'rejected');
       if (failed.length > 0) {

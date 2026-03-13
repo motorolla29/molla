@@ -10,8 +10,14 @@ export default function OfflinePage() {
         <div className="h-15 flex items-center justify-between px-4">
           <div className="w-12 flex items-center justify-start">
             <a
-              href="/"
-              data-offline-back="true"
+              href=""
+              onClick={(e) => {
+                console.log('back');
+                if (typeof window === 'undefined') return;
+                console.log('back 2');
+                e.preventDefault();
+                if (window.history.length > 1) window.history.back();
+              }}
               className="flex items-center p-2 text-gray-600 hover:text-gray-900 transition-colors"
               aria-label="Вернуться назад"
             >
@@ -37,8 +43,13 @@ export default function OfflinePage() {
             Проверьте соединение и попробуйте ещё раз.
           </p>
           <a
-            href="/"
-            className="retry-link w-full max-w-fit inline-flex items-center justify-center rounded-xl bg-violet-500 px-6 py-3 text-sm sm:text-base font-semibold text-white hover:bg-violet-600 active:bg-violet-700 active:outline-none transition-colors"
+            href=""
+            onClick={(e) => {
+              if (typeof window === 'undefined') return;
+              e.preventDefault();
+              window.location.reload();
+            }}
+            className="w-full max-w-fit inline-flex items-center justify-center rounded-xl bg-violet-500 px-6 py-3 text-sm sm:text-base font-semibold text-white hover:bg-violet-600 active:bg-violet-700 active:outline-none transition-colors"
           >
             Попробовать ещё раз
           </a>

@@ -7,6 +7,7 @@ import ServiceWorkerRegister from '@/components/service-worker-register/service-
 import PushNotificationInitializer from '@/components/push-notification-initializer/push-notification-initializer';
 import OfflineIndicator from '@/components/offline-indicator/offline-indicator';
 import OfflineChunkHandler from '@/components/offline-chunk-handler/offline-chunk-handler';
+import OfflinePrewarm from '@/components/offline-prewarm/offline-prewarm';
 import { ToastProvider } from '@/components/toast/toast-context';
 import ToastContainer from '@/components/toast/toast-container';
 import ToastHandler from '@/components/toast/toast-handler';
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="ru">
       <body>
         <OfflineChunkHandler />
+        <OfflinePrewarm />
         <LocationInitializer />
         <AuthInitializer />
         <GlobalActivityTracker />
