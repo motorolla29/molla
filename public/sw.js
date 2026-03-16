@@ -1,7 +1,7 @@
 // Service Worker для PWA, Push-уведомлений и Offline режима.
 // Подход: небольшой precache для offline shell + runtime cache для статики и ключевых GET /api.
 
-const SW_VERSION = 'v10';
+const SW_VERSION = 'v11';
 const CACHE_PREFIX = 'molla';
 const OFFLINE_CACHE = `${CACHE_PREFIX}-offline-${SW_VERSION}`;
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
@@ -58,10 +58,10 @@ const isApiCacheAllowed = (pathname) => {
   if (!pathname.startsWith('/api/')) return false;
 
   const allowExact = new Set([
-    // Профиль
+    // Auth/state, нужно для шапки/кнопок на offline-capable страницах
     '/api/auth/me',
 
-    // Главная: ленты
+    // Главная/ленты (offline-capable)
     '/api/ads',
     '/api/ads/fresh',
     '/api/ads/recommended',
@@ -71,27 +71,17 @@ const isApiCacheAllowed = (pathname) => {
     '/api/map-markers',
     '/api/cluster-ads',
 
-    // Уведомления
-    '/api/notifications',
-
-    // Избранное
+    // Избранное (offline-capable)
     '/api/favorites',
-
-    // Отзывы
-    '/api/reviews',
-
-    // Мои объявления
-    '/api/user/ads',
   ]);
 
   if (allowExact.has(pathname)) return true;
 
-  // Детальная карточка объявления
+  // Детальная карточка объявления (используется на публичных страницах)
   if (pathname.startsWith('/api/ads/')) return true;
 
   // Чужие объявления пользователя (в карточке продавца)
-  if (pathname.startsWith('/api/users/') && pathname.endsWith('/ads'))
-    return true;
+  if (pathname.startsWith('/api/users/') && pathname.endsWith('/ads')) return true;
 
   return false;
 };
