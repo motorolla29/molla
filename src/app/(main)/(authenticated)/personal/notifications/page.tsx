@@ -161,7 +161,7 @@ export default function NotificationsPage() {
                     <h3
                       className={`font-semibold text-sm sm:text-base ${
                         notification.isRead
-                          ? 'text-neutral-600'
+                          ? 'text-neutral-700'
                           : 'text-neutral-900'
                       }`}
                     >
@@ -174,7 +174,7 @@ export default function NotificationsPage() {
                   <p
                     className={`text-sm sm:text-base mb-2 sm:mb-3 leading-relaxed wrap-break-word ${
                       notification.isRead
-                        ? 'text-neutral-600'
+                        ? 'text-neutral-700'
                         : 'text-neutral-900'
                     }`}
                   >

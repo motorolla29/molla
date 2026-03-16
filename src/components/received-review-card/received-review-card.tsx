@@ -6,6 +6,7 @@ import {
   MoreVertical,
   ShoppingBag,
   MessageCircleMore,
+  Trash2,
   Camera,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +14,7 @@ import { Avatar } from '@/components/avatar/avatar';
 import { useToast } from '@/components/toast/toast-context';
 import ImageModal from '@/components/messenger/image-modal';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
+import { useConfirmationModal } from '@/components/confirmation-modal/confirmation-modal-context';
 import { useAuthStore } from '@/store/useAuthStore';
 import type { ReviewBase } from '@/types/review';
 
@@ -27,15 +29,16 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
   const [replyText, setReplyText] = useState(review.replyContent ?? '');
   const [replyError, setReplyError] = useState<string | null>(null);
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
-  const [localReplyContent, setLocalReplyContent] = useState<string | null>(
-    review.replyContent ?? null,
-  );
-  const [localReplyCreatedAt, setLocalReplyCreatedAt] = useState<string | null>(
-    review.replyCreatedAt ?? null,
-  );
-  const [localReplyPhotos, setLocalReplyPhotos] = useState<string[] | null>(
-    review.replyPhotos ?? null,
-  );
+  // Локальные "оверрайды" ответа: undefined = берём из review, иначе используем локальное значение.
+  const [localReplyContent, setLocalReplyContent] = useState<
+    string | null | undefined
+  >(undefined);
+  const [localReplyCreatedAt, setLocalReplyCreatedAt] = useState<
+    string | null | undefined
+  >(undefined);
+  const [localReplyPhotos, setLocalReplyPhotos] = useState<
+    string[] | null | undefined
+  >(undefined);
   const contentRef = useRef<HTMLParagraphElement>(null);
   const replyContentRef = useRef<HTMLParagraphElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -51,6 +54,7 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
   const [replyPhotos, setReplyPhotos] = useState<ReplyUploadingPhoto[]>([]);
   const MAX_REPLY_PHOTOS = 3;
   const toast = useToast();
+  const { confirm } = useConfirmationModal();
   const { user: currentUser } = useAuthStore();
 
   // Проверяем, обрезан ли текст
@@ -80,9 +84,16 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const hasReply = Boolean(
-    (localReplyContent ?? review.replyContent)?.trim().length,
-  );
+  const replyContent =
+    localReplyContent !== undefined ? localReplyContent : review.replyContent;
+  const replyCreatedAt =
+    localReplyCreatedAt !== undefined
+      ? localReplyCreatedAt
+      : review.replyCreatedAt;
+  const replyPhotosValue =
+    localReplyPhotos !== undefined ? localReplyPhotos : review.replyPhotos;
+
+  const hasReply = Boolean(replyContent?.trim().length);
 
   const handleStartReply = () => {
     if (hasReply) {
@@ -99,6 +110,57 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
     setIsReplying(false);
     setReplyError(null);
     // Не сбрасываем текст, чтобы пользователь мог вернуться
+  };
+  const currentUserIdNum =
+    currentUser?.id != null ? Number(currentUser.id) : null;
+  const canManageReply =
+    currentUserIdNum != null && review.seller?.id === currentUserIdNum;
+
+  const handleDeleteReplyConfirmed = async () => {
+    if (!canManageReply) return;
+    if (!hasReply) return;
+
+    try {
+      setIsSubmittingReply(true);
+      const res = await fetch('/api/reviews/reply', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId: review.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const message =
+          (data && (data.error as string)) || 'Не удалось удалить ответ';
+        toast.error(message);
+        return;
+      }
+      const updated = (data as any).review;
+      // Обновляем локальное состояние, чтобы UI сразу очистился, даже если родитель
+      // не перерендерил карточку с обновлёнными props.
+      setLocalReplyContent(updated?.replyContent ?? null);
+      setLocalReplyCreatedAt(updated?.replyCreatedAt ?? null);
+      setLocalReplyPhotos(
+        Array.isArray(updated?.replyPhotos) ? updated.replyPhotos : [],
+      );
+      setReplyText('');
+      setReplyPhotos([]);
+      setIsReplying(false);
+      toast.info('Ответ удалён');
+      setMenuOpen(false);
+    } catch {
+      toast.error('Не удалось удалить ответ. Попробуйте ещё раз.');
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
+  const handleDeleteReply = () => {
+    if (!canManageReply || !hasReply) return;
+    confirm('Удалить ваш ответ на этот отзыв?', handleDeleteReplyConfirmed, {
+      title: 'Удалить ответ',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+    });
   };
 
   const handleReplyFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,9 +300,7 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
       const updated = data.review;
       setLocalReplyContent(updated?.replyContent ?? text);
       setLocalReplyCreatedAt(
-        updated?.replyCreatedAt
-          ? updated.replyCreatedAt
-          : new Date().toISOString(),
+        updated?.replyCreatedAt ? updated.replyCreatedAt : new Date().toISOString(),
       );
       const backendReplyPhotos: string[] | undefined = updated?.replyPhotos;
       setLocalReplyPhotos(
@@ -539,17 +599,29 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
                 }}
               >
                 <div className="py-1">
-                  <button
-                    type="button"
-                    className="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    onClick={handleStartReply}
-                  >
-                    <MessageCircleMore
-                      size={12}
-                      className="sm:w-[14px] sm:h-[14px]"
-                    />
-                    Написать ответ под отзывом
-                  </button>
+                  {!hasReply && (
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      onClick={handleStartReply}
+                    >
+                      <MessageCircleMore
+                        size={12}
+                        className="sm:w-[14px] sm:h-[14px]"
+                      />
+                      Написать ответ под отзывом
+                    </button>
+                  )}
+                  {canManageReply && hasReply && (
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      onClick={handleDeleteReply}
+                    >
+                      <Trash2 size={12} className="sm:w-[14px] sm:h-[14px]" />
+                      Удалить ответ
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -573,9 +645,9 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
               <span className="text-[11px] sm:text-xs font-semibold text-neutral-700 max-w-full truncate">
                 Ваш ответ
               </span>
-              {localReplyCreatedAt && (
+              {replyCreatedAt && (
                 <span className="text-[10px] sm:text-[11px] text-gray-400">
-                  {new Date(localReplyCreatedAt).toLocaleDateString('ru-RU', {
+                  {new Date(replyCreatedAt).toLocaleDateString('ru-RU', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
@@ -589,7 +661,7 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
                 replyExpanded ? '' : 'line-clamp-5'
               }`}
             >
-              {(localReplyContent ?? review.replyContent)?.trim()}
+              {replyContent?.trim()}
             </p>
             {isReplyClamped && !replyExpanded && (
               <button
@@ -602,9 +674,9 @@ export default function ReceivedReviewCard({ review }: { review: ReviewBase }) {
             )}
             {/* Фото в ответе */}
             {(() => {
-              const photosToShow =
-                localReplyPhotos ??
-                (Array.isArray(review.replyPhotos) ? review.replyPhotos : []);
+              const photosToShow = Array.isArray(replyPhotosValue)
+                ? replyPhotosValue
+                : [];
               if (!photosToShow || photosToShow.length === 0) {
                 return null;
               }
