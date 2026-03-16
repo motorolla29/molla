@@ -10,6 +10,7 @@ type PhotoSliderProps = {
 };
 
 const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
+  const hasMultipleImages = images.length > 1;
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
 
@@ -84,7 +85,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
 
   return (
     <>
-      <div className="w-full lg:max-w-2xl">
+      <div className="w-full lg:max-w-2xl select-none">
         {/* Main Carousel */}
         <div
           className="relative overflow-hidden cursor-grab group"
@@ -115,44 +116,48 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
               </div>
             ))}
           </div>
-          <button
-            onClick={scrollPrev}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6 -translate-x-0.5 stroke-violet-400"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5 8.25 12l7.5-7.5"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={scrollNext}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6 translate-x-0.5 stroke-violet-400"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m8.25 4.5 7.5 7.5-7.5 7.5"
-              />
-            </svg>
-          </button>
+          {hasMultipleImages && (
+            <>
+              <button
+                onClick={scrollPrev}
+                className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6 -translate-x-0.5 stroke-violet-400"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5 8.25 12l7.5-7.5"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={scrollNext}
+                className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-4 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6 translate-x-0.5 stroke-violet-400"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                  />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Thumbnails */}
@@ -181,7 +186,7 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
       {isZoomOpen && (
         <div
           onClick={() => setIsZoomOpen(false)}
-          className="fixed mb-0 inset-0 z-50 bg-black/50 backdrop-blur-xl flex flex-col justify-center items-center group"
+          className="fixed mb-0 inset-0 z-50 bg-black/50 backdrop-blur-xl flex flex-col justify-center items-center group select-none"
         >
           <div
             className="w-full h-full max-h-screen overflow-hidden cursor-grab"
@@ -213,50 +218,54 @@ const PhotoSlider: React.FC<PhotoSliderProps> = ({ images, options }) => {
             </button>
           </div>
           {/* Стрелки внутри зума */}
-          <button
-            onClick={(e) => {
-              emblaZoomApi?.scrollPrev();
-              e.stopPropagation();
-            }}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-8 -translate-x-0.5 stroke-violet-400"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5 8.25 12l7.5-7.5"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={(e) => {
-              emblaZoomApi?.scrollNext();
-              e.stopPropagation();
-            }}
-            className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-8 translate-x-0.5 stroke-violet-400"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m8.25 4.5 7.5 7.5-7.5 7.5"
-              />
-            </svg>
-          </button>
+          {hasMultipleImages && (
+            <>
+              <button
+                onClick={(e) => {
+                  emblaZoomApi?.scrollPrev();
+                  e.stopPropagation();
+                }}
+                className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition left-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-8 -translate-x-0.5 stroke-violet-400"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5 8.25 12l7.5-7.5"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={(e) => {
+                  emblaZoomApi?.scrollNext();
+                  e.stopPropagation();
+                }}
+                className="absolute hidden md:flex opacity-0 group-hover:opacity-100 transition right-12 top-1/2 p-4 border border-violet-400 rounded-full -translate-y-1/2 text-neutral-800 bg-white/70 text-4xl hover:bg-white/80"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-8 translate-x-0.5 stroke-violet-400"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                  />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
       )}
     </>

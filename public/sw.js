@@ -1,11 +1,12 @@
 // Service Worker для PWA, Push-уведомлений и Offline режима.
 // Подход: небольшой precache для offline shell + runtime cache для статики и ключевых GET /api.
 
-const SW_VERSION = 'v11';
+const SW_VERSION = 'v12';
 const CACHE_PREFIX = 'molla';
 const OFFLINE_CACHE = `${CACHE_PREFIX}-offline-${SW_VERSION}`;
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
 const API_CACHE = `${CACHE_PREFIX}-api-${SW_VERSION}`;
+const PAGES_CACHE = `${CACHE_PREFIX}-pages-${SW_VERSION}`;
 // Важно: не кешируем произвольный HTML страниц runtime-ом.
 // Иначе после нового деплоя в кэше может остаться старый HTML, который ссылается
 // на новые (другие) чанки Next.js, и офлайн будет падать с ChunkLoadError.
@@ -51,7 +52,20 @@ const isStaticAsset = (pathname) =>
   pathname.startsWith('/icons/') ||
   pathname.startsWith('/images/') ||
   pathname.startsWith('/logo/') ||
+  pathname === '/manifest.json' ||
   pathname === '/favicon.ico';
+
+// Кешируем HTML runtime только там, где это действительно даёт UX-выгоду
+// и не ломает офлайн из-за устаревшего HTML при деплое:
+// карточка объявления (например /kaluga/goods/sharik_qh4q).
+function isAdDetailPath(pathname) {
+  if (!pathname) return false;
+  if (pathname === '/' || pathname === OFFLINE_URL) return false;
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api')) return false;
+  if (pathname.startsWith('/personal')) return false;
+  // 3 сегмента: /city/category/adId
+  return /^\/[^/]+\/[^/]+\/[^/]+\/?$/.test(pathname);
+}
 
 // Кешируем только нужные GET /api (явный allowlist), чтобы не схватить лишнее.
 const isApiCacheAllowed = (pathname) => {
@@ -166,13 +180,15 @@ self.addEventListener('install', (event) => {
             pathname === OFFLINE_URL ||
             PRECACHE_PAGES_SET.has(normalizePathname(pathname))
           ) {
-            return offlineCache.add(u.toString());
+            // Важно: кладём по относительному URL, чтобы match('/offline') находил запись.
+            return offlineCache.add(url);
           }
 
           // Статические ассеты (иконки, логотип, манифест) кладём в STATIC_CACHE,
           // чтобы ими мог пользоваться runtime handler isStaticAsset().
           if (isStaticAsset(pathname)) {
-            return staticCache.add(u.toString());
+            // Аналогично: относительный URL, чтобы match работал стабильно.
+            return staticCache.add(url);
           }
 
           // Остальное пока не трогаем.
@@ -233,9 +249,22 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         try {
           // Всегда пробуем сеть для документа (актуальный HTML под текущие чанки).
-          return await fetch(request);
+          const response = await fetch(request);
+
+          // Runtime HTML cache только для карточки объявления.
+          if (isAdDetailPath(url.pathname)) {
+            await cachePutSafe(PAGES_CACHE, request, response);
+          }
+
+          return response;
         } catch (e) {
           const pathname = normalizePathname(url.pathname);
+
+          // Карточка объявления: если уже открывали онлайн — можем отдать её HTML из PAGES_CACHE.
+          if (isAdDetailPath(url.pathname)) {
+            const cached = await cacheMatchByPath(PAGES_CACHE, pathname);
+            if (cached) return cached;
+          }
 
           // Если документ входит в precache pages — отдаём его HTML из OFFLINE_CACHE.
           if (PRECACHE_PAGES_SET.has(pathname)) {
@@ -246,9 +275,11 @@ self.addEventListener('fetch', (event) => {
           // Иначе всегда показываем offline-экран (предсказуемо, без ERR_FAILED).
           const offline = await cacheMatch(OFFLINE_CACHE, OFFLINE_URL);
           if (offline) return offline;
+          // Если по какой-то причине /offline нет в кэше (первый запуск/срыв install),
+          // возвращаем простой 503 без кастомного HTML.
           return new Response('Offline', {
             status: 503,
-            headers: { 'Content-Type': 'text/plain' },
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
           });
         }
       })(),
