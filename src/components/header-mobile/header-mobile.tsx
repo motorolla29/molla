@@ -6,6 +6,7 @@ import { MapPinIcon } from '@heroicons/react/24/outline';
 import LocationModal from '../location-modal/location-modal';
 import { useLocationStore } from '@/store/useLocationStore';
 import { useNotificationsStore } from '@/store/useNotificationsStore';
+import Portal from '@/components/portal/portal';
 
 export default function HeaderMobile() {
   const { cityName, setLocation } = useLocationStore();
@@ -49,15 +50,17 @@ export default function HeaderMobile() {
         </Link>
       </div>
 
-      <LocationModal
-        isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        onSelect={(label, nameNom, namePrep, lat, lon) => {
-          setLocation(label, nameNom, namePrep, lat, lon);
-          setShowLocationModal(false);
-        }}
-        saveToStorage={true}
-      />
+      <Portal>
+        <LocationModal
+          isOpen={showLocationModal}
+          onClose={() => setShowLocationModal(false)}
+          onSelect={(label, nameNom, namePrep, lat, lon) => {
+            setLocation(label, nameNom, namePrep, lat, lon);
+            setShowLocationModal(false);
+          }}
+          saveToStorage={true}
+        />
+      </Portal>
     </div>
   );
 }

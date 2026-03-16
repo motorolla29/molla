@@ -34,7 +34,7 @@ export default function TopSearchPanelMobile({
   return (
     <>
       {/* Мобильный хедер с исходным стилем инпута */}
-      <div className="lg:hidden bg-white mx-auto py-3 flex items-center gap-2 sticky top-12 z-9">
+      <div className="lg:hidden bg-white mx-auto py-3 flex items-center gap-2 sticky top-12 z-10">
         <form
           onSubmit={(e) => {
             e.preventDefault();
