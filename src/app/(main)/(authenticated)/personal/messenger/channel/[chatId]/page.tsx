@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -57,6 +57,7 @@ export default function ChatPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const params = useParams<{ chatId: string }>();
+  const searchParams = useSearchParams();
   const chatId = (params?.chatId as string) || '';
   const { socket } = useChatSocket();
   const onlineUserIds = useChatPresenceStore((state) => state.onlineUserIds);
@@ -101,12 +102,35 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [initialScrollBehavior, setInitialScrollBehavior] = useState<
+    'bottom' | 'none'
+  >('bottom');
   const [isScrollLocked, setIsScrollLocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<{
     url: string;
     alt: string;
   } | null>(null);
+  const [pendingScrollToMessageId, setPendingScrollToMessageId] = useState<
+    string | null
+  >(null);
+  const hasMoreRef = useRef(false);
+  const isLoadingMoreRef = useRef(false);
+  const isLoadingRef = useRef(true);
+  const messagesRef = useRef<Message[]>([]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+  useEffect(() => {
+    isLoadingMoreRef.current = isLoadingMore;
+  }, [isLoadingMore]);
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Ref для управления таймером typing
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -124,10 +148,113 @@ export default function ChatPage() {
   useEffect(() => {
     if (user && chatId) {
       loadChatInfo();
-      loadMessages();
+      const msgId = searchParams?.get('msg');
+      loadMessages(msgId || undefined);
       markMessagesAsRead();
     }
   }, [user, chatId]);
+
+  // Если пришли из поиска с ?msg=..., пытаемся прокрутить к этому сообщению.
+  useEffect(() => {
+    const msgId = searchParams?.get('msg');
+    if (!msgId) {
+      setPendingScrollToMessageId(null);
+      setInitialScrollBehavior('bottom');
+      return;
+    }
+    // Если якорь есть — отключаем авто-скролл вниз и подсветим после загрузки.
+    setInitialScrollBehavior('none');
+    setPendingScrollToMessageId(msgId);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!pendingScrollToMessageId) return;
+    if (isLoading) return;
+
+    let cancelled = false;
+    const targetId = pendingScrollToMessageId;
+
+    const makeAttrSelector = (attr: string, value: string) => {
+      // Без CSS.escape: в attribute selector достаточно экранировать \ и "
+      const safe = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      return `[${attr}="${safe}"]`;
+    };
+
+    const flashAndFocus = (root: HTMLElement) => {
+      const bubble =
+        root.querySelector<HTMLElement>('[data-message-bubble]') || root;
+      bubble.classList.add('molla-msg-hit-bg');
+      root.setAttribute('tabindex', '-1');
+      // Фокус после скролла иногда "теряется" — делаем его в следующем кадре
+      requestAnimationFrame(() => {
+        try {
+          root.focus({ preventScroll: true });
+        } catch {}
+      });
+      window.setTimeout(() => {
+        bubble.classList.remove('molla-msg-hit-bg');
+        root.removeAttribute('tabindex');
+      }, 2500);
+    };
+
+    const scrollMessageIntoContainer = (
+      container: HTMLElement,
+      el: HTMLElement,
+    ) => {
+      const cRect = container.getBoundingClientRect();
+      const eRect = el.getBoundingClientRect();
+      const delta =
+        eRect.top - cRect.top - container.clientHeight / 2 + eRect.height / 2;
+      container.scrollTop += delta;
+    };
+
+    const tryScrollOnce = () => {
+      const container = document.querySelector<HTMLElement>(
+        '[data-messages-container]',
+      );
+      const el = document.querySelector<HTMLElement>(
+        makeAttrSelector('data-message-id', targetId),
+      );
+      if (!el) return false;
+      if (container) {
+        scrollMessageIntoContainer(container, el);
+      } else {
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      flashAndFocus(el);
+      return true;
+    };
+
+    const ensure = async () => {
+      // При anchor-mode сообщения должны уже быть загружены вокруг anchor.
+      // Ждём появления DOM элемента и скроллим один раз.
+      for (let i = 0; i < 80; i++) {
+        if (cancelled) return;
+        if (tryScrollOnce()) return;
+        await new Promise((r) => requestAnimationFrame(() => r(null)));
+        await new Promise((r) => setTimeout(r, 50));
+      }
+    };
+
+    ensure().finally(() => {
+      if (cancelled) return;
+      // Сбрасываем pending только если:
+      // - нашли сообщение (tryScrollOnce внутри ensure вернул true и мы вышли), или
+      // - больше нет что подгружать (hasMoreRef === false), иначе дадим шанс при следующих апдейтах.
+      const stillHasMore = hasMoreRef.current;
+      const existsNow = !!document.querySelector(
+        makeAttrSelector('data-message-id', targetId),
+      );
+      if (existsNow || !stillHasMore) {
+        setPendingScrollToMessageId(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingScrollToMessageId, isLoading, messages.length, chatId]);
 
   // Автоматическая отметка сообщений как прочитанные при входе в чат
   const markMessagesAsRead = async () => {
@@ -175,17 +302,30 @@ export default function ChatPage() {
     }
   };
 
-  const loadMessages = async () => {
+  const loadMessages = async (anchorId?: string) => {
     try {
       setIsLoading(true);
+      const qs = new URLSearchParams();
+      qs.set('limit', '50');
+      if (anchorId) qs.set('anchorId', anchorId);
+
       const response = await fetch(
-        `/api/messenger/chats/${chatId}/messages?limit=50`,
+        `/api/messenger/chats/${chatId}/messages?${qs.toString()}`,
       );
       if (response.ok) {
-        const data: { messages: Message[]; hasMore: boolean } =
-          await response.json();
+        const data: {
+          messages: Message[];
+          hasMore: boolean;
+          anchorId?: string | null;
+        } = await response.json();
         setMessages(data.messages);
         setHasMore(data.hasMore);
+        // Если якорь не найден (не ok), fallback будет ниже. Здесь — значит найден.
+      }
+      if (!response.ok && anchorId && response.status === 404) {
+        // Anchor не найден/не доступен (например, был "удалён у меня") — грузим как обычно.
+        setInitialScrollBehavior('bottom');
+        await loadMessages(undefined);
       }
     } catch (error) {
       // Игнорируем network errors при навигации
@@ -556,9 +696,10 @@ export default function ChatPage() {
       : chat?.otherUserLastSeenAt || null;
 
   const typingForChat =
-    chatId && otherUserId != null ? typingMap[chatId]?.[otherUserId] : undefined;
-  const isTyping =
-    !!typingForChat && Date.now() - typingForChat < 3000;
+    chatId && otherUserId != null
+      ? typingMap[chatId]?.[otherUserId]
+      : undefined;
+  const isTyping = !!typingForChat && Date.now() - typingForChat < 3000;
 
   // Очищаем таймер при размонтировании компонента
   useEffect(() => {
@@ -608,6 +749,42 @@ export default function ChatPage() {
 
   return (
     <div className="h-full">
+      <style jsx global>{`
+        @keyframes mollaMsgBgPulseOutgoing {
+          0% {
+            background-color: rgb(139, 92, 246); /* violet-500 */
+          }
+          50% {
+            background-color: rgb(167, 139, 250); /* violet-400 */
+          }
+          100% {
+            background-color: rgb(139, 92, 246); /* violet-500 */
+          }
+        }
+        @keyframes mollaMsgBgPulseIncoming {
+          0% {
+            background-color: rgb(243, 244, 246); /* gray-100 */
+          }
+          50% {
+            background-color: rgb(237, 233, 254); /* violet-100-ish */
+          }
+          100% {
+            background-color: rgb(243, 244, 246); /* gray-100 */
+          }
+        }
+        .molla-msg-hit-bg {
+          outline: none;
+          animation-duration: 2.5s;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: 1;
+        }
+        .molla-msg-hit-bg[data-bubble-kind='outgoing'] {
+          animation-name: mollaMsgBgPulseOutgoing;
+        }
+        .molla-msg-hit-bg[data-bubble-kind='incoming'] {
+          animation-name: mollaMsgBgPulseIncoming;
+        }
+      `}</style>
       {/* Область чата */}
       <ChatArea
         chat={chat}
@@ -625,6 +802,7 @@ export default function ChatPage() {
         onLoadMoreMessages={loadMoreMessages}
         showBackButton={true}
         onImageModalOpen={openImageModal}
+        initialScrollBehavior={initialScrollBehavior}
       />
 
       {/* Модальное окно для просмотра изображений */}

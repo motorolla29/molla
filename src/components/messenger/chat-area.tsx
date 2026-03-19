@@ -37,6 +37,7 @@ interface ChatAreaProps {
   onLoadMoreMessages?: () => Promise<void> | void;
   showBackButton?: boolean;
   onImageModalOpen?: (imageUrl: string, altText: string) => void;
+  initialScrollBehavior?: 'bottom' | 'none';
 }
 
 export default function ChatArea({
@@ -55,6 +56,7 @@ export default function ChatArea({
   onLoadMoreMessages,
   showBackButton = false,
   onImageModalOpen,
+  initialScrollBehavior = 'bottom',
 }: ChatAreaProps) {
   const {
     localMessages,
@@ -78,6 +80,7 @@ export default function ChatArea({
     isLoadingMoreMessages,
     onLoadMoreMessages,
     isTyping,
+    initialScrollBehavior,
   });
 
   const formatLastSeen = (value?: string | null) => {
@@ -149,11 +152,7 @@ export default function ChatArea({
   };
 
   return (
-    <div
-      className={`fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:top-auto ${
-        isInputHidden ? 'lg:h-[calc(100dvh)]' : 'lg:h-[calc(100dvh-105px)]'
-      }`}
-    >
+    <div className="fixed inset-0 top-12 flex flex-col bg-white lg:static lg:bg-transparent lg:top-auto lg:h-[calc(100dvh-105px)]">
       <ChatHeader
         chat={chat}
         showBackButton={showBackButton}

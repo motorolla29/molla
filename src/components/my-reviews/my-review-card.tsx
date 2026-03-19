@@ -241,6 +241,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
                   {isReviewAboutCurrentUser && (
                     <Link
                       href={`/user/${review.user.id}/active`}
+                      target="_blank"
                       className="w-full px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       onClick={() => setMenuOpen(false)}
                     >
@@ -255,6 +256,7 @@ export default function MyReviewCard({ review, onDelete }: MyReviewCardProps) {
                   {!isReviewAboutCurrentUser && (
                     <Link
                       href={`/user/${review.seller.id}/active`}
+                      target="_blank"
                       className="w-full px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       onClick={() => setMenuOpen(false)}
                     >

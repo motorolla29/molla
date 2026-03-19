@@ -9,6 +9,7 @@ import { useChatPresenceStore } from '@/store/useChatPresenceStore';
 import { useUnreadMessagesStore } from '@/store/useUnreadMessagesStore';
 import { useToast } from '@/components/toast/toast-context';
 import type { ChatListItemModel } from '@/components/messenger/chat-list-item';
+import MessengerSearch from '@/components/messenger/messenger-search';
 
 export default function MessengerPage() {
   const { user } = useAuthStore();
@@ -17,6 +18,7 @@ export default function MessengerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const { socket } = useChatSocket();
   const toast = useToast();
 
@@ -396,6 +398,15 @@ export default function MessengerPage() {
     });
   };
 
+  const handleSearchSelect = (chatId: string, messageId?: string | null) => {
+    const href = messageId
+      ? `/personal/messenger/channel/${chatId}?msg=${encodeURIComponent(
+          messageId,
+        )}`
+      : `/personal/messenger/channel/${chatId}`;
+    router.push(href);
+  };
+
   const handleHideChat = async (chatId: string) => {
     try {
       const response = await fetch(
@@ -473,9 +484,15 @@ export default function MessengerPage() {
     <div className="m-4 lg:m-6 h-full">
       <div className="mb-2 min-[500px]:mb-4 pb-4 border-b border-gray-200">
         <h1 className="text-lg font-semibold text-gray-900">Сообщения</h1>
+        <MessengerSearch
+          onSelect={handleSearchSelect}
+          onActiveChange={setIsSearchActive}
+          onHideChat={handleHideChat}
+          onToggleBlock={handleToggleBlock}
+        />
       </div>
 
-      {isLoading ? (
+      {isSearchActive ? null : isLoading ? (
         <div className="my-16 text-center">
           <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Загрузка чатов...</p>

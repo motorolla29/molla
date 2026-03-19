@@ -18,6 +18,7 @@ interface UseChatScrollArgs {
   isLoadingMoreMessages: boolean;
   onLoadMoreMessages?: () => Promise<void> | void;
   isTyping: boolean;
+  initialScrollBehavior?: 'bottom' | 'none';
 }
 
 interface UseChatScrollResult {
@@ -36,6 +37,7 @@ export function useChatScroll({
   isLoadingMoreMessages,
   onLoadMoreMessages,
   isTyping,
+  initialScrollBehavior = 'bottom',
 }: UseChatScrollArgs): UseChatScrollResult {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -187,6 +189,16 @@ export function useChatScroll({
     if (hasDoneInitialScrollRef.current) return;
     if (isLoading) return;
     if (localMessages.length === 0) return;
+    if (initialScrollBehavior === 'none') {
+      // В режиме якоря/контекста мы НЕ хотим "снэп" вниз:
+      // - не делаем initial scroll
+      // - и не даём эффекту "append" принять первую порцию за "новое сообщение"
+      prevMessagesLengthRef.current = localMessages.length;
+      prevLastMessageIdRef.current =
+        localMessages[localMessages.length - 1]?.id ?? null;
+      hasDoneInitialScrollRef.current = true;
+      return;
+    }
 
     const container = messagesContainerRef.current;
     if (!container) return;
@@ -200,7 +212,7 @@ export function useChatScroll({
     setTimeout(scrollToBottom, 150);
 
     hasDoneInitialScrollRef.current = true;
-  }, [isLoading, localMessages.length]);
+  }, [isLoading, localMessages.length, initialScrollBehavior]);
 
   // 2) Дальнейшая автопрокрутка при приходе новых сообщений (append)
   useEffect(() => {

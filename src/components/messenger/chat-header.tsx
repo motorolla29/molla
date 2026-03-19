@@ -6,6 +6,7 @@ import { FaUser } from 'react-icons/fa6';
 import { CloudImage } from '@/components/cloud-image/cloud-image';
 import { getAvatarColor } from '@/utils';
 import type { Chat } from './message-item';
+import { useRouter } from 'next/navigation';
 
 interface ChatHeaderProps {
   chat: Chat | null;
@@ -24,13 +25,18 @@ export function ChatHeader({
   isLoading = false,
   formatLastSeen,
 }: ChatHeaderProps) {
+  const router = useRouter();
   return (
     <div className=" bg-white p-4 border-b border-gray-200 shrink-0 sticky top-12 z-1 lg:static">
       <div className="flex items-center space-x-4">
         {/* Кнопка назад */}
         {showBackButton && (
           <Link
-            href="/personal/messenger"
+            href=""
+            onClick={(e) => {
+              e.preventDefault();
+              router.back();
+            }}
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors shrink-0"
           >
             <ArrowLeft size={20} />

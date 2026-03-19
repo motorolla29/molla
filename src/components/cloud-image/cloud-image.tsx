@@ -112,10 +112,15 @@ export function CloudImage({
 
   const handleLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+      const currentSrc = e.currentTarget.currentSrc || '';
+      // Плейсхолдер (data:) загружается мгновенно и не должен считаться "готовой" картинкой
+      if (!isInView || currentSrc.startsWith('data:image/')) {
+        return;
+      }
       setHasLoaded(true);
       onLoad?.(e);
     },
-    [onLoad],
+    [isInView, onLoad],
   );
 
   const displaySrc = getCloudImageVariantUrl(
@@ -134,7 +139,7 @@ export function CloudImage({
       src={
         isInView
           ? displaySrc
-          : 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+          : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E"
       }
       alt={alt}
       loading="lazy"

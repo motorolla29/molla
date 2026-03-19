@@ -53,6 +53,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
     const beforeId = searchParams.get('beforeId');
+    const anchorId = searchParams.get('anchorId');
 
     const limit = Math.min(
       100,
@@ -73,7 +74,82 @@ export async function GET(
     let messages;
     let hasMore = false;
 
-    if (beforeId) {
+    if (anchorId && !beforeId) {
+      // Режим "якоря": вернуть пачку, содержащую anchor, + всё что новее него (в разумном лимите).
+      const anchor = await prisma.message.findFirst({
+        where: {
+          id: anchorId,
+          chatId: chatId,
+          ...(baseWhere.createdAt ? { createdAt: baseWhere.createdAt } : {}),
+        },
+        select: { id: true, createdAt: true },
+      });
+
+      if (!anchor) {
+        return NextResponse.json(
+          { error: 'Anchor message not found' },
+          { status: 404 },
+        );
+      }
+
+      // Берём "контекст" до якоря включительно (limit штук)
+      const olderOrEqual = await prisma.message.findMany({
+        where: {
+          ...baseWhere,
+          createdAt: {
+            ...(baseWhere.createdAt || {}),
+            lte: anchor.createdAt,
+          },
+        },
+        include: {
+          sender: { select: { id: true, name: true, avatar: true } },
+          attachments: {
+            select: { id: true, fileUrl: true, fileName: true, fileType: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      });
+
+      // Всё что новее якоря (cap чтобы не унести много данных)
+      const newer = await prisma.message.findMany({
+        where: {
+          ...baseWhere,
+          createdAt: {
+            ...(baseWhere.createdAt || {}),
+            gt: anchor.createdAt,
+          },
+        },
+        include: {
+          sender: { select: { id: true, name: true, avatar: true } },
+          attachments: {
+            select: { id: true, fileUrl: true, fileName: true, fileType: true },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+        take: 500,
+      });
+
+      const orderedOlder = [...olderOrEqual].reverse(); // asc
+      messages = [...orderedOlder, ...newer]; // asc
+
+      // Есть ли ещё более старые сообщения выше верхней границы
+      if (orderedOlder.length > 0) {
+        const oldest = orderedOlder[0];
+        const olderCount = await prisma.message.count({
+          where: {
+            ...baseWhere,
+            createdAt: {
+              ...(baseWhere.createdAt || {}),
+              lt: oldest.createdAt,
+            },
+          },
+        });
+        hasMore = olderCount > 0;
+      } else {
+        hasMore = false;
+      }
+    } else if (beforeId) {
       // Загрузка более старых сообщений (пачка "выше")
       const beforeMessage = await prisma.message.findUnique({
         where: { id: beforeId },
@@ -168,9 +244,10 @@ export async function GET(
       hasMore = totalCount > messages.length;
     }
 
-    // Мы запрашивали сообщения в порядке `desc`, поэтому разворачиваем,
-    // чтобы на фронте они были в привычном `asc`
-    const orderedMessages = [...messages].reverse();
+    // Сообщения уже могут быть в asc (anchor-mode) или в desc (обычный режим).
+    // Приводим к asc.
+    const orderedMessages =
+      anchorId && !beforeId ? [...messages] : [...messages].reverse();
 
     // Форматируем сообщения для фронтенда
     const formattedMessages = orderedMessages.map((message) => ({
@@ -195,6 +272,7 @@ export async function GET(
     return NextResponse.json({
       messages: formattedMessages,
       hasMore,
+      anchorId: anchorId || null,
     });
   } catch (error) {
     console.error('Error fetching messages:', error);

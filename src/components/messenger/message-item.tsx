@@ -138,7 +138,7 @@ const MessageItem = memo(
 
         <div
           data-message-id={message.id}
-          className={`flex ${marginTop} ${
+          className={`flex outline-none ${marginTop} ${
             message.senderId === currentUserId ? 'justify-end' : 'justify-start'
           }`}
         >
@@ -194,6 +194,10 @@ const MessageItem = memo(
           )}
 
           <div
+            data-message-bubble
+            data-bubble-kind={
+              message.senderId === currentUserId ? 'outgoing' : 'incoming'
+            }
             className={`max-w-36 min-[320px]:max-w-48 min-[390px]:max-w-56 ${message.attachments && message.attachments.length > 0 ? 'sm:max-w-[350px]' : 'sm:max-w-120'} px-3 py-1 rounded-lg relative ${
               message.senderId === currentUserId
                 ? 'bg-violet-500 text-white'

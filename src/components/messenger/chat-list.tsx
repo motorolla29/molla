@@ -225,10 +225,7 @@ export default function ChatList({
   }
 
   return (
-    <div
-      ref={chatListRef}
-      className="flex-1 max-w-full overflow-y-auto custom-scrollbar"
-    >
+    <div ref={chatListRef} className="flex-1 max-w-full custom-scrollbar">
       {chats.map((chat) => (
         <ChatListItem
           key={chat.id}
