@@ -48,7 +48,10 @@ export default function MessageInput({
 
   const handleSend = () => {
     if ((message.trim() || attachments.length > 0) && !disabled) {
-      onSendMessage(message.trim(), attachments.length > 0 ? attachments : undefined);
+      onSendMessage(
+        message.trim(),
+        attachments.length > 0 ? attachments : undefined,
+      );
       setMessage('');
       setAttachments([]);
       // Прекращаем индикацию печати при отправке сообщения
@@ -127,7 +130,7 @@ export default function MessageInput({
   ];
 
   return (
-    <div className=" border-gray-200 rounded-2xl bg-amber-500 p-2 min-[340px]:bg-white min-[340px]:p-4 mb-2 min-[340px]:m-4 mt-0">
+    <div className=" border-gray-200 rounded-2xl p-2 min-[340px]:bg-white min-[340px]:p-4 min-[340px]:m-4">
       {/* Предпросмотр вложений */}
       {attachments.length > 0 && (
         <div className="mb-3">
@@ -143,7 +146,7 @@ export default function MessageInput({
                   onClick={() => removeAttachment(index)}
                   className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
                 >
-                  <span className='-translate-y-px'>×</span>
+                  <span className="-translate-y-px">×</span>
                 </button>
               </div>
             ))}
