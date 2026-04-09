@@ -28,7 +28,7 @@ export default function PersonalLayout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-[calc(100vh-95px)] bg-gray-50 flex flex-col">
+    <div className="min-h-full flex-1 bg-gray-50 flex flex-col pb-[env(safe-area-inset-bottom)]">
       {/* Header с кнопкой назад */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 lg:px-6 hidden lg:block">
         <div className="flex items-center">
