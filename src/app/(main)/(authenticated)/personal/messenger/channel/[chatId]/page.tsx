@@ -581,6 +581,12 @@ export default function ChatPage() {
     socket.on('message_status_update', handleMessageStatusUpdate);
     socket.on('typing', handleTyping);
     socket.on('stop_typing', handleStopTyping);
+    
+    // Reload messages on reconnect to catch missed messages
+    const handleConnect = () => {
+      loadMessages();
+    };
+    socket.on('connect', handleConnect);
 
     return () => {
       socket.emit('leave_chat', { chatId });
@@ -589,6 +595,7 @@ export default function ChatPage() {
       socket.off('message_status_update', handleMessageStatusUpdate);
       socket.off('typing', handleTyping);
       socket.off('stop_typing', handleStopTyping);
+      socket.off('connect', handleConnect);
     };
   }, [socket, chatId, user, chat, markTyping]);
 
