@@ -188,7 +188,41 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Socket события отправляются через обычный socket в page.tsx
+    // Send socket event to notify recipient even if sender was offline
+    try {
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
+      await fetch(`${socketUrl}/emit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'send_message',
+          data: {
+            chatId,
+            persistedMessage: {
+              id: messageWithAttachments!.id,
+              chatId: messageWithAttachments!.chatId,
+              senderId: messageWithAttachments!.senderId,
+              senderName: messageWithAttachments!.sender?.name,
+              content: messageWithAttachments!.content || '',
+              messageType: messageWithAttachments!.messageType,
+              status: 'delivered',
+              createdAt: messageWithAttachments!.createdAt,
+              attachments: messageWithAttachments!.attachments.map(
+                (attachment) => ({
+                  id: attachment.id,
+                  fileUrl: attachment.fileUrl,
+                  fileName: attachment.fileName,
+                  fileType: attachment.fileType,
+                }),
+              ),
+            },
+          },
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to send socket event:', error);
+      // Don't fail the request if socket event fails
+    }
 
     return NextResponse.json({
       success: true,

@@ -585,6 +585,8 @@ export default function ChatPage() {
     // Reload messages on reconnect to catch missed messages
     const handleConnect = () => {
       loadMessages();
+      markMessagesAsRead();
+      socket.emit('join_chat', { chatId });
     };
     socket.on('connect', handleConnect);
 
