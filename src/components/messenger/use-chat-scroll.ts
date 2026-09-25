@@ -216,10 +216,10 @@ export function useChatScroll({
 
   // Сбрасываем флаг при начале загрузки (для реконнекта)
   useEffect(() => {
-    if (isLoading && localMessages.length === 0) {
+    if (isLoading) {
       hasDoneInitialScrollRef.current = false;
     }
-  }, [isLoading, localMessages.length]);
+  }, [isLoading]);
 
   // 2) Дальнейшая автопрокрутка при приходе новых сообщений (append)
   useEffect(() => {
