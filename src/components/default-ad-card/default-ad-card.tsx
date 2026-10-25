@@ -58,7 +58,10 @@ export default function DefaultAdCard({
         target="_blank"
       >
         {/* Кнопка избранного */}
-        <FavoriteButton ad={ad} className="absolute top-0 right-0" />
+        <FavoriteButton
+          ad={ad}
+          className="absolute top-0 right-0 p-0 hover:bg-transparent md:p-1 md:hover:bg-black/8"
+        />
         <div className="overflow-hidden">
           <h2 className="text-base sm:text-lg font-semibold line-clamp-1 hover:text-violet-400 mr-10 mb-2 leading-tight max-w-full overflow-hidden wrap-break-word">
             {ad.title}

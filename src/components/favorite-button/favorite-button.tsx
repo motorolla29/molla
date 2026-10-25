@@ -107,7 +107,7 @@ export default function FavoriteButton({
     <button
       onClick={handleClick}
       disabled={isAuthChecking}
-      className={`p-1 sm:hover:bg-black/8 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+      className={`rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
         className || ''
       }`}
       aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}

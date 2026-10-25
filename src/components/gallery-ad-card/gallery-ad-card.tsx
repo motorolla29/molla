@@ -47,7 +47,10 @@ export default function GalleryAdCard({
           </div>
         )}
         {/* Кнопка избранного */}
-        <FavoriteButton ad={ad} className="absolute top-2 right-2" />
+        <FavoriteButton
+          ad={ad}
+          className="absolute top-2 right-2 p-1 sm:hover:bg-black/8"
+        />
       </div>
       <div className="flex-1 flex-col min-w-0">
         <h3 className="text-sm sm:text-base md:text-lg text-neutral-800 leading-[1.2] pb-1 hover:text-violet-400 truncate min-w-0">
