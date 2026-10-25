@@ -123,18 +123,12 @@ export default function MessengerPage() {
       setChats((prevChats) => {
         let updatedChats = prevChats.map((chat) => {
           if (chat.id === payload.chatId) {
-            const isFromOtherUser = payload.senderId !== Number(user?.id);
-            const newUnreadCount = isFromOtherUser
-              ? chat.unreadCount + 1
-              : chat.unreadCount;
-
             return {
               ...chat,
               lastMessage: displayMessage,
               lastMessageTime: payload.timestamp || new Date(),
               lastMessageStatus: payload.status || 'sent',
               lastMessageIsOutgoing: payload.senderId === Number(user?.id),
-              unreadCount: newUnreadCount,
             };
           }
           return chat;

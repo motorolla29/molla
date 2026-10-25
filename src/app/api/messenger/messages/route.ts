@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
   let createdMessageId: string | null = null;
   let hadAttachments = false;
   let hasTextContent = false;
+  let socketEventSent = false;
 
   try {
     // Получаем токен из cookies
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest) {
     // Send socket event to notify recipient even if sender was offline
     try {
       const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
-      await fetch(`${socketUrl}/emit`, {
+      const socketResponse = await fetch(`${socketUrl}/emit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -219,6 +220,7 @@ export async function POST(request: NextRequest) {
           },
         }),
       });
+      socketEventSent = socketResponse.ok;
     } catch (error) {
       console.error('Failed to send socket event:', error);
       // Don't fail the request if socket event fails
@@ -226,6 +228,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      socketEventSent,
       statusMessage: 'Message sent successfully',
       messageId: messageWithAttachments!.id,
       message: messageWithAttachments

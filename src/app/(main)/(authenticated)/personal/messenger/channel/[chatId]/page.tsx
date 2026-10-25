@@ -653,8 +653,8 @@ export default function ChatPage() {
           }
         : null;
 
-      if (persisted) {
-        // Отправляем persisted сообщение через socket для доставки всем участникам
+      if (persisted && !data.socketEventSent) {
+        // Резервная отправка сохраненного сообщения через socket
         socket?.emit('send_message', {
           chatId,
           persistedMessage: persisted,
