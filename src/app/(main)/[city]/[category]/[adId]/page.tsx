@@ -106,13 +106,11 @@ export default async function AdPage({ params }: Props) {
   }
 
   return (
-    <AdClient
-      ad={ad}
-      similarAds={
-        <Suspense fallback={<SimilarAdsSkeleton />}>
-          <SimilarAds ad={ad} />
-        </Suspense>
-      }
-    />
+    <div className="container mx-auto px-4 py-6">
+      <AdClient ad={ad} />
+      <Suspense fallback={<SimilarAdsSkeleton />}>
+        <SimilarAds ad={ad} />
+      </Suspense>
+    </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 import { AdBase } from '@/types/ad';
 import { categoryOptions } from '@/const';
 import { getCurrencySymbol, getViewsWord, getFavoritesWord } from '@/utils';
@@ -27,10 +26,9 @@ import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface AdClientProps {
   ad: AdBase;
-  similarAds?: ReactNode;
 }
 
-export default function AdClient({ ad, similarAds }: AdClientProps) {
+export default function AdClient({ ad }: AdClientProps) {
   const photos = ad.photos.length > 0 ? ad.photos : ['default.svg'];
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const isArchived = ad.status === 'archived';
@@ -172,7 +170,6 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
 
   return (
     <Suspense>
-      <div className="container mx-auto px-4 py-6">
         {/* Блок уведомления для архивных объявлений владельца */}
         {!isAuthChecking && isOwner && isArchived && (
           <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 sm:p-4 mb-4 max-w-full lg:max-w-[960px] xl:max-w-[1080px] 2xl:max-w-[1166px]">
@@ -458,15 +455,12 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           </div>
         )}
 
-        {similarAds}
-
         {/* Модальное окно карты */}
         <MapModal
           isOpen={isMapModalOpen}
           onClose={() => setIsMapModalOpen(false)}
           ad={ad}
         />
-      </div>
     </Suspense>
   );
 }
