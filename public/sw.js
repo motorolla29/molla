@@ -245,18 +245,27 @@ self.addEventListener('fetch', (event) => {
     !url.pathname.startsWith('/_next') &&
     !url.pathname.startsWith('/api')
   ) {
+    const networkResponse = fetch(request);
+
+    if (isAdDetailPath(url.pathname)) {
+      event.waitUntil(
+        networkResponse
+          .then(
+            (response) =>
+              cachePutSafe(PAGES_CACHE, request, response.clone()),
+            () => undefined,
+          )
+          .catch((error) => {
+            console.warn('[SW] Failed to cache ad page:', error);
+          }),
+      );
+    }
+
     event.respondWith(
       (async () => {
         try {
           // Всегда пробуем сеть для документа (актуальный HTML под текущие чанки).
-          const response = await fetch(request);
-
-          // Runtime HTML cache только для карточки объявления.
-          if (isAdDetailPath(url.pathname)) {
-            await cachePutSafe(PAGES_CACHE, request, response);
-          }
-
-          return response;
+          return await networkResponse;
         } catch (e) {
           const pathname = normalizePathname(url.pathname);
 
