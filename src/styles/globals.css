@@ -1,5 +1,14 @@
 @import 'tailwindcss';
 
+html {
+  color-scheme: light;
+  background-color: #fff;
+}
+
+body {
+  background-color: #fff;
+}
+
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
