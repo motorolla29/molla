@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { AdBase } from '@/types/ad';
 import { categoryOptions } from '@/const';
 import { getCurrencySymbol, getViewsWord, getFavoritesWord } from '@/utils';
@@ -15,7 +16,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { getAvatarColor } from '@/utils';
 import PhotoSlider from '@/components/photo-slider/photo-slider';
-import GalleryAdCard from '@/components/gallery-ad-card/gallery-ad-card';
 import MapModal from '@/components/map-modal/map-modal';
 import FavoriteButton from '@/components/favorite-button/favorite-button';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -27,7 +27,7 @@ import { CloudImage } from '@/components/cloud-image/cloud-image';
 
 interface AdClientProps {
   ad: AdBase;
-  similarAds?: AdBase[];
+  similarAds?: ReactNode;
 }
 
 export default function AdClient({ ad, similarAds }: AdClientProps) {
@@ -458,19 +458,7 @@ export default function AdClient({ ad, similarAds }: AdClientProps) {
           </div>
         )}
 
-        {/* Блок с похожими объявлениями */}
-        {similarAds && similarAds.length > 0 && (
-          <section className="mt-4 mb-8 text-neutral-800">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Похожие объявления
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {similarAds.slice(0, 8).map((x) => (
-                <GalleryAdCard key={x.id} ad={x} />
-              ))}
-            </div>
-          </section>
-        )}
+        {similarAds}
 
         {/* Модальное окно карты */}
         <MapModal

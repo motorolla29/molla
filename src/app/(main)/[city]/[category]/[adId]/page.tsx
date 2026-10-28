@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import AdClient from './ad-client';
+import SimilarAds, { SimilarAdsSkeleton } from './similar-ads';
 import { categoryOptions } from '@/const';
 import { AdBase, CategoryKey, Currency } from '@/types/ad';
 import { prisma } from '@/lib/prisma';
@@ -103,84 +105,14 @@ export default async function AdPage({ params }: Props) {
     notFound();
   }
 
-  // 5. Похожие объявления: до 6 объявлений той же категории,
-  // отсортированных по расстоянию от текущих координат (чем ближе, тем выше),
-  // без ограничения по городу
-  const SIMILAR_LIMIT = 6;
-  const SAME_CATEGORY_LIMIT = 128;
-
-  let similarAds: AdBase[] = [];
-
-  try {
-    const sameCategoryRaw = await prisma.ad.findMany({
-      where: {
-        category: adFromDb.category,
-        id: { not: ad.id },
-        status: 'active',
-      },
-      include: {
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            rating: true,
-            phone: true,
-            email: true,
-          },
-        },
-      },
-      take: SAME_CATEGORY_LIMIT,
-    });
-
-    const withDistance = sameCategoryRaw.map((item) => ({
-      item,
-      dist:
-        item.lat && item.lng && ad.location.lat && ad.location.lng
-          ? (item.lat - ad.location.lat) * (item.lat - ad.location.lat) +
-            (item.lng - ad.location.lng) * (item.lng - ad.location.lng)
-          : Infinity, // Если координаты отсутствуют, ставим бесконечное расстояние
-    }));
-
-    withDistance.sort((a, b) => a.dist - b.dist);
-
-    const nearestSameCategory = withDistance
-      .slice(0, SIMILAR_LIMIT)
-      .map((x) => x.item);
-
-    similarAds = nearestSameCategory.map((item) => ({
-      id: item.id,
-      category: item.category.toLowerCase() as CategoryKey,
-      title: item.title,
-      description: item.description,
-      city: item.city,
-      cityLabel: item.cityLabel,
-      address: item.address,
-      location: {
-        lat: item.lat,
-        lng: item.lng,
-      },
-      price: item.price ? Number(item.price) : undefined, // Конвертируем BigInt в число
-      currency: (item.currency as Currency) || undefined,
-      datePosted: item.datePosted.toISOString(),
-      photos: item.photos,
-      seller: {
-        id: item.seller.id,
-        avatar: item.seller.avatar,
-        name: item.seller.name,
-        rating: item.seller.rating,
-        contact: {
-          phone: item.seller.phone || undefined,
-          email: item.seller.email || undefined,
-        },
-      },
-      details: item.details,
-      status: item.status,
-    }));
-  } catch (error) {
-    console.error('Failed to fetch similar ads:', error);
-    similarAds = [];
-  }
-
-  return <AdClient ad={ad} similarAds={similarAds} />;
+  return (
+    <AdClient
+      ad={ad}
+      similarAds={
+        <Suspense fallback={<SimilarAdsSkeleton />}>
+          <SimilarAds ad={ad} />
+        </Suspense>
+      }
+    />
+  );
 }
