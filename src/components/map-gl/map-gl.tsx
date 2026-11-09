@@ -124,11 +124,6 @@ export default function MapGl({
   const lastBoundsRef = useRef<any | null>(null);
   const markerLayoutRef = useRef<any | null>(null);
 
-  const iconBaseUrl =
-    process.env.CLOUD_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_CLOUD_PUBLIC_BASE_URL ||
-    'https://molla.s3.cloud.ru';
-
   const ORIGINAL_SIZE: [number, number] = [399, 548];
   const MAX_WIDTH = 50;
 
@@ -381,7 +376,7 @@ export default function MapGl({
             onClick={handleCluster}
           >
             {displayMarkers.map((marker) => {
-              const iconUrl = `${iconBaseUrl}/icons/${marker.category}-map-marker.png`;
+              const iconUrl = `/icons/${marker.category}-map-marker.png`;
               const ad =
                 ads.length > 0
                   ? ads.find((a) => a.id === marker.id) ||
